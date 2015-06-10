@@ -53,23 +53,17 @@ libspectrum_word display_lores_border;
 libspectrum_word display_hires_border;
 static libspectrum_word display_last_border;
 
-/* Stores the pixel, attribute and SCLD screen mode information used to
-   draw each 8x1 group of pixels (including border) last frame */
-libspectrum_dword
+/* Stores the pixel, colour and screen mode information used to
+   draw each [8|16]x1 chunk of pixels (including border) last frame */
+display_chunk
 display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
 
-libspectrum_word
-display_last_screen_ulaplus[ DISPLAY_SCREEN_WIDTH_COLS * 
-                             DISPLAY_SCREEN_HEIGHT ];
-
-/* Offsets as to where the data and the attributes for each pixel
-   line start */
+/* Offsets as to where the data and the attributes for each pixel line start */
 libspectrum_word display_line_start[ DISPLAY_HEIGHT ];
 libspectrum_word display_attr_start[ DISPLAY_HEIGHT ];
 
-/* If you write to the byte at display_dirty_?table[n+0x4000], then
-   the eight pixels starting at (8*xtable[n],ytable[n]) must be
-   replotted */
+/* If you write to the byte at display_dirty_?table[n+0x4000], then the eight
+   pixels starting at (8*xtable[n],ytable[n]) must be replotted */
 static libspectrum_word
   display_dirty_ytable[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT ];
 static libspectrum_word
@@ -200,8 +194,8 @@ display_init( int *argc, char ***argv )
 
   display_frame_count=0; display_flash_reversed=0;
 
-  memset( display_last_screen_ulaplus, 0,
-          sizeof( display_last_screen_ulaplus ) );
+  /* Make sure display_chunk structures are all initialised to 0 */
+  memset( display_last_screen, DIRTY, sizeof( display_last_screen ) );
 
   display_refresh_all();
 
@@ -355,79 +349,11 @@ display_write_if_dirty_timex( int x, int y )
   libspectrum_word offset;
   libspectrum_byte *screen;
   libspectrum_byte data, data2;
-  libspectrum_dword mode_data;
-  libspectrum_dword last_chunk_detail;
-
-  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
-  beam_y = y + DISPLAY_BORDER_HEIGHT;
-  offset = display_get_addr( x, y );
-
-  /* Read byte, atrr/byte, and screen mode */
-  screen = RAM[ memory_current_screen ];
-  data = screen[ offset ];
-  mode_data = scld_last_dec.byte;
-
-  if( scld_last_dec.name.hires ) {
-    switch( scld_last_dec.mask.scrnmode ) {
-
-    case HIRESATTRALTD:
-      offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
-      data2 = screen[ offset ];
-      break;
-
-    case HIRES:
-      data2 = screen[ offset + ALTDFILE_OFFSET ];
-      break;
-
-    case HIRESDOUBLECOL:
-      data2 = data;
-      break;
-
-    default: /* case HIRESATTR: */
-      offset = display_attr_start[ y ] + x;
-      data2 = screen[ offset ];
-      break;
-
-    }
-  } else {
-    data2 = display_get_attr_byte( x, y );
-  }
-
-  last_chunk_detail = (display_flash_reversed << 24) | (mode_data << 16) |
-                      (data2 << 8) | data;
-  /* And draw it if it is different to what was there last time */
-  index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-  if( display_last_screen[ index ] != last_chunk_detail ) {
-    libspectrum_byte ink, paper;
-    display_get_attr( x, y, &ink, &paper );
-    if( scld_last_dec.name.hires ) {
-      libspectrum_word hires_data = (data << 8) + data2;
-      uidisplay_plot16( beam_x, beam_y, hires_data, ink, paper );
-    } else {
-      uidisplay_plot8( beam_x, beam_y, data, ink, paper );
-    }
-
-    /* Update last display record */
-    display_last_screen[ index ] = last_chunk_detail;
-
-    /* And now mark it dirty */
-    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
-  }
-}
-
-void
-display_write_if_dirty_timex_ulaplus( int x, int y )
-{
-  int beam_x, beam_y;
-  int index;
-  libspectrum_word offset;
-  libspectrum_word last_ulaplus_chunk_detail;
-  libspectrum_byte *screen;
-  libspectrum_byte data, data2;
+  display_chunk chunk_detail;
   libspectrum_byte ink, paper;
-  libspectrum_byte screen_mode;
-  libspectrum_dword mode_data;
-  libspectrum_dword last_chunk_detail;
+
+  chunk_detail.type = DIRTY;
+  chunk_detail.data.dword = 0;
 
   beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
   beam_y = y + DISPLAY_BORDER_HEIGHT;
@@ -436,48 +362,46 @@ display_write_if_dirty_timex_ulaplus( int x, int y )
   /* Read byte, atrr/byte, and screen mode */
   screen = RAM[ memory_current_screen ];
   data = screen[ offset ];
-  mode_data = scld_last_dec.byte;
-
-  if( scld_last_dec.name.hires ) {
-    switch( scld_last_dec.mask.scrnmode ) {
-
-    case HIRESATTRALTD:
-      offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
-      data2 = screen[ offset ];
-      break;
-
-    case HIRES:
-      data2 = screen[ offset + ALTDFILE_OFFSET ];
-      break;
-
-    case HIRESDOUBLECOL:
-      data2 = data;
-      break;
-
-    default: /* case HIRESATTR: */
-      offset = display_attr_start[ y ] + x;
-      data2 = screen[ offset ];
-      break;
-
-    }
-  } else {
-    data2 = display_get_attr_byte( x, y );
-  }
-
-  screen_mode = ( ulaplus_palette_enabled )? 0x10 : display_flash_reversed;
-
-  last_chunk_detail = (screen_mode << 24) | (mode_data << 16) |
-                      (data2 << 8) | data;
 
   display_get_attr( x, y, &ink, &paper );
-  last_ulaplus_chunk_detail = ( ink << 8 ) | paper;
+  if( scld_last_dec.name.hires ) {
+    chunk_detail.type = HIRES_TWO_COLOUR;
+    chunk_detail.data.hr_2c.ink = ink;
+    chunk_detail.data.hr_2c.paper = paper;
+    chunk_detail.data.hr_2c.data = data;
+    switch( scld_last_dec.mask.scrnmode ) {
 
-  /* And draw it if it is different to what was there last time */
+    case HIRESATTRALTD:
+      offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
+      data2 = screen[ offset ];
+      break;
+
+    case HIRES:
+      data2 = screen[ offset + ALTDFILE_OFFSET ];
+      break;
+
+    case HIRESDOUBLECOL:
+      data2 = data;
+      break;
+
+    default: /* case HIRESATTR: */
+      offset = display_attr_start[ y ] + x;
+      data2 = screen[ offset ];
+      break;
+
+    }
+    chunk_detail.data.hr_2c.data2 = data2;
+  } else {
+    chunk_detail.type = LOWRES_TWO_COLOUR;
+    chunk_detail.data.lr_2c.ink = ink;
+    chunk_detail.data.lr_2c.paper = paper;
+    chunk_detail.data.lr_2c.data = data;
+  }
+
+  /* And draw it if it is different to what was there this time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-
-  if( display_last_screen[ index ] != last_chunk_detail ||
-      display_last_screen_ulaplus[ index ] != last_ulaplus_chunk_detail ) {
-
+  if( display_last_screen[ index ].type != chunk_detail.type ||
+      display_last_screen[ index ].data.dword != chunk_detail.data.dword ) {
     if( scld_last_dec.name.hires ) {
       libspectrum_word hires_data = (data << 8) + data2;
       uidisplay_plot16( beam_x, beam_y, hires_data, ink, paper );
@@ -485,9 +409,9 @@ display_write_if_dirty_timex_ulaplus( int x, int y )
       uidisplay_plot8( beam_x, beam_y, data, ink, paper );
     }
 
-    /* Update last display record */
-    display_last_screen[ index ] = last_chunk_detail;
-    display_last_screen_ulaplus[ index ] = last_ulaplus_chunk_detail;
+    /* Update this display record */
+    display_last_screen[ index ].type = chunk_detail.type;
+    display_last_screen[ index ].data.dword = chunk_detail.data.dword;
 
     /* And now mark it dirty */
     display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
@@ -513,8 +437,11 @@ display_write_if_dirty_pentagon_16_col( int x, int y )
   libspectrum_word offset;
   libspectrum_byte *screen;
   libspectrum_byte data1, data2, data3, data4;
-  libspectrum_dword last_chunk_detail;
+  display_chunk chunk_detail;
   libspectrum_byte colour1, colour2;
+
+  chunk_detail.type = DIRTY;
+  chunk_detail.data.dword = 0;
 
   /* We need to read the pixels from the appropriate two pages and write them
      out to the frame buffer */
@@ -538,17 +465,17 @@ display_write_if_dirty_pentagon_16_col( int x, int y )
   data1 = screen[ offset ];
   data3 = screen[ offset + ALTDFILE_OFFSET ];
 
-  /* This is a bit of a cheat - we'd normally encode the screen mode in here
-     as well to support screen mode mixing. I doubt there is much call for
-     mixing 16 colour mode with other modes so will assume that as long as
-     we are in 16 colour mode the screen we draw is in that mode as it seems
-     a shame to chuck more memory at supporting just this obscure mode */
-  last_chunk_detail = (data4 << 24) | (data3 << 16) | (data2 << 8) | data1;
+  chunk_detail.type = LOWRES_SIXTEEN_COLOUR;
+  chunk_detail.data.lr_16c.data4 = data4;
+  chunk_detail.data.lr_16c.data3 = data3;
+  chunk_detail.data.lr_16c.data2 = data2;
+  chunk_detail.data.lr_16c.data1 = data1;
 
   /* And draw it if it is different to what was there last time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
 
-  if( display_last_screen[ index ] != last_chunk_detail ) {
+  if( display_last_screen[ index ].type != chunk_detail.type ||
+      display_last_screen[ index ].data.dword != chunk_detail.data.dword ) {
     /* Print pixel 1 & 2 from screen_page_2 base, pixel 3 & 4 from
        screen_page_1 base, pixel 5 & 6 from screen_page_2 ALTDFILE_OFFSET,
        pixel 7 & 8 from screen_page_1 ALTDFILE_OFFSET */
@@ -568,7 +495,8 @@ display_write_if_dirty_pentagon_16_col( int x, int y )
     uidisplay_putpixel( draw_x  , beam_y, colour2 );
 
     /* Update last display record */
-    display_last_screen[ index ] = last_chunk_detail;
+    display_last_screen[ index ].type = chunk_detail.type;
+    display_last_screen[ index ].data.dword = chunk_detail.data.dword;
 
     /* And now mark it dirty */
     display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
@@ -582,45 +510,12 @@ display_write_if_dirty_sinclair( int x, int y )
   int index;
   libspectrum_word offset;
   libspectrum_byte *screen;
-  libspectrum_byte data, data2;
-  libspectrum_dword last_chunk_detail;
-
-  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
-  beam_y = y + DISPLAY_BORDER_HEIGHT;
-  offset = display_get_addr( x, y );
-
-  /* Read byte, atrr/byte, and screen mode */
-  screen = RAM[ memory_current_screen ];
-  data = screen[ offset ];
-  data2 = display_get_attr_byte( x, y );
-
-  last_chunk_detail = (display_flash_reversed << 24) | (data2 << 8) | data;
-  /* And draw it if it is different to what was there last time */
-  index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-  if( display_last_screen[ index ] != last_chunk_detail ) {
-    libspectrum_byte ink, paper;
-    display_parse_attr( data2, &ink, &paper );
-    uidisplay_plot8( beam_x, beam_y, data, ink, paper );
-
-    /* Update last display record */
-    display_last_screen[ index ] = last_chunk_detail;
-
-    /* And now mark it dirty */
-    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
-  }
-}
-
-void
-display_write_if_dirty_sinclair_ulaplus( int x, int y )
-{
-  int beam_x, beam_y;
-  int index;
-  libspectrum_word offset;
-  libspectrum_byte *screen;
   libspectrum_byte data;
+  display_chunk chunk_detail;
   libspectrum_byte ink, paper;
-  libspectrum_byte screen_mode = 0;
-  libspectrum_dword last_chunk_detail;
+
+  chunk_detail.type = DIRTY;
+  chunk_detail.data.dword = 0;
 
   beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
   beam_y = y + DISPLAY_BORDER_HEIGHT;
@@ -630,17 +525,20 @@ display_write_if_dirty_sinclair_ulaplus( int x, int y )
   screen = RAM[ memory_current_screen ];
   data = screen[ offset ];
   display_get_attr( x, y, &ink, &paper );
-  screen_mode = ( ulaplus_palette_enabled )? 0x10 : display_flash_reversed;
 
-  last_chunk_detail = (screen_mode << 24) | (ink << 16) | (paper << 8) | data;
-
+  chunk_detail.type = LOWRES_TWO_COLOUR;
+  chunk_detail.data.lr_2c.ink = ink;
+  chunk_detail.data.lr_2c.paper = paper;
+  chunk_detail.data.lr_2c.data = data;
   /* And draw it if it is different to what was there last time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-  if( display_last_screen[ index ] != last_chunk_detail ) {
+  if( display_last_screen[ index ].type != chunk_detail.type ||
+      display_last_screen[ index ].data.dword != chunk_detail.data.dword ) {
     uidisplay_plot8( beam_x, beam_y, data, ink, paper );
 
     /* Update last display record */
-    display_last_screen[ index ] = last_chunk_detail;
+    display_last_screen[ index ].type = chunk_detail.type;
+    display_last_screen[ index ].data.dword = chunk_detail.data.dword;
 
     /* And now mark it dirty */
     display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
@@ -838,6 +736,7 @@ display_parse_attr( libspectrum_byte attr,
       *ink= (attr & 0x07) + ( (attr & 0x40) >> 3 );
       *paper= (attr & ( 0x0f << 3 ) ) >> 3;
     }
+    // FIXME: translate ink and paper indexes to ULAplus palette?
 
   }  
 }
@@ -919,16 +818,22 @@ display_set_hires_border( libspectrum_byte colour )
 static void
 set_border( int y, int start, int end, libspectrum_word colour )
 {
-  libspectrum_dword chunk_detail;
+  display_chunk chunk_detail;
   int index = start + y * DISPLAY_SCREEN_WIDTH_COLS;
-  libspectrum_byte screen_mode = ( colour >> 8 ) & 0xff;
   libspectrum_byte paper = colour & 0xff;
 
-  chunk_detail = ( screen_mode << 24 ) | ( paper << 8 );
+  chunk_detail.type = DIRTY;
+  chunk_detail.data.dword = 0;
+
+  chunk_detail.type = LOWRES_TWO_COLOUR;
+  chunk_detail.data.lr_2c.ink = 0x00;
+  chunk_detail.data.lr_2c.paper = paper;
+  chunk_detail.data.lr_2c.data = 0xff;
 
   for( ; start < end; start++ ) {
     /* Draw it if it is different to what was there last time */
-    if( display_last_screen[ index ] != chunk_detail ) {
+    if( display_last_screen[ index ].type != chunk_detail.type ||
+        display_last_screen[ index ].data.dword != chunk_detail.data.dword ) {
       uidisplay_plot8( start, y, 0x00, 0, paper );
 
       /* Update last display record */
@@ -1125,11 +1030,7 @@ display_dirty_flashing_timex(void)
 
     } else { /* Standard Speccy screen */
 
-      if( ulaplus_palette_enabled ) {
-        display_dirty_flashing_sinclair_ulaplus();
-      } else {
-        display_dirty_flashing_sinclair();
-      }
+      display_dirty_flashing_sinclair();
 
     }
   }
@@ -1147,22 +1048,16 @@ display_dirty_flashing_sinclair(void)
   libspectrum_word offset;
   libspectrum_byte *screen, attr;
 
+  /* ULAplus: FLASH doesn't work in the 64-colour mode. You get extra colours
+     instead */
+  if( ulaplus_palette_enabled ) return;
+
   screen = RAM[ memory_current_screen ];
   
   /* Standard Speccy screen */
   for( offset = 0x1800; offset < 0x1b00; offset++ ) {
     attr = screen[ offset ];
     if( attr & 0x80 ) display_dirty64( offset );
-  }
-}
-
-void
-display_dirty_flashing_sinclair_ulaplus(void)
-{
-  /* ULAplus: FLASH doesn't work in the 64-colour mode. You get extra colours
-     instead */
-  if( !ulaplus_palette_enabled ) {
-    display_dirty_flashing_sinclair();
   }
 }
 
@@ -1185,9 +1080,8 @@ void display_refresh_all(void)
   for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
     display_is_dirty[i] = display_all_dirty;
 
-  memset( display_last_screen, 0xff,
-          DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT 
-          * sizeof(libspectrum_dword) );
+  for( i = 0; i < DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT; i++ )
+    display_last_screen[i].type = DIRTY;
 }
 
 /* Fetch pixel (x, y). On a Timex this will be a point on a 640x480 canvas,
@@ -1197,38 +1091,37 @@ int
 display_getpixel( int x, int y )
 {
   libspectrum_byte ink, paper;
-  libspectrum_byte data, data2;
+  libspectrum_byte data;
   int mask = 1 << (7 - (x % 8));
   int index;
 
   if( machine_current->timex ) {
     int column = x >> 4;
-    scld mode_data;
 
     y >>= 1;
     index = column + y * DISPLAY_SCREEN_WIDTH_COLS;
 
-    data = display_last_screen[ index ] & 0xff;
-    data2 = (display_last_screen[ index ] & 0xff00)>>8;
-    mode_data.byte = (display_last_screen[ index ] & 0xff0000)>>16;
-
-    if( mode_data.name.hires ) {
-      if( x % 16 > 7 ) data = data2;
-      display_parse_attr( hires_convert_dec( mode_data.byte ), &ink, &paper );
+    if( display_last_screen[ index ].type == HIRES_TWO_COLOUR ) {
+      data = display_last_screen[ index ].data.hr_2c.data;
+      if( x % 16 > 7 )
+        data = display_last_screen[ index ].data.hr_2c.data2;
+      ink = display_last_screen[ index ].data.hr_2c.ink;
+      paper = display_last_screen[ index ].data.hr_2c.paper;
     } else {
       /* divide x by two to get the same value for adjacent pixels */
       mask = 1 << (7 - ((x>>1) % 8));
-      display_parse_attr( data2, &ink, &paper );
+      data = display_last_screen[ index ].data.lr_2c.data;
+      ink = display_last_screen[ index ].data.lr_2c.ink;
+      paper = display_last_screen[ index ].data.lr_2c.paper;
     }
-  } else {
+  } else { // assuming last_chunk_detail.type == LOWRES_TWO_COLOUR;
     int column = x >> 3;
 
     index = column + y * DISPLAY_SCREEN_WIDTH_COLS;
 
-    data = display_last_screen[ index ] & 0xff;
-    data2 = (display_last_screen[ index ] & 0xff00)>>8;
-
-    display_parse_attr( data2, &ink, &paper );
+    data = display_last_screen[ index ].data.lr_2c.data;
+    ink = display_last_screen[ index ].data.lr_2c.ink;
+    paper = display_last_screen[ index ].data.lr_2c.paper;
   }
 
   if( data & mask ) return ink;

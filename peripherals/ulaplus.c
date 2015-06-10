@@ -97,15 +97,6 @@ ulaplus_reset( int hard_reset GCC_UNUSED )
   ulaplus_palette_enabled = 0;
   ulaplus_current_register = 0;
   memset( ulaplus_palette, 0, ULAPLUS_CLUT_MAX_COLOURS );
-
-  if( display_write_if_dirty == display_write_if_dirty_sinclair )
-    display_write_if_dirty = display_write_if_dirty_sinclair_ulaplus;
-
-  if( display_write_if_dirty == display_write_if_dirty_timex )
-    display_write_if_dirty = display_write_if_dirty_timex_ulaplus;
-
-  if( display_dirty_flashing == display_dirty_flashing_sinclair )
-    display_dirty_flashing = display_dirty_flashing_sinclair_ulaplus;
 }
 
 /* ULAplus registerport write:

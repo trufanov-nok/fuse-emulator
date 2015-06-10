@@ -67,7 +67,52 @@ extern int display_ui_initialised;
 extern libspectrum_word display_lores_border;
 extern libspectrum_word display_hires_border;
 
-extern libspectrum_dword
+/* The various display modes of the emulated machines */
+typedef enum display_chunk_type {
+  LOWRES_TWO_COLOUR,	 /* Low-res chunk with two colours */
+  LOWRES_SIXTEEN_COLOUR, /* Low-res chunk with 16 colours */
+  HIRES_TWO_COLOUR,	 /* Hi-res chunk with two colours */
+  DIRTY,	         /* Guaranteed to be dirty regardless of next scan */
+} display_chunk_type;
+
+typedef struct
+{
+  unsigned ink   : 8; /* colour index in ULAplus palette */
+  unsigned paper : 8; /* colour index in ULAplus palette */
+  unsigned data  : 8; /* 8 pixels packed into a byte */
+} low_res_2_col_type; 
+
+typedef struct
+{
+  unsigned data4 : 8; /* 2 16 colour pixels packed as nibbles in a byte */
+  unsigned data3 : 8; /* 2 16 colour pixels packed as nibbles in a byte */
+  unsigned data2 : 8; /* 2 16 colour pixels packed as nibbles in a byte */
+  unsigned data1 : 8; /* 2 16 colour pixels packed as nibbles in a byte */
+} low_res_16_col_type; 
+
+typedef struct
+{
+  unsigned ink   : 8; /* colour index in ULAplus palette */
+  unsigned paper : 8; /* colour index in ULAplus palette */
+  unsigned data2 : 8; /* 8 pixels packed into a byte */
+  unsigned data  : 8; /* 8 pixels packed into a byte */
+} hi_res_2_col_type; 
+
+typedef union
+{
+  libspectrum_dword dword;
+  low_res_2_col_type lr_2c; 
+  low_res_16_col_type lr_16c; 
+  hi_res_2_col_type hr_2c; 
+} display_chunk_data; 
+
+typedef struct
+{
+  display_chunk_type type;
+  display_chunk_data data;
+} display_chunk; 
+
+extern display_chunk
 display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
 
 /* Offsets as to where the data and the attributes for each pixel
@@ -90,10 +135,8 @@ typedef void (*display_write_if_dirty_fn)( int x, int y );
 /* Function to write a dirty 8x1 chunk of pixels to the display */
 extern display_write_if_dirty_fn display_write_if_dirty;
 void display_write_if_dirty_timex( int x, int y );
-void display_write_if_dirty_timex_ulaplus( int x, int y );
 void display_write_if_dirty_pentagon_16_col( int x, int y );
 void display_write_if_dirty_sinclair( int x, int y );
-void display_write_if_dirty_sinclair_ulaplus( int x, int y );
 
 typedef void (*display_dirty_flashing_fn)(void);
 /* Function to dirty the pixels which are changed by virtue of having a flash
@@ -102,7 +145,6 @@ extern display_dirty_flashing_fn display_dirty_flashing;
 void display_dirty_flashing_timex(void);
 void display_dirty_flashing_pentagon_16_col(void);
 void display_dirty_flashing_sinclair(void);
-void display_dirty_flashing_sinclair_ulaplus(void);
 
 void display_parse_attr( libspectrum_byte attr, libspectrum_byte *ink,
 			 libspectrum_byte *paper );

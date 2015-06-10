@@ -80,6 +80,7 @@
       1    2    y		Y coord (0-239)
       3    1    w		width (1-40)
       4    2    h		height (1-240)
+                mode; 4 bytes of pixel/colour data ($/HiRes)
       6    ?    runlength encoded data bytes
                 bitmap1; attrib1		ZX$/TX$/HiCol ($/X/C)
                 bitmap1; bitmap2; attrib	HiR	(R)
@@ -106,7 +107,7 @@
                                                 D - Pentagon
                                                 E - 48 NTSC
       In a frame there are no, one or several screen rectangle, changed from
-      the previouse frame.
+      the previous frame.
 
       X -> End of recording
       off  len  data          description
@@ -219,12 +220,13 @@ fwrite_compr( void *b, size_t n, size_t m, FILE *f )
 static void
 movie_compress_area( int x, int y, int w, int h, int s )
 {
+  // FIXME: revise FMF format for ULAplus related refactoring
   libspectrum_dword *dpoint, *dline;
   libspectrum_byte d, d1, *b;
   libspectrum_byte buff[ 960 ];
   int w0, h0, l;
 
-  dline = &display_last_screen[x + 40 * y];
+  dline = &display_last_screen[x + 40 * y].data.dword;
   b = buff; l = -1;
   d1 = ( ( *dline >> s ) & 0xff ) + 1;		/* *d1 != dpoint :-) */
 
