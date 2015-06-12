@@ -372,7 +372,7 @@ uidisplay_area( int x, int y, int w, int h )
 
   scaled_x = scale * x; scaled_y = scale * y;
 
-  if( ulaplus_available && ulaplus_palette_enabled ) {
+  if( ulaplus_available ) {
     palette = settings_current.bw_tv ? bw_ulaplus_colours : ulaplus_colours;
   } else {
     palette = settings_current.bw_tv ? bw_colours : gtkdisplay_colours;

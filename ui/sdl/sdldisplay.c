@@ -574,8 +574,14 @@ void
 uidisplay_putpixel( int x, int y, int colour )
 {
   libspectrum_word *dest_base, *dest;
-  Uint32 *palette_values = settings_current.bw_tv ? bw_values :
-                           colour_values;
+  Uint32 *palette_values;
+
+  if( ui_widget_level < 0 && ulaplus_available ) {
+    palette_values = settings_current.bw_tv ? bw_ulaplus_values : 
+                                              colour_ulaplus_values;
+  } else {
+    palette_values = settings_current.bw_tv ? bw_values : colour_values;
+  }
 
   Uint32 palette_colour = palette_values[ colour ];
 
@@ -611,7 +617,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
   libspectrum_word *dest;
   Uint32 *palette_values;
 
-  if( ulaplus_available && ulaplus_palette_enabled ) {
+  if( ui_widget_level < 0 && ulaplus_available ) {
     palette_values = settings_current.bw_tv ? bw_ulaplus_values : 
                                               colour_ulaplus_values;
   } else {
@@ -682,8 +688,14 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
 {
   libspectrum_word *dest_base, *dest;
   int i;
-  Uint32 *palette_values = settings_current.bw_tv ? bw_values :
-                           colour_values;
+  Uint32 *palette_values;
+
+  if( ui_widget_level < 0 && ulaplus_available ) {
+    palette_values = settings_current.bw_tv ? bw_ulaplus_values : 
+                                              colour_ulaplus_values;
+  } else {
+    palette_values = settings_current.bw_tv ? bw_values : colour_values;
+  }
   Uint32 palette_ink = palette_values[ ink ];
   Uint32 palette_paper = palette_values[ paper ];
   x <<= 4; y <<= 1;

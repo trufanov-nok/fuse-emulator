@@ -4636,3 +4636,7 @@
 20150512 display.[ch],machines/{machines_periph.c,spec48.c,tc2048.c},
          peripherals/{scld.[ch],ulaplus.c},screenshot.c: add support for
          Timex-style display modes to ULAplus (Fred).
+20150512 display.[ch],machines/machines_periph.c,ui/gtk/gtkdisplay.c,
+         ui/sdl/sdldisplay.c,ui/win32/win32display.c: when ULAplus is enabled
+         always use its palette, don't allow ULAplus use for UIs that don't 
+         currently support its palette (thanks, Sergio) (Fred).

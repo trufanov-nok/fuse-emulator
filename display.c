@@ -49,9 +49,9 @@
 int display_ui_initialised = 0;
 
 /* The current border colour */
-libspectrum_word display_lores_border;
-libspectrum_word display_hires_border;
-static libspectrum_word display_last_border;
+static libspectrum_byte display_lores_border;
+static libspectrum_byte display_hires_border;
+static libspectrum_byte display_last_border;
 
 /* Stores the pixel, colour and screen mode information used to
    draw each [8|16]x1 chunk of pixels (including border) last frame */
@@ -108,7 +108,7 @@ int critical_region_x = 0, critical_region_y = 0;
 /* The border colour changes which have occurred in this frame */
 struct border_change_t {
   int x, y;
-  libspectrum_word colour;
+  libspectrum_byte colour;
 };
 
 display_dirty_fn display_dirty;
@@ -130,6 +130,10 @@ static int border_changes_last = 0;
 static struct border_change_t *border_changes = NULL;
 
 display_flag display_mode;
+
+static libspectrum_byte ulaplus_colour_map[] = {
+  0, 2, 20, 22, 160, 162, 180, 182, 0, 3, 28, 31, 224, 227, 252, 255
+};
 
 static struct border_change_t *
 alloc_change(void)
@@ -764,7 +768,11 @@ display_parse_attr( libspectrum_byte attr,
       *ink= (attr & 0x07) + ( (attr & 0x40) >> 3 );
       *paper= (attr & ( 0x0f << 3 ) ) >> 3;
     }
-    // FIXME: translate ink and paper indexes to ULAplus palette?
+    /* translate ink and paper indexes to ULAplus palette */
+    if( ulaplus_available ) {
+      *ink = ulaplus_colour_map[*ink];
+      *paper = ulaplus_colour_map[*paper];
+    }
 
   }  
 }
@@ -808,18 +816,17 @@ check_border_change( void )
 void
 display_set_lores_border( libspectrum_byte colour )
 {
-  libspectrum_word last_chunk_detail;
-  libspectrum_byte screen_mode = 0;
-
-  if( ulaplus_available && ulaplus_palette_enabled ) {
-    colour = ulaplus_palette[ colour | 0x08 ];
-    screen_mode = ( ulaplus_palette_enabled << 1 );
+  if( ulaplus_available ) {
+    if( ulaplus_palette_enabled ) {
+      colour = ulaplus_palette[ colour | 0x08 ];
+    } else {
+      /* translate colour index to ULAplus palette */
+      colour = ulaplus_colour_map[ colour ];
+    }
   }
 
-  last_chunk_detail = ( screen_mode << 8 ) | colour;
-
-  if( display_lores_border != last_chunk_detail ) {
-    display_lores_border = last_chunk_detail;
+  if( display_lores_border != colour ) {
+    display_lores_border = colour;
   }
   check_border_change();
 }
@@ -827,24 +834,23 @@ display_set_lores_border( libspectrum_byte colour )
 void
 display_set_hires_border( libspectrum_byte colour )
 {
-  libspectrum_word last_chunk_detail;
-  libspectrum_byte screen_mode = 0;
-
-  if( ulaplus_available && ulaplus_palette_enabled ) {
-    colour = ulaplus_palette[ colour | 0x18 ];
-    screen_mode = ( ulaplus_palette_enabled << 1 );
+  if( ulaplus_available ) {
+    if( ulaplus_palette_enabled ) {
+      colour = ulaplus_palette[ colour | 0x08 ];
+    } else {
+      /* translate colour index to ULAplus palette */
+      colour = ulaplus_colour_map[ colour ];
+    }
   }
 
-  last_chunk_detail = ( screen_mode << 8 ) | colour;
-
-  if( display_hires_border != last_chunk_detail ) {
-    display_hires_border = last_chunk_detail;
+  if( display_hires_border != colour ) {
+    display_hires_border = colour;
   }
   check_border_change();
 }
 
 static void
-set_border( int y, int start, int end, libspectrum_word colour )
+set_border( int y, int start, int end, libspectrum_byte colour )
 {
   display_chunk chunk_detail;
   int index = start + y * DISPLAY_SCREEN_WIDTH_COLS;
@@ -906,13 +912,13 @@ border_change_write( int y, int start, int end, libspectrum_word colour )
 }
 
 static void
-border_change_line_part( int y, int start, int end, libspectrum_word colour )
+border_change_line_part( int y, int start, int end, libspectrum_byte colour )
 {
   border_change_write( y, start, end, colour );
 }
 
 static void
-border_change_line( int y, libspectrum_word colour )
+border_change_line( int y, libspectrum_byte colour )
 {
   border_change_write( y, 0, DISPLAY_SCREEN_WIDTH_COLS, colour );
 }

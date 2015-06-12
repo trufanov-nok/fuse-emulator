@@ -64,9 +64,6 @@
 
 extern int display_ui_initialised;
 
-extern libspectrum_word display_lores_border;
-extern libspectrum_word display_hires_border;
-
 /* The various display modes of the emulated machines */
 typedef enum display_chunk_type {
   LOWRES_TWO_COLOUR,	 /* Low-res chunk with two colours */
