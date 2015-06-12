@@ -49,7 +49,8 @@ spec48_port_from_ula( libspectrum_word port )
   if( !( port & 0x0001 ) ) return 1;
 
   /* Ports supplied by ULAplus */
-  if( ulaplus_available && ( port == 0xbf3b || port == 0xff3b ) ) {
+  if( ulaplus_available &&
+      ( port == 0xbf3b || port == 0xff3b || ( port & 0xff ) == 0xff) ) {
     return 1;
   }
 

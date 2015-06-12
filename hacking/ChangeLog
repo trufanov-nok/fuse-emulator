@@ -4633,3 +4633,6 @@
          blue component as specified by ULAplus 1.1 (Sergio).
 20150510 display.{ch},movie.c,peripherals/ulaplus.c: refactor display chunk
          handling and remove redundant functions (Fred).
+20150512 display.[ch],machines/{machines_periph.c,spec48.c,tc2048.c},
+         peripherals/{scld.[ch],ulaplus.c},screenshot.c: add support for
+         Timex-style display modes to ULAplus (Fred).

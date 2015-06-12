@@ -175,7 +175,6 @@ base_peripherals( void )
   periph_set_present( PERIPH_TYPE_SPECCYBOOT, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_SPECTRANET, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_ULA, PERIPH_PRESENT_ALWAYS );
-  periph_set_present( PERIPH_TYPE_ULAPLUS, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_ZXATASP, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_ZXCF, PERIPH_PRESENT_OPTIONAL );
 }
@@ -192,6 +191,7 @@ base_peripherals_48_128( void )
   periph_set_present( PERIPH_TYPE_OPUS, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_PLUSD, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_SPECDRUM, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_ULAPLUS, PERIPH_PRESENT_OPTIONAL );
 }
 
 /* The set of peripherals available on the 48K and similar machines */

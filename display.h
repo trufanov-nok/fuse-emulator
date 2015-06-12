@@ -164,4 +164,96 @@ int display_getpixel( int x, int y );
 
 void display_update_critical( int x, int y );
 
+/* Timex-style hi-colour and hi-res handling */
+#define STANDARD        0x00 /* standard Spectrum */
+#define ALTDFILE        0x01 /* the same in nature as above, but using second
+                                display file */
+#define EXTCOLOUR       0x02 /* extended colours (data taken from first screen,
+                                attributes 1x8 taken from second display. */
+#define EXTCOLALTD      0x03 /* similar to above, but data is taken from second
+                                screen */
+#define HIRESATTR       0x04 /* hires mode, data in odd columns is taken from
+                                first screen in standard way, data in even
+                                columns is made from attributes data (8x8) */
+#define HIRESATTRALTD   0x05 /* similar to above, but data taken from second
+                                display */
+#define HIRES           0x06 /* true hires mode, odd columns from first screen,
+                                even columns from second screen.  columns
+                                numbered from 1. */
+#define HIRESDOUBLECOL  0x07 /* data taken only from second screen, columns are
+                                doubled */
+#define HIRESCOLMASK    0x38
+
+#define WHITEBLACK      0x00
+#define YELLOWBLUE      0x01
+#define CYANRED         0x02
+#define GREENMAGENTA    0x03
+#define MAGENTAGREEN    0x04
+#define REDCYAN         0x05
+#define BLUEYELLOW      0x06
+#define BLACKWHITE      0x07
+
+#define ALTDFILE_OFFSET 0x2000
+
+#ifdef WORDS_BIGENDIAN
+
+typedef struct
+{
+  unsigned b7       : 1;  /* */
+  unsigned b6       : 1;  /* */
+  unsigned b5       : 1;  /* */
+  unsigned b4       : 1;  /* */
+  unsigned b3       : 1;  /* */
+  unsigned hires    : 1;  /* Timex-style HIRES mode */
+  unsigned b1       : 1;  /* */
+  unsigned altdfile : 1;  /* Use Timex-style alternate ALTDFILE */
+} display_flag_names;
+
+typedef struct
+{
+  unsigned b7       : 1;  /* */
+  unsigned b6       : 1;  /* */
+  unsigned hirescol : 3;  /* HIRESCOLMASK */
+  unsigned scrnmode : 3;  /* SCRNMODEMASK */
+} display_flag_masks;
+
+#else				/* #ifdef WORDS_BIGENDIAN */
+
+typedef struct
+{
+  unsigned altdfile : 1;  /* Use Timex-style alternate ALTDFILE */
+  unsigned b1       : 1;  /* */
+  unsigned hires    : 1;  /* Timex-style HIRES mode */
+  unsigned b3       : 1;  /* */
+  unsigned b4       : 1;  /* */
+  unsigned b5       : 1;  /* */
+  unsigned b6       : 1;  /* */
+  unsigned b7       : 1;  /* */
+} display_flag_names;
+
+typedef struct
+{
+  unsigned scrnmode : 3;  /* SCRNMODEMASK */
+  unsigned hirescol : 3;  /* HIRESCOLMASK */
+  unsigned b6       : 1;  /* */
+  unsigned b7       : 1;  /* */
+} display_flag_masks;
+
+#endif				/* #ifdef WORDS_BIGENDIAN */
+
+typedef union
+{
+  libspectrum_byte byte;
+  display_flag_masks mask;
+  display_flag_names name;
+} display_flag; 
+
+extern display_flag display_mode;    /* The current display mode */
+
+extern libspectrum_byte hires_get_attr( void );
+
+extern libspectrum_byte hires_convert_display_flag( libspectrum_byte attr );
+
+extern void display_videomode_update( display_flag new_display_mode );
+
 #endif			/* #ifndef FUSE_DISPLAY_H */

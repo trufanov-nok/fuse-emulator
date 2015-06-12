@@ -431,7 +431,7 @@ screenshot_scr_read( const char *filename )
             ( scld_last_dec.byte & ~( HIRESCOLMASK | HIRES ) ) |
             ( *(screen.buffer + HIRES_ATTR) & ( HIRESCOLMASK | HIRES ) ) );
     } else {
-      libspectrum_byte attr = hires_convert_dec( *(screen.buffer + HIRES_ATTR) );
+      libspectrum_byte attr = hires_convert_display_flag( *(screen.buffer + HIRES_ATTR) );
 
       for( i = 0; i < MONO_BITMAP_SIZE; i++ )
         RAM[ memory_current_screen ][display_get_addr(0,0) + i] =

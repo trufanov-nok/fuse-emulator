@@ -30,36 +30,6 @@
 #include "memory.h"
 #endif				/* #ifndef FUSE_MEMORY_H */
 
-#define STANDARD        0x00 /* standard Spectrum */
-#define ALTDFILE        0x01 /* the same in nature as above, but using second
-                                display file */
-#define EXTCOLOUR       0x02 /* extended colours (data taken from first screen,
-                                attributes 1x8 taken from second display. */
-#define EXTCOLALTD      0x03 /* similar to above, but data is taken from second
-                                screen */
-#define HIRESATTR       0x04 /* hires mode, data in odd columns is taken from
-                                first screen in standard way, data in even
-                                columns is made from attributes data (8x8) */
-#define HIRESATTRALTD   0x05 /* similar to above, but data taken from second
-                                display */
-#define HIRES           0x06 /* true hires mode, odd columns from first screen,
-                                even columns from second screen.  columns
-                                numbered from 1. */
-#define HIRESDOUBLECOL  0x07 /* data taken only from second screen, columns are
-                                doubled */
-#define HIRESCOLMASK    0x38
-
-#define WHITEBLACK      0x00
-#define YELLOWBLUE      0x01
-#define CYANRED         0x02
-#define GREENMAGENTA    0x03
-#define MAGENTAGREEN    0x04
-#define REDCYAN         0x05
-#define BLUEYELLOW      0x06
-#define BLACKWHITE      0x07
-
-#define ALTDFILE_OFFSET 0x2000
-
 #ifdef WORDS_BIGENDIAN
 
 typedef struct
@@ -132,9 +102,6 @@ void scld_hsr_write( libspectrum_word port, libspectrum_byte b );
 void scld_memory_map( void );
 /* Initialise the memory map to point to the home bank */
 void scld_memory_map_home( void );
-
-libspectrum_byte hires_get_attr( void );
-libspectrum_byte hires_convert_dec( libspectrum_byte attr );
 
 void scld_home_map_16k( libspectrum_word address, memory_page source[],
                         int page_num );

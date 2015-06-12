@@ -54,6 +54,8 @@ static libspectrum_byte ulaplus_dataport_read( libspectrum_word port,
                                                int *attached );
 static void ulaplus_dataport_write( libspectrum_word port,
                                     libspectrum_byte value );
+static void ulaplus_videomode_write( libspectrum_word port,
+                                     libspectrum_byte b );
 
 static module_info_t ulaplus_module_info = {
   ulaplus_reset,
@@ -66,6 +68,7 @@ static module_info_t ulaplus_module_info = {
 static const periph_port_t ulaplus_ports[] = {
   { 0xffff, 0xbf3b, NULL, ulaplus_registerport_write },
   { 0xffff, 0xff3b, ulaplus_dataport_read, ulaplus_dataport_write },
+  { 0x00ff, 0x00ff, NULL, ulaplus_videomode_write },
   { 0, 0, NULL, NULL }
 };
 
@@ -135,7 +138,9 @@ ulaplus_dataport_read( libspectrum_word port GCC_UNUSED, int *attached )
    store the palette value for that register (in GGGRRRBB format);
    If the current register is 64 (mode group), set the mode according to bit 0
    (0 - normal mode, 1 - 64 colour mode).
-   Register range 65-255 is reserved. */
+   Register range 65-127 is the mode group which mirrors the video functionality
+                         of Timex port #FF.
+   Register range 128-255 is reserved. */
 void
 ulaplus_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
@@ -173,8 +178,24 @@ ulaplus_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
       display_set_lores_border( ula_last_byte() & 7 );
     }
 
+  } else if( ( ulaplus_current_register & 0xC0 ) == 0x40 ) { /* mode group */
+
+    ulaplus_videomode_write( port, b );
+
   }
 
+}
+
+/* ULAplus videomode write
+   The #FF register as the primary means to set the video mode, as per the Timex
+   machines. */
+static void
+ulaplus_videomode_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
+{
+  display_flag new_display_mode;
+  new_display_mode.byte = b;
+
+  display_videomode_update( new_display_mode );
 }
 
 static void
@@ -197,6 +218,8 @@ ulaplus_from_snapshot( libspectrum_snap *snap )
 
     memcpy( ulaplus_palette, libspectrum_snap_ulaplus_palette( snap, 0 ),
             ULAPLUS_CLUT_MAX_COLOURS );
+
+    // FIXME: Read Timex screen mode
 
     display_set_lores_border( ula_last_byte() & 7 );
     display_refresh_all();
@@ -225,4 +248,6 @@ ulaplus_to_snapshot( libspectrum_snap *snap )
 
   memcpy( buffer, ulaplus_palette, ULAPLUS_CLUT_MAX_COLOURS );
   libspectrum_snap_set_ulaplus_palette( snap, 0, buffer );
+
+  // FIXME: Write Timex screen mode
 }

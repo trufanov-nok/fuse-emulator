@@ -129,6 +129,8 @@ static void display_get_attr( int x, int y,
 static int border_changes_last = 0;
 static struct border_change_t *border_changes = NULL;
 
+display_flag display_mode;
+
 static struct border_change_t *
 alloc_change(void)
 {
@@ -150,7 +152,7 @@ add_border_sentinel( void )
   struct border_change_t *sentinel = alloc_change();
 
   sentinel->x = sentinel->y = 0;
-  sentinel->colour = scld_last_dec.name.hires ?
+  sentinel->colour = display_mode.name.hires ?
                             display_hires_border : display_lores_border;
 
   return 0;
@@ -205,7 +207,7 @@ display_init( int *argc, char ***argv )
   }
   border_changes = NULL;
   error = add_border_sentinel(); if( error ) return error;
-  display_last_border = scld_last_dec.name.hires ?
+  display_last_border = display_mode.name.hires ?
                             display_hires_border : display_lores_border;
 
   return 0;
@@ -216,7 +218,7 @@ display_init( int *argc, char ***argv )
 void
 display_dirty_timex( libspectrum_word offset )
 {
-  switch ( scld_last_dec.mask.scrnmode ) {
+  switch ( display_mode.mask.scrnmode ) {
 
     case STANDARD: /* standard Speccy screen */
     case HIRESATTR: /* strange mode */
@@ -280,6 +282,32 @@ display_dirty_sinclair( libspectrum_word offset )
   }
 }
 
+libspectrum_byte
+hires_convert_display_flag( libspectrum_byte attr )
+{
+  display_flag colour;
+
+  colour.byte = attr;
+
+  switch ( colour.mask.hirescol )
+  {
+    case BLACKWHITE:   return 0x47;
+    case BLUEYELLOW:   return 0x4e;
+    case REDCYAN:      return 0x55;
+    case MAGENTAGREEN: return 0x5c;
+    case GREENMAGENTA: return 0x63;
+    case CYANRED:      return 0x6a;
+    case YELLOWBLUE:   return 0x71;
+    default:	       return 0x78; /* WHITEBLACK */
+  }
+}
+
+libspectrum_byte
+hires_get_attr( void )
+{
+  return( hires_convert_display_flag( display_mode.byte ) );
+}
+
 /* Get the attribute byte or equivalent for the eight pixels starting at
    ( (8*x) , y ) */
 static inline libspectrum_byte
@@ -287,15 +315,15 @@ display_get_attr_byte( int x, int y )
 {
   libspectrum_byte attr;
 
-  if ( scld_last_dec.name.hires ) {
+  if ( display_mode.name.hires ) {
     attr = hires_get_attr();
   } else {
 
     libspectrum_word offset;
 
-    if( scld_last_dec.name.b1 ) {
+    if( display_mode.name.b1 ) {
       offset = display_line_start[y] + x + ALTDFILE_OFFSET;
-    } else if( scld_last_dec.name.altdfile ) {
+    } else if( display_mode.name.altdfile ) {
       offset = display_attr_start[y] + x + ALTDFILE_OFFSET;
     } else {
       offset = display_attr_start[y] + x;
@@ -364,12 +392,12 @@ display_write_if_dirty_timex( int x, int y )
   data = screen[ offset ];
 
   display_get_attr( x, y, &ink, &paper );
-  if( scld_last_dec.name.hires ) {
+  if( display_mode.name.hires ) {
     chunk_detail.type = HIRES_TWO_COLOUR;
     chunk_detail.data.hr_2c.ink = ink;
     chunk_detail.data.hr_2c.paper = paper;
     chunk_detail.data.hr_2c.data = data;
-    switch( scld_last_dec.mask.scrnmode ) {
+    switch( display_mode.mask.scrnmode ) {
 
     case HIRESATTRALTD:
       offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
@@ -402,7 +430,7 @@ display_write_if_dirty_timex( int x, int y )
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
   if( display_last_screen[ index ].type != chunk_detail.type ||
       display_last_screen[ index ].data.dword != chunk_detail.data.dword ) {
-    if( scld_last_dec.name.hires ) {
+    if( display_mode.name.hires ) {
       libspectrum_word hires_data = (data << 8) + data2;
       uidisplay_plot16( beam_x, beam_y, hires_data, ink, paper );
     } else {
@@ -766,11 +794,11 @@ push_border_change( libspectrum_word colour )
 static void
 check_border_change( void )
 {
-  if( scld_last_dec.name.hires &&
+  if( display_mode.name.hires &&
       display_hires_border != display_last_border ) {
     push_border_change( display_hires_border );
     display_last_border = display_hires_border;
-  } else if( !scld_last_dec.name.hires &&
+  } else if( !display_mode.name.hires &&
              display_lores_border != display_last_border ) {
     push_border_change( display_lores_border );
     display_last_border = display_lores_border;
@@ -1013,15 +1041,15 @@ display_dirty_flashing_timex(void)
 
   screen = RAM[ memory_current_screen ];
   
-  if( !scld_last_dec.name.hires ) {
-    if( scld_last_dec.name.b1 ) {
+  if( !display_mode.name.hires ) {
+    if( display_mode.name.b1 ) {
 
       for( offset = ALTDFILE_OFFSET; offset < 0x3800; offset++ ) {
         attr = screen[ offset ];
         if( attr & 0x80 ) display_dirty8( offset - ALTDFILE_OFFSET );
       }
 
-    } else if( scld_last_dec.name.altdfile ) {
+    } else if( display_mode.name.altdfile ) {
 
       for( offset= 0x3800; offset < 0x3b00; offset++ ) {
         attr = screen[ offset ];
@@ -1127,4 +1155,31 @@ display_getpixel( int x, int y )
   if( data & mask ) return ink;
 
   return paper;
+}
+
+/* We use new_display_mode as we don't want to have the new colours, modes
+   etc. to take effect until we have updated the critical region */
+void
+display_videomode_update( display_flag new_display_mode )
+{
+  display_flag old_display_mode = display_mode;
+  libspectrum_byte ink,paper;
+
+  /* If we changed the active screen, or change the colour in hires
+   * mode, update the critical region and mark the entire display file as
+   * dirty so we redraw it on the next pass */
+  if( new_display_mode.mask.scrnmode != old_display_mode.mask.scrnmode ||
+      new_display_mode.name.hires != old_display_mode.name.hires ||
+      ( new_display_mode.name.hires &&
+           ( new_display_mode.mask.hirescol !=
+             old_display_mode.mask.hirescol ) ) ) {
+    display_update_critical( 0, 0 );
+    display_refresh_main_screen();
+  }
+
+  /* Commit change to display_mode */
+  display_mode = new_display_mode;
+
+  display_parse_attr( hires_get_attr(), &ink, &paper );
+  display_set_hires_border( paper );
 }

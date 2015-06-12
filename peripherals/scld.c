@@ -100,26 +100,14 @@ void
 scld_dec_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
   scld old_dec = scld_last_dec;
-  scld new_dec;
-  libspectrum_byte ink,paper;
+  display_flag new_display_mode;
 
-  /* We use new_dec as we don't want to have the new colours, modes etc.
-     to take effect until we have updated the critical region */
-  new_dec.byte = b;
+  new_display_mode.byte = b;
 
-  /* If we changed the active screen, or change the colour in hires
-   * mode, update the critical region and mark the entire display file as
-   * dirty so we redraw it on the next pass */
-  if( new_dec.mask.scrnmode != old_dec.mask.scrnmode ||
-      new_dec.name.hires != old_dec.name.hires ||
-      ( new_dec.name.hires &&
-           ( new_dec.mask.hirescol != old_dec.mask.hirescol ) ) ) {
-    display_update_critical( 0, 0 );
-    display_refresh_main_screen();
-  }
+  display_videomode_update( new_display_mode );
 
   /* Commit change to scld_last_dec */
-  scld_last_dec = new_dec;
+  scld_last_dec.byte = b;
 
   /* If we just reenabled interrupts, check for a retriggered interrupt */
   if( old_dec.name.intdisable && !scld_last_dec.name.intdisable )
@@ -127,9 +115,6 @@ scld_dec_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 
   if( scld_last_dec.name.altmembank != old_dec.name.altmembank )
     machine_current->memory_map();
-
-  display_parse_attr( hires_get_attr(), &ink, &paper );
-  display_set_hires_border( paper );
 }
 
 static void
@@ -152,32 +137,6 @@ scld_hsr_read( libspectrum_word port GCC_UNUSED, int *attached )
   *attached = 1;
 
   return scld_last_hsr;
-}
-
-libspectrum_byte
-hires_get_attr( void )
-{
-  return( hires_convert_dec( scld_last_dec.byte ) );
-}
-
-libspectrum_byte
-hires_convert_dec( libspectrum_byte attr )
-{
-  scld colour;
-
-  colour.byte = attr;
-
-  switch ( colour.mask.hirescol )
-  {
-    case BLACKWHITE:   return 0x47;
-    case BLUEYELLOW:   return 0x4e;
-    case REDCYAN:      return 0x55;
-    case MAGENTAGREEN: return 0x5c;
-    case GREENMAGENTA: return 0x63;
-    case CYANRED:      return 0x6a;
-    case YELLOWBLUE:   return 0x71;
-    default:	       return 0x78; /* WHITEBLACK */
-  }
 }
 
 void
