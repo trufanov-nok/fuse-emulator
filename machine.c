@@ -40,6 +40,7 @@
 #include "memory.h"
 #include "module.h"
 #include "movie.h"
+#include "periph.h"
 #include "peripherals/ula.h"
 #include "pokefinder/pokemem.h"
 #include "settings.h"
@@ -221,10 +222,16 @@ machine_select_machine( fuse_machine_info *machine )
 
   if( uidisplay_end() ) return 1;
 
+  /* Do a hard reset */
+  if( machine_reset( 1 ) ) return 1;
+
   capabilities = libspectrum_machine_capabilities( machine->machine );
+  machine_current->timex_video = 
+                    capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ||
+                    periph_is_active( PERIPH_TYPE_ULAPLUS );
 
   /* Set screen sizes here */
-  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) {
+  if( machine_current->timex_video ) {
     width = DISPLAY_SCREEN_WIDTH;
     height = 2*DISPLAY_SCREEN_HEIGHT;
   } else {
@@ -235,9 +242,6 @@ machine_select_machine( fuse_machine_info *machine )
   if( uidisplay_init( width, height ) ) return 1;
 
   sound_init( settings_current.sound_device );
-
-  /* Do a hard reset */
-  if( machine_reset( 1 ) ) return 1;
 
   /* And the dock menu item */
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK ) {

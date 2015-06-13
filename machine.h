@@ -64,7 +64,8 @@ typedef struct fuse_machine_info {
 
   int (*reset)(void);	/* Reset function */
 
-  int timex;      /* Timex machine (keyboard emulation/loading sounds etc.) */
+  int timex;       /* Timex machine (keyboard emulation/loading sounds etc.) */
+  int timex_video; /* Timex style video (SCLD, ULAplus etc.) */
 
   machine_timings timings; /* How long do things take to happen? */
   /* Redraw line y this many tstates after interrupt */

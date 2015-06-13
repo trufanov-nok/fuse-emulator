@@ -569,7 +569,7 @@ uidisplay_init( int width, int height )
   image_width  = width;
   image_height = height;
   if( !scaler_is_supported( current_scaler ) ) {
-    if( machine_current->timex )
+    if( machine_current->timex_video )
       scaler_select_scaler( SCALER_HALFSKIP );
     else
       scaler_select_scaler( SCALER_NORMAL );
@@ -601,7 +601,7 @@ register_scalers( void )
 
     if( xdisplay_depth == 4 ) {
       scaler_register( SCALER_NORMAL );
-      if( machine_current->timex ) {
+      if( machine_current->timex_video ) {
         scaler_register( SCALER_HALFSKIP );
         scaler_register( SCALER_TIMEX1_5X );
       } else {
@@ -614,7 +614,7 @@ register_scalers( void )
     } else {
       scaler_register( SCALER_NORMAL );
       scaler_register( SCALER_PALTV );
-      if( machine_current->timex ) {
+      if( machine_current->timex_video ) {
         scaler_register( SCALER_HALF ); 
         scaler_register( SCALER_HALFSKIP );
         scaler_register( SCALER_TIMEXTV );
@@ -639,20 +639,23 @@ register_scalers( void )
     }
   if( current_scaler != SCALER_NUM )
     f = 4.0 * scaler_get_scaling_factor( current_scaler ) * 
-	    ( machine_current->timex ? 2 : 1 );
+	    ( machine_current->timex_video ? 2 : 1 );
   if( scaler_is_supported( current_scaler ) &&
 	( xdisplay_current_size * 4 == f ) ) {
     uidisplay_hotswap_gfx_mode();
   } else {
     switch( xdisplay_current_size ) {
     case 1:
-      scaler_select_scaler( machine_current->timex ? SCALER_HALF : SCALER_NORMAL );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_HALF :
+                                                           SCALER_NORMAL );
       break;
     case 2:
-      scaler_select_scaler( machine_current->timex ? SCALER_NORMAL : SCALER_DOUBLESIZE );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_NORMAL :
+                                                           SCALER_DOUBLESIZE );
       break;
     case 3:
-      scaler_select_scaler( machine_current->timex ? SCALER_TIMEX1_5X : SCALER_TRIPLESIZE );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_TIMEX1_5X :
+                                                           SCALER_TRIPLESIZE );
       break;
     }
   }
@@ -907,7 +910,7 @@ uidisplay_putpixel( int x, int y, int colour )
   libspectrum_word pc = settings_current.bw_tv ? pal_grey[ colour ] :
                         	pal_colour[ colour ];
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     x <<= 1; y <<= 1;
     rgb_image[y + 2][x + 1] = pc;
     rgb_image[y + 2][x + 2] = pc;
@@ -930,7 +933,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
   libspectrum_word pp = settings_current.bw_tv ? pal_grey[ paper ] :
                         	pal_colour[ paper ];
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
 
     x <<= 4; y <<= 1;
 

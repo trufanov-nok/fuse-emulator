@@ -105,9 +105,16 @@ spec48_reset( void )
 void
 spec48_common_display_setup( void )
 {
-  display_dirty = display_dirty_sinclair;
-  display_write_if_dirty = display_write_if_dirty_sinclair;
-  display_dirty_flashing = display_dirty_flashing_sinclair;
+  /* FIXME: The following implies this stuff is better placed in display.c? */
+  if( periph_is_active( PERIPH_TYPE_ULAPLUS ) ) {
+    display_dirty = display_dirty_timex;
+    display_write_if_dirty = display_write_if_dirty_timex;
+    display_dirty_flashing = display_dirty_flashing_timex;
+  } else {
+    display_dirty = display_dirty_sinclair;
+    display_write_if_dirty = display_write_if_dirty_sinclair;
+    display_dirty_flashing = display_dirty_flashing_sinclair;
+  }
 
   memory_display_dirty = memory_display_dirty_sinclair;
 }

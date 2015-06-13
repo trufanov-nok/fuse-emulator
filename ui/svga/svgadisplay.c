@@ -459,7 +459,7 @@ uidisplay_init( int width, int height )
   image_width  = width;
   image_height = height;
   if( !scaler_is_supported( current_scaler ) ) {
-    if( machine_current->timex )
+    if( machine_current->timex_video )
       scaler_select_scaler( SCALER_HALFSKIP );
     else
       scaler_select_scaler( SCALER_NORMAL );
@@ -480,7 +480,7 @@ register_scalers( void )
   scaler_register_clear();
   scaler_select_bitformat( 565 );		/* 16bit always */
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     SIZE_1x_REGISTER( 0, SCALER_HALF );
     SIZE_1x_REGISTER( 1, SCALER_HALFSKIP );
     SIZE_2x_REGISTER( 1, SCALER_NORMAL );
@@ -509,20 +509,23 @@ register_scalers( void )
   }
   if( current_scaler != SCALER_NUM )
     f = 4.0 * scaler_get_scaling_factor( current_scaler ) * 
-	    ( machine_current->timex ? 2 : 1 );
+	    ( machine_current->timex_video ? 2 : 1 );
   if( scaler_is_supported( current_scaler ) &&
 	( svgadisplay_current_size * 4 == f ) ) {
     uidisplay_hotswap_gfx_mode();
   } else {
     switch( svgadisplay_current_size ) {
     case 1:
-      scaler_select_scaler( machine_current->timex ? SCALER_HALF : SCALER_NORMAL );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_HALF :
+                                                           SCALER_NORMAL );
       break;
     case 2:
-      scaler_select_scaler( machine_current->timex ? SCALER_NORMAL : SCALER_DOUBLESIZE );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_NORMAL :
+                                                           SCALER_DOUBLESIZE );
       break;
     case 3:
-      scaler_select_scaler( machine_current->timex ? SCALER_TIMEX1_5X : SCALER_TRIPLESIZE );
+      scaler_select_scaler( machine_current->timex_video ? SCALER_TIMEX1_5X :
+                                                           SCALER_TRIPLESIZE );
       break;
     }
   }
@@ -562,8 +565,9 @@ uidisplay_hotswap_gfx_mode( void )
   scaled_image_h = image_height * image_scale >> 2;
 
   if( svgadisplay_current_size * 4 != 
-	image_scale * ( machine_current->timex ? 2 : 1 ) ) {
-    svgadisplay_current_size = ( image_scale * ( machine_current->timex ? 2 : 1 ) ) >> 2;
+	image_scale * ( machine_current->timex_video ? 2 : 1 ) ) {
+    svgadisplay_current_size =
+      ( image_scale * ( machine_current->timex_video ? 2 : 1 ) ) >> 2;
     svgadisplay_setmode( svgadisplay_current_size - 1 );
   }
 
@@ -705,7 +709,7 @@ uidisplay_putpixel( int x, int y, int colour )
 		( settings_current.bw_tv ? pal_grey[ colour ] :
                         	pal_colour[ colour ] );
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     x <<= 1; y <<= 1;
     rgb_image[y + 2][x + 1] = pc;
     rgb_image[y + 2][x + 2] = pc;
@@ -730,7 +734,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 			( settings_current.bw_tv ? pal_grey[ paper ] :
                         	pal_colour[ paper ] );
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
 
     x <<= 4; y <<= 1;
 

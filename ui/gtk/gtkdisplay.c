@@ -302,7 +302,7 @@ register_scalers( int force_scaler )
 
   scaler_register_clear();
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     scaler_register( SCALER_HALF );
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
@@ -331,12 +331,13 @@ register_scalers( int force_scaler )
 
   if( force_scaler ) {
     switch( gtkdisplay_current_size ) {
-    case 1: scaler = machine_current->timex ? SCALER_HALF : SCALER_NORMAL;
+    case 1: scaler = machine_current->timex_video ? SCALER_HALF : SCALER_NORMAL;
       break;
-    case 2: scaler = machine_current->timex ? SCALER_NORMAL : SCALER_DOUBLESIZE;
+    case 2: scaler = machine_current->timex_video ? SCALER_NORMAL :
+                                                    SCALER_DOUBLESIZE;
       break;
-    case 3: scaler = machine_current->timex ? SCALER_TIMEX1_5X :
-                                              SCALER_TRIPLESIZE;
+    case 3: scaler = machine_current->timex_video ? SCALER_TIMEX1_5X :
+                                                    SCALER_TRIPLESIZE;
       break;
     }
   }
@@ -444,7 +445,7 @@ uidisplay_end( void )
 void
 uidisplay_putpixel( int x, int y, int colour )
 {
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     x <<= 1; y <<= 1;
     gtkdisplay_image[y  ][x  ] = colour;
     gtkdisplay_image[y  ][x+1] = colour;
@@ -463,7 +464,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 {
   x <<= 3;
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     int i;
 
     x <<= 1; y <<= 1;

@@ -4640,3 +4640,8 @@
          ui/sdl/sdldisplay.c,ui/win32/win32display.c: when ULAplus is enabled
          always use its palette, don't allow ULAplus use for UIs that don't 
          currently support its palette (thanks, Sergio) (Fred).
+20150513 display.c,machine.[ch],machines/spec48.c,movie.c,screenshot.c,
+         ui/fb/fbdisplay.c,ui/gtk/gtkdisplay.c,ui/sdl/sdldisplay.c,
+         ui/svga/svgadisplay.c,ui/widget/widget.c,ui/wii/wiidisplay.c,
+         ui/win32/win32display.c,ui/xlib/xdisplay.c,uidisplay.c: support hires
+         mode for ULAplus (Fred).

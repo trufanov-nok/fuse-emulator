@@ -121,7 +121,7 @@ init_scalers( void )
   scaler_register( SCALER_DOTMATRIX );
   scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
-  if( machine_current->timex ) {
+  if( timex ) {
     scaler_register( SCALER_HALF ); 
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
@@ -239,7 +239,7 @@ uidisplay_init( int width, int height )
   image_width = width;
   image_height = height;
 
-  timex = machine_current->timex;
+  timex = machine_current->timex_video;
 
   init_scalers();
 
@@ -585,7 +585,7 @@ uidisplay_putpixel( int x, int y, int colour )
 
   Uint32 palette_colour = palette_values[ colour ];
 
-  if( machine_current->timex ) {
+  if( timex ) {
     x <<= 1; y <<= 1;
     dest_base = dest =
       (libspectrum_word*)( (libspectrum_byte*)tmp_screen->pixels +
@@ -627,7 +627,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
   Uint32 palette_ink = palette_values[ ink ];
   Uint32 palette_paper = palette_values[ paper ];
 
-  if( machine_current->timex ) {
+  if( timex ) {
     int i;
     libspectrum_word *dest_base;
 

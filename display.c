@@ -976,7 +976,7 @@ static void
 update_ui_screen( void )
 {
   static int frame_count = 0;
-  int scale = machine_current->timex ? 2 : 1;
+  int scale = machine_current->timex_video ? 2 : 1;
   size_t i;
   struct rectangle *ptr;
 
@@ -1129,7 +1129,7 @@ display_getpixel( int x, int y )
   int mask = 1 << (7 - (x % 8));
   int index;
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     int column = x >> 4;
 
     y >>= 1;

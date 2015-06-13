@@ -453,7 +453,7 @@ fbdisplay_end( void )
 void
 uidisplay_putpixel( int x, int y, int colour )
 {
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     x <<= 1; y <<= 1;
     fbdisplay_image[y  ][x  ] = colour;
     fbdisplay_image[y  ][x+1] = colour;
@@ -472,7 +472,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 {
   x <<= 3;
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     int i;
 
     x <<= 1; y <<= 1;

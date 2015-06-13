@@ -84,7 +84,7 @@ screenshot_write( const char *filename, scaler_type scaler )
   size_t y, base_height, base_width, height, width;
   int error;
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     base_height = 2 * DISPLAY_SCREEN_HEIGHT;
     base_width = DISPLAY_SCREEN_WIDTH; 
   } else {
@@ -254,7 +254,7 @@ rgb32_to_rgb24( libspectrum_byte *rgb24_data, size_t rgb24_stride,
 int
 screenshot_available_scalers( scaler_type scaler )
 {
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
 
     switch( scaler ) {
 
@@ -401,7 +401,7 @@ screenshot_scr_read( const char *filename )
     /* If it is a Timex and it is not in hi colour mode, copy screen and switch
         mode if neccesary */
     /* If it is not a Timex copy the mono bitmap and raise an error */
-    if( machine_current->timex ) {
+    if( machine_current->timex_video ) {
       if( !scld_last_dec.name.b1 )
         scld_dec_write( 0xff, ( scld_last_dec.byte & ~HIRESATTR ) | EXTCOLOUR );
       memcpy( &RAM[ memory_current_screen ][display_get_addr(0,0) +
@@ -419,7 +419,7 @@ screenshot_scr_read( const char *filename )
     /* If it is a Timex and it is not in hi res mode, copy screen and switch
         mode if neccesary */
     /* If it is not a Timex scale the bitmap and raise an error */
-    if( machine_current->timex ) {
+    if( machine_current->timex_video ) {
       memcpy( &RAM[ memory_current_screen ][display_get_addr(0,0)],
                 screen.buffer, MONO_BITMAP_SIZE );
 

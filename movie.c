@@ -180,8 +180,8 @@ get_timing()
 static char
 get_screentype()
 {
-  if( machine_current->timex ) { /* ALTDFILE and default */
-    if( scld_last_dec.name.hires )
+  if( machine_current->timex_video ) { /* ALTDFILE and default */
+    if( display_mode.name.hires )
       return 'R';	/* HIRES screen */
     else if( scld_last_dec.name.b1 )
       return 'C';	/* HICOLOR screen */

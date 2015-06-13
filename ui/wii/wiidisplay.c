@@ -138,7 +138,7 @@ u32 convert_rgb (rgb_t rgb1, rgb_t rgb2)
 
 static void put_pixel(int x, int y, int colour, int mouseputpixel)
 {
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     x <<= 1; y <<= 1;
     display_image[y  ][x  ] = colour;
     display_image[y  ][x+1] = colour;
@@ -482,7 +482,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 {
   x <<= 3;
 
-  if( machine_current->timex ) {
+  if( machine_current->timex_video ) {
     int i;
 
     x <<= 1; y <<= 1;

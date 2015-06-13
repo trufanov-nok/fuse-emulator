@@ -36,7 +36,7 @@ void uidisplay_spectrum_screen( const libspectrum_byte *screen, int border )
   int x,y;
   libspectrum_byte attr, data; int ink, paper;
 
-  int scale = machine_current->timex ? 2 : 1;
+  int scale = machine_current->timex_video ? 2 : 1;
 
   for( y=0; y < DISPLAY_BORDER_HEIGHT; y++ ) {
     for( x=0; x < DISPLAY_ASPECT_WIDTH; x++ ) {
