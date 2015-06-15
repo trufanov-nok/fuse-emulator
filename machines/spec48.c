@@ -1,5 +1,5 @@
 /* spec48.c: Spectrum 48K specific routines
-   Copyright (c) 1999-2011 Philip Kendall
+   Copyright (c) 1999-2015 Philip Kendall
 
    $Id$
 
@@ -105,18 +105,7 @@ spec48_reset( void )
 void
 spec48_common_display_setup( void )
 {
-  /* FIXME: The following implies this stuff is better placed in display.c? */
-  if( periph_is_active( PERIPH_TYPE_ULAPLUS ) ) {
-    display_dirty = display_dirty_timex;
-    display_write_if_dirty = display_write_if_dirty_timex;
-    display_dirty_flashing = display_dirty_flashing_timex;
-  } else {
-    display_dirty = display_dirty_sinclair;
-    display_write_if_dirty = display_write_if_dirty_sinclair;
-    display_dirty_flashing = display_dirty_flashing_sinclair;
-  }
-
-  memory_display_dirty = memory_display_dirty_sinclair;
+  display_set_mode( SINCLAIR );
 }
 
 int

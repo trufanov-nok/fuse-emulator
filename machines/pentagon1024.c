@@ -1,6 +1,6 @@
 /* pentagon1024.c: Pentagon 1024 specific routines This machine is expected to
                   be a post-1996 Pentagon (a 1024k v2.2 1024SL?).
-   Copyright (c) 1999-2011 Philip Kendall and Fredrick Meunier
+   Copyright (c) 1999-2015 Philip Kendall and Fredrick Meunier
 
    $Id$
 
@@ -131,14 +131,7 @@ pentagon1024_v22_memoryport_write( libspectrum_word port GCC_UNUSED,
   if( machine_current->ram.locked ) return;
 
   machine_current->ram.last_byte2 = b;
-  if( b & 0x01 ) {
-    display_dirty = display_dirty_pentagon_16_col;
-    display_write_if_dirty = display_write_if_dirty_pentagon_16_col;
-    display_dirty_flashing = display_dirty_flashing_pentagon_16_col;
-    memory_display_dirty = memory_display_dirty_pentagon_16_col;
-  } else {
-    spec48_common_display_setup();
-  }
+  display_set_mode( b & 0x01 ? PENTAGON1024 : SINCLAIR );
   machine_current->memory_map();
 }
 

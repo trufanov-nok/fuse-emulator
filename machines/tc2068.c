@@ -1,5 +1,5 @@
 /* tc2068.c: Timex TC2068 specific routines
-   Copyright (c) 1999-2011 Philip Kendall, Fredrick Meunier, Witold Filipczyk,
+   Copyright (c) 1999-2015 Philip Kendall, Fredrick Meunier, Witold Filipczyk,
                            Darren Salt
 
    $Id$
@@ -215,9 +215,5 @@ tc2068_memory_map( void )
 void
 tc2068_tc2048_common_display_setup( void )
 {
-  display_dirty = display_dirty_timex;
-  display_write_if_dirty = display_write_if_dirty_timex;
-  display_dirty_flashing = display_dirty_flashing_timex;
-
-  memory_display_dirty = memory_display_dirty_sinclair;
+  display_set_mode( TIMEX );
 }

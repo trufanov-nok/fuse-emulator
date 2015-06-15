@@ -1,5 +1,5 @@
 /* display.c: Routines for printing the Spectrum screen
-   Copyright (c) 1999-2006 Philip Kendall, Thomas Harte, Witold Filipczyk
+   Copyright (c) 1999-2015 Philip Kendall, Thomas Harte, Witold Filipczyk
                            and Fredrick Meunier
 
    $Id$
@@ -1188,4 +1188,35 @@ display_videomode_update( display_flag new_display_mode )
 
   display_parse_attr( hires_get_attr(), &ink, &paper );
   display_set_hires_border( paper );
+}
+
+void
+display_set_mode( const display_hardware_mode_type mode )
+{
+  switch( mode ) {
+  case SINCLAIR:
+  case TIMEX:
+    if( machine_current->timex_video ) {
+      display_dirty = display_dirty_timex;
+      display_write_if_dirty = display_write_if_dirty_timex;
+      display_dirty_flashing = display_dirty_flashing_timex;
+    } else {
+      display_dirty = display_dirty_sinclair;
+      display_write_if_dirty = display_write_if_dirty_sinclair;
+      display_dirty_flashing = display_dirty_flashing_sinclair;
+    }
+    memory_display_dirty = memory_display_dirty_sinclair;
+    break;
+  case PENTAGON1024:
+    display_dirty = display_dirty_pentagon_16_col;
+    display_write_if_dirty = display_write_if_dirty_pentagon_16_col;
+    display_dirty_flashing = display_dirty_flashing_pentagon_16_col;
+    memory_display_dirty = memory_display_dirty_pentagon_16_col;
+    break;
+  default:
+    ui_error( UI_ERROR_ERROR,
+              "unknown display_hardware_mode_type %ud at %s:%d\n", mode,
+              __FILE__, __LINE__ );
+    fuse_abort();
+  }
 }

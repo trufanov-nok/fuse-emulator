@@ -1,5 +1,5 @@
 /* display.h: Routines for printing the Spectrum's screen
-   Copyright (c) 1999-2006 Philip Kendall
+   Copyright (c) 1999-2015 Philip Kendall
 
    $Id$
 
@@ -252,5 +252,14 @@ extern libspectrum_byte hires_get_attr( void );
 extern libspectrum_byte hires_convert_display_flag( libspectrum_byte attr );
 
 extern void display_videomode_update( display_flag new_display_mode );
+
+/* The various display hardware mode types of the emulated machines */
+typedef enum display_hardware_mode_type {
+  SINCLAIR,	 /* Low-res with two colours only */
+  TIMEX,         /* Low-res with 2 colours or hi-res with 2 colours */
+  PENTAGON1024,  /* Low-res with 16 colours */
+} display_hardware_mode_type;
+
+extern void display_set_mode( const display_hardware_mode_type mode );
 
 #endif			/* #ifndef FUSE_DISPLAY_H */

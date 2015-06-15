@@ -4645,3 +4645,6 @@
          ui/svga/svgadisplay.c,ui/widget/widget.c,ui/wii/wiidisplay.c,
          ui/win32/win32display.c,ui/xlib/xdisplay.c,uidisplay.c: support hires
          mode for ULAplus (Fred).
+20150515 display.[ch],machines/{pentagon1024.c,spec48.c,tc2068.c}: refactor
+         display_dirty, display_write_if_dirty, display_dirty_flashing and
+         memory_display_dirty maintenance to live in display_set_mode() (Fred).
