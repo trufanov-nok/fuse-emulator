@@ -165,7 +165,9 @@ ulaplus_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 
     }
 
-  } else if( ulaplus_current_register == 64 ) {
+  } else if( ( ulaplus_current_register & 0xC0 ) == 0x40 ) { /* mode group */
+
+    ulaplus_videomode_write( port, ulaplus_current_register & 0x3F );
 
     b = b & 1;
 
@@ -177,10 +179,6 @@ ulaplus_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 
       display_set_lores_border( ula_last_byte() & 7 );
     }
-
-  } else if( ( ulaplus_current_register & 0xC0 ) == 0x40 ) { /* mode group */
-
-    ulaplus_videomode_write( port, b );
 
   }
 
