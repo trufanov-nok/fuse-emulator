@@ -105,7 +105,11 @@ spec48_reset( void )
 void
 spec48_common_display_setup( void )
 {
-  display_set_mode( SINCLAIR );
+  /* This type of logic probably really belongs in the display hardware
+     peripherals somewhere (ULA, SCLD, ULAplus, Pentagon1024 equivalent etc.) */
+  display_set_mode(
+   machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ||
+          periph_is_active( PERIPH_TYPE_ULAPLUS ) ? TIMEX : SINCLAIR ); 
 }
 
 int

@@ -4650,3 +4650,5 @@
          memory_display_dirty maintenance to live in display_set_mode() (Fred).
 20150923 peripherals/ulaplus.c: fix video mode updates from register port writes
          (from attachment to patch #323) (Sergio).
+20150926 display.c,machine.c,machines/spec48.c: move ULAplus display format
+         setting to spec48_common_display_setup() (from patch #323) (Fred).

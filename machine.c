@@ -205,7 +205,6 @@ static int
 machine_select_machine( fuse_machine_info *machine )
 {
   int width, height;
-  int capabilities;
 
   machine_current = machine;
 
@@ -225,10 +224,9 @@ machine_select_machine( fuse_machine_info *machine )
   /* Do a hard reset */
   if( machine_reset( 1 ) ) return 1;
 
-  capabilities = libspectrum_machine_capabilities( machine->machine );
   machine_current->timex_video = 
-                    capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ||
-                    periph_is_active( PERIPH_TYPE_ULAPLUS );
+          machine->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ||
+          periph_is_active( PERIPH_TYPE_ULAPLUS );
 
   /* Set screen sizes here */
   if( machine_current->timex_video ) {
@@ -244,7 +242,7 @@ machine_select_machine( fuse_machine_info *machine )
   sound_init( settings_current.sound_device );
 
   /* And the dock menu item */
-  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK ) {
+  if( machine->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK ) {
     ui_menu_activate( UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK_EJECT, 0 );
   }
 

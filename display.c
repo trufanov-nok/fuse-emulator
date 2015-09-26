@@ -1195,16 +1195,14 @@ display_set_mode( const display_hardware_mode_type mode )
 {
   switch( mode ) {
   case SINCLAIR:
+    display_dirty = display_dirty_sinclair;
+    display_write_if_dirty = display_write_if_dirty_sinclair;
+    display_dirty_flashing = display_dirty_flashing_sinclair;
+    memory_display_dirty = memory_display_dirty_sinclair;
   case TIMEX:
-    if( machine_current->timex_video ) {
-      display_dirty = display_dirty_timex;
-      display_write_if_dirty = display_write_if_dirty_timex;
-      display_dirty_flashing = display_dirty_flashing_timex;
-    } else {
-      display_dirty = display_dirty_sinclair;
-      display_write_if_dirty = display_write_if_dirty_sinclair;
-      display_dirty_flashing = display_dirty_flashing_sinclair;
-    }
+    display_dirty = display_dirty_timex;
+    display_write_if_dirty = display_write_if_dirty_timex;
+    display_dirty_flashing = display_dirty_flashing_timex;
     memory_display_dirty = memory_display_dirty_sinclair;
     break;
   case PENTAGON1024:
