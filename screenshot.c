@@ -34,6 +34,7 @@
 #include "display.h"
 #include "machine.h"
 #include "peripherals/scld.h"
+#include "peripherals/ulaplus.h"
 #include "screenshot.h"
 #include "settings.h"
 #include "ui/scaler/scaler.h"
@@ -288,23 +289,21 @@ screenshot_available_scalers( scaler_type scaler )
 int
 screenshot_scr_write( const char *filename )
 {
-  libspectrum_byte scr_data[HIRES_SCR_SIZE];
+  libspectrum_byte scr_data[ HIRES_SCR_SIZE + ULAPLUS_CLUT_MAX_COLOURS ];
   int scr_length;
 
-  memset( scr_data, 0, HIRES_SCR_SIZE );
-
-  if( scld_last_dec.name.hires ) {
+  if( display_mode.name.hires ) {
     memcpy( scr_data,
             &RAM[ memory_current_screen ][display_get_addr(0,0)],
             MONO_BITMAP_SIZE );
     memcpy( scr_data + MONO_BITMAP_SIZE,
             &RAM[ memory_current_screen ][display_get_addr(0,0) +
             ALTDFILE_OFFSET], MONO_BITMAP_SIZE );
-    scr_data[HIRES_ATTR] = ( scld_last_dec.byte & HIRESCOLMASK ) |
-                           scld_last_dec.mask.scrnmode;
+    scr_data[ HIRES_ATTR ] = ( display_mode.byte & HIRESCOLMASK ) |
+                             display_mode.mask.scrnmode;
     scr_length = HIRES_SCR_SIZE;
   }
-  else if( scld_last_dec.name.b1 ) {
+  else if( display_mode.name.b1 ) {
     memcpy( scr_data,
             &RAM[ memory_current_screen ][display_get_addr(0,0)],
             MONO_BITMAP_SIZE );
@@ -318,6 +317,11 @@ screenshot_scr_write( const char *filename )
             &RAM[ memory_current_screen ][display_get_addr(0,0)],
             STANDARD_SCR_SIZE );
     scr_length = STANDARD_SCR_SIZE;
+  }
+
+  if( ulaplus_palette_enabled ) {
+    memcpy( scr_data + scr_length, ulaplus_palette, ULAPLUS_CLUT_MAX_COLOURS );
+    scr_length += ULAPLUS_CLUT_MAX_COLOURS;
   }
 
   return utils_write_file( filename, scr_data, scr_length );
