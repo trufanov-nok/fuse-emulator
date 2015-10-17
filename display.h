@@ -155,7 +155,7 @@ void display_refresh_main_screen(void);
 void display_refresh_all(void);
 
 #define display_get_addr( x, y ) \
-  scld_last_dec.name.altdfile ? display_line_start[(y)]+(x)+ALTDFILE_OFFSET : \
+  display_mode.name.altdfile ? display_line_start[(y)]+(x)+ALTDFILE_OFFSET : \
   display_line_start[(y)]+(x)
 int display_getpixel( int x, int y );
 

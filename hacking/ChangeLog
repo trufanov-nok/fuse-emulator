@@ -4653,3 +4653,5 @@
 20150926 display.c,machine.c,machines/spec48.c: move ULAplus display format
          setting to spec48_common_display_setup() (from patch #323) (Fred).
 20151005 screenshot.c: add SCR write support for ULAplus (Sergio).
+20151017 display.h,movie.c: more from switch from scld_last_dec to display_mode
+         (Sergio).

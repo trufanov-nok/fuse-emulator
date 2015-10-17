@@ -42,7 +42,6 @@
 #include "machine.h"
 #include "movie_tables.h"
 #include "options.h"
-#include "peripherals/scld.h"
 #include "screenshot.h"
 #include "settings.h"
 #include "sound.h"
@@ -183,7 +182,7 @@ get_screentype()
   if( machine_current->timex_video ) { /* ALTDFILE and default */
     if( display_mode.name.hires )
       return 'R';	/* HIRES screen */
-    else if( scld_last_dec.name.b1 )
+    else if( display_mode.name.b1 )
       return 'C';	/* HICOLOR screen */
     else
       return 'X';	/* STANDARD screen on timex machine */
