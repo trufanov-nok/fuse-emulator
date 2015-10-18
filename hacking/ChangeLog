@@ -4655,3 +4655,5 @@
 20151005 screenshot.c: add SCR write support for ULAplus (Sergio).
 20151017 display.h,movie.c: more from switch from scld_last_dec to display_mode
          (Sergio).
+20151018 peripherals/ulaplus.c: save/restore ULAplus Timex screen mode (thanks,
+         Andrew Owen and Fred) (Sergio).

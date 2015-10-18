@@ -217,7 +217,8 @@ ulaplus_from_snapshot( libspectrum_snap *snap )
     memcpy( ulaplus_palette, libspectrum_snap_ulaplus_palette( snap, 0 ),
             ULAPLUS_CLUT_MAX_COLOURS );
 
-    // FIXME: Read Timex screen mode
+    ulaplus_videomode_write( 0x00ff,
+                             libspectrum_snap_ulaplus_ff_register( snap ) );
 
     display_set_lores_border( ula_last_byte() & 7 );
     display_refresh_all();
@@ -247,5 +248,5 @@ ulaplus_to_snapshot( libspectrum_snap *snap )
   memcpy( buffer, ulaplus_palette, ULAPLUS_CLUT_MAX_COLOURS );
   libspectrum_snap_set_ulaplus_palette( snap, 0, buffer );
 
-  // FIXME: Write Timex screen mode
+  libspectrum_snap_set_ulaplus_ff_register( snap, display_mode.byte );
 }
