@@ -4631,21 +4631,21 @@
          (thanks, Stuart) (Gilberto Almeida, Fred and Sergio).
 20140920 ui/{gtk/gtkdisplay.c,sdl/sdldisplay.c,win32/win32display.c}: scale
          blue component as specified by ULAplus 1.1 (Sergio).
-20150510 display.{ch},movie.c,peripherals/ulaplus.c: refactor display chunk
+20150610 display.{ch},movie.c,peripherals/ulaplus.c: refactor display chunk
          handling and remove redundant functions (Fred).
-20150512 display.[ch],machines/{machines_periph.c,spec48.c,tc2048.c},
+20150612 display.[ch],machines/{machines_periph.c,spec48.c,tc2048.c},
          peripherals/{scld.[ch],ulaplus.c},screenshot.c: add support for
          Timex-style display modes to ULAplus (Fred).
-20150512 display.[ch],machines/machines_periph.c,ui/gtk/gtkdisplay.c,
+20150612 display.[ch],machines/machines_periph.c,ui/gtk/gtkdisplay.c,
          ui/sdl/sdldisplay.c,ui/win32/win32display.c: when ULAplus is enabled
          always use its palette, don't allow ULAplus use for UIs that don't 
          currently support its palette (thanks, Sergio) (Fred).
-20150513 display.c,machine.[ch],machines/spec48.c,movie.c,screenshot.c,
+20150613 display.c,machine.[ch],machines/spec48.c,movie.c,screenshot.c,
          ui/fb/fbdisplay.c,ui/gtk/gtkdisplay.c,ui/sdl/sdldisplay.c,
          ui/svga/svgadisplay.c,ui/widget/widget.c,ui/wii/wiidisplay.c,
          ui/win32/win32display.c,ui/xlib/xdisplay.c,uidisplay.c: support hires
          mode for ULAplus (Fred).
-20150515 display.[ch],machines/{pentagon1024.c,spec48.c,tc2068.c}: refactor
+20150615 display.[ch],machines/{pentagon1024.c,spec48.c,tc2068.c}: refactor
          display_dirty, display_write_if_dirty, display_dirty_flashing and
          memory_display_dirty maintenance to live in display_set_mode() (Fred).
 20150923 peripherals/ulaplus.c: fix video mode updates from register port writes
