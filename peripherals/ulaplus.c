@@ -165,9 +165,9 @@ ulaplus_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 
     }
 
-  } else if( ( ulaplus_current_register & 0xC0 ) == 0x40 ) { /* mode group */
+  } else if( ( ulaplus_current_register & 0xc0 ) == 0x40 ) { /* mode group */
 
-    ulaplus_videomode_write( port, ulaplus_current_register & 0x3F );
+    ulaplus_videomode_write( port, ulaplus_current_register & 0x3f );
 
     b = b & 1;
 

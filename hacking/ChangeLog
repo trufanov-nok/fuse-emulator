@@ -4657,3 +4657,4 @@
          (Sergio).
 20151018 peripherals/ulaplus.c: save/restore ULAplus Timex screen mode (thanks,
          Andrew Owen and Fred) (Sergio).
+20151218 peripherals/ulaplus.c: use lowercase for hex values (Fred).
