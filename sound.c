@@ -289,9 +289,7 @@ sound_init( const char *device )
   sound_framesiz = ( float )settings_current.sound_freq / hz;
   sound_framesiz++;
 
-  samples =
-    (blip_sample_t *)libspectrum_calloc( sound_framesiz * sound_channels,
-                                         sizeof(blip_sample_t) );
+  samples = libspectrum_new0( blip_sample_t, sound_framesiz * sound_channels );
   /* initialize movie settings... */
   movie_init_sound( settings_current.sound_freq, sound_stereo_ay );
 
@@ -357,22 +355,8 @@ ay_do_tone( int level, unsigned int tone_count, int *var, int chan )
     if( ay_tone_high[ chan ] )
       *var = level;
     else {
-      *var = -level;
+      *var = 0;
     }
-  }
-
-  /* The AY output goes from 0 to the maximum volume, so there
-   * is a DC component that is half the maxmum volume.
-   * Robocop uses a high frequency square wave with a tone
-   * period of one to average out to being like a DC offset at
-   * around half the maximum volume. This is used as a base for
-   * the sample playback.
-   * This seems to intefere with our attempt to remove the
-   * returned DC offset, so for now we just ignore the high
-   * frequency wave and hope it's a sample
-   */
-  if( ay_tone_period[ chan ] == 1 ) {
-      *var = -level;
   }
 }
 
@@ -691,7 +675,7 @@ sound_beeper( int on )
     if( on == 1 ) on = 0;
   }
 
-  val = -beeper_ampl[3] + beeper_ampl[on]*2;
+  val = beeper_ampl[on];
 
   blip_synth_update( left_beeper_synth, tstates, val );
   if( sound_stereo_ay != SOUND_STEREO_AY_NONE )

@@ -49,6 +49,7 @@
 #include "spectrum.h"
 #include "machine.h"
 #include "ui/ui.h"
+#include "ui/uijoystick.h"
 
 static int sticks = 0;
 static int buttons[2];
@@ -72,7 +73,7 @@ init_stick( int which )
   }
 
   buttons[which] = joystick_getnumbuttons( which );
-  if( buttons[which] > 10 ) buttons[which] = 10;
+  if( buttons[which] > NUM_JOY_BUTTONS ) buttons[which] = NUM_JOY_BUTTONS;
 
   return 0;
 }

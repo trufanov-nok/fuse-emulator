@@ -34,12 +34,14 @@
 
 #include <libspectrum.h>
 #ifdef HAVE_ZLIB_H
+#define ZLIB_CONST
 #include <zlib.h>
 #endif
 
 #include "display.h"
 #include "fuse.h"
 #include "machine.h"
+#include "movie.h"
 #include "movie_tables.h"
 #include "options.h"
 #include "screenshot.h"
@@ -141,7 +143,7 @@ void movie_start_frame( void );
 void movie_init_sound( int f, int s );
 
 static char
-get_timing()
+get_timing( void )
 {
   switch( machine_current->machine ) {
   case LIBSPECTRUM_MACHINE_16:
@@ -151,25 +153,20 @@ get_timing()
   case LIBSPECTRUM_MACHINE_SCORP:
   case LIBSPECTRUM_MACHINE_SE:
     return 'A';
-    break;
   case LIBSPECTRUM_MACHINE_128:
   case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A:
   case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
     return 'B';
-    break;
   case LIBSPECTRUM_MACHINE_TS2068:
     return 'C';
-    break;
   case LIBSPECTRUM_MACHINE_PENT:
   case LIBSPECTRUM_MACHINE_PENT512:
   case LIBSPECTRUM_MACHINE_PENT1024:
     return 'D';
-    break;
   case LIBSPECTRUM_MACHINE_48_NTSC:
     return 'E';
-    break;
   case LIBSPECTRUM_MACHINE_UNKNOWN:
   default:
     return '?';
@@ -177,7 +174,7 @@ get_timing()
 }
 
 static char
-get_screentype()
+get_screentype( void )
 {
   if( machine_current->timex_video ) { /* ALTDFILE and default */
     if( display_mode.name.hires )
@@ -192,7 +189,7 @@ get_screentype()
 
 #ifdef HAVE_ZLIB_H
 static void
-fwrite_compr( void *b, size_t n, size_t m, FILE *f )
+fwrite_compr( const void *b, size_t n, size_t m, FILE *f )
 {
   if( fmf_compr == 0 ) {
     fwrite( b, n, m, f );
@@ -486,7 +483,7 @@ movie_start_frame( void )
 }
 
 void
-movie_init()
+movie_init( void )
 {
   /* start movie recording if user requested... */
   if( settings_current.movie_start )

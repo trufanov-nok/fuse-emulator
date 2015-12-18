@@ -52,7 +52,6 @@ typedef struct ui_media_drive_info_t
   ui_media_drive_insert_hook_fn insert_hook;
   ui_media_drive_autoload_hook_fn autoload_hook;
   struct fdd_t *fdd;
-  struct disk_t *disk;
 } ui_media_drive_info_t;
 
 int ui_media_drive_register( ui_media_drive_info_t *drive );
@@ -86,6 +85,7 @@ typedef enum ui_media_controller {
   UI_MEDIA_CONTROLLER_MDR,
   UI_MEDIA_CONTROLLER_OPUS,
   UI_MEDIA_CONTROLLER_DISCIPLE,
+  UI_MEDIA_CONTROLLER_DIDAKTIK,
 } ui_media_controller;
 
 #endif			/* #ifndef FUSE_UIMEDIA_H */

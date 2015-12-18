@@ -51,16 +51,16 @@ libspectrum_byte ula_default_value;
 
 static void ula_from_snapshot( libspectrum_snap *snap );
 static void ula_to_snapshot( libspectrum_snap *snap );
-static libspectrum_byte ula_read( libspectrum_word port, int *attached );
+static libspectrum_byte ula_read( libspectrum_word port, libspectrum_byte *attached );
 static void ula_write( libspectrum_word port, libspectrum_byte b );
 
 static module_info_t ula_module_info = {
 
-  NULL,
-  NULL,
-  NULL,
-  ula_from_snapshot,
-  ula_to_snapshot,
+  /* .reset = */ NULL,
+  /* .romcs = */ NULL,
+  /* .snapshot_enabled = */ NULL,
+  /* .snapshot_from = */ ula_from_snapshot,
+  /* .snapshot_to = */ ula_to_snapshot,
 
 };
 
@@ -70,10 +70,10 @@ static const periph_port_t ula_ports[] = {
 };
 
 static const periph_t ula_periph = {
-  NULL,
-  ula_ports,
-  0,
-  NULL
+  /* .option = */ NULL,
+  /* .ports = */ ula_ports,
+  /* .hard_reset = */ 0,
+  /* .activate = */ NULL,
 };
 
 static const periph_port_t ula_ports_full_decode[] = {
@@ -82,10 +82,10 @@ static const periph_port_t ula_ports_full_decode[] = {
 };
 
 static const periph_t ula_periph_full_decode = {
-  NULL,
-  ula_ports_full_decode,
-  0,
-  NULL
+  /* .option = */ NULL,
+  /* .ports = */ ula_ports_full_decode,
+  /* .hard_reset = */ 0,
+  /* .activate = */ NULL,
 };
 
 void
@@ -100,11 +100,11 @@ ula_init( void )
 }
 
 static libspectrum_byte
-ula_read( libspectrum_word port, int *attached )
+ula_read( libspectrum_word port, libspectrum_byte *attached )
 {
   libspectrum_byte r = ula_default_value;
 
-  *attached = 1;
+  *attached = 0xff;
 
   loader_detect_loader();
 

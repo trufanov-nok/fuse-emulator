@@ -30,6 +30,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fuse.h"
+#include "peripherals/disk/beta.h"
+#include "peripherals/disk/didaktik.h"
+#include "peripherals/disk/disciple.h"
+#include "peripherals/disk/opus.h"
+#include "peripherals/disk/plusd.h"
+#include "peripherals/ide/divide.h"
+#include "peripherals/if1.h"
+#include "peripherals/spectranet.h"
+#include "peripherals/ula.h"
+#include "peripherals/usource.h"
+#include "profile.h"
+#include "rzx.h"
+#include "slt.h"
+#include "tape.h"
+
 #include "event.h"
 #include "module.h"
 #include "spectrum.h"
@@ -477,6 +493,31 @@ disciple_page( void )
   abort();
 }
 
+int didaktik80_available = 0;
+int didaktik80_active = 0;
+int didaktik80_snap = 0;
+
+void
+didaktik80_page( void )
+{
+  abort();
+}
+
+void
+didaktik80_unpage( void )
+{
+  abort();
+}
+
+int usource_available = 0;
+int usource_active = 0;
+
+void
+usource_toggle( void )
+{
+  abort();
+}
+
 void
 if1_page( void )
 {
@@ -498,7 +539,7 @@ divide_set_automap( int state GCC_UNUSED )
 int spectranet_available = 0;
 
 void
-spectranet_page( void )
+spectranet_page( int via_io GCC_UNUSED )
 {
   abort();
 }
@@ -524,6 +565,14 @@ int
 spectranet_nmi_flipflop( void )
 {
   return 0;
+}
+
+int svg_capture_active = 0;     /* SVG capture enabled? */
+
+void
+svg_capture( void )
+{
+  abort();
 }
 
 int
@@ -581,6 +630,7 @@ init_dummies( void )
   scld_last_dec.name.intdisable = 0;
   settings_current.slt_traps = 0;
   settings_current.divide_enabled = 0;
+  settings_current.z80_is_cmos = 0;
   beta_pc_mask = 0xfe00;
   beta_pc_value = 0x3c00;
   spectranet_programmable_trap_active = 0;

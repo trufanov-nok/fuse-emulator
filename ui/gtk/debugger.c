@@ -212,8 +212,6 @@ static GtkActionEntry menu_data[] = {
 
 };
 
-static guint menu_data_count = G_N_ELEMENTS( menu_data );
-
 static GtkToggleActionEntry menu_toggles[] = {
 
   { "VIEW_REGISTERS", NULL, "_Registers", NULL, NULL, G_CALLBACK( toggle_display_registers ), TRUE },
@@ -224,8 +222,6 @@ static GtkToggleActionEntry menu_toggles[] = {
   { "VIEW_EVENTS", NULL, "_Events", NULL, NULL, G_CALLBACK( toggle_display_events ), TRUE },
 
 };
-
-static guint menu_toggles_count = G_N_ELEMENTS( menu_toggles );
 
 static const char*
 format_8_bit( void )
@@ -418,10 +414,10 @@ create_menu_bar( GtkBox *parent, GtkAccelGroup **accel_group )
 
   /* Load actions */
   menu_action_group = gtk_action_group_new( "DebuggerActionGroup" );
-  gtk_action_group_add_actions( menu_action_group, menu_data, menu_data_count,
-                                NULL );
+  gtk_action_group_add_actions( menu_action_group, menu_data,
+				ARRAY_SIZE( menu_data ), NULL );
   gtk_action_group_add_toggle_actions( menu_action_group, menu_toggles,
-                                       menu_toggles_count, NULL );
+                                       ARRAY_SIZE( menu_toggles ), NULL );
   gtk_ui_manager_insert_action_group( ui_manager_debugger, menu_action_group,
                                       0 );
   g_object_unref( menu_action_group );
@@ -582,8 +578,8 @@ create_breakpoints( GtkBox *parent )
 {
   size_t i;
 
-  gchar *titles[] = { "ID", "Type", "Value", "Ignore", "Life",
-		      "Condition" };
+  static const gchar *const titles[] =
+    { "ID", "Type", "Value", "Ignore", "Life", "Condition" };
 
   breakpoints_model = gtk_list_store_new( BREAKPOINTS_COLUMN_COUNT, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING );
 
@@ -603,7 +599,8 @@ create_disassembly( GtkBox *parent, gtkui_font font )
   size_t i;
 
   GtkWidget *scrollbar;
-  const gchar *titles[] = { "Address", "Instruction" };
+  static const gchar *const titles[] =
+    { "Address", "Instruction" };
 
   /* A box to hold the disassembly listing and the scrollbar */
   disassembly_box = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -648,7 +645,7 @@ static void
 create_stack_display( GtkBox *parent, gtkui_font font )
 {
   size_t i;
-  const gchar *titles[] = { "Address", "Instruction" };
+  static const gchar *const titles[] = { "Address", "Instruction" };
   
   stack_model =
     gtk_list_store_new( STACK_COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING,
@@ -695,7 +692,7 @@ stack_activate( GtkTreeView *tree_view, GtkTreePath *path,
 static void
 create_events( GtkBox *parent )
 {
-  const gchar *titles[] = { "Time", "Type" };
+  static const gchar *const titles[] = { "Time", "Type" };
   size_t i;
 
   events_model =
@@ -836,7 +833,7 @@ ui_debugger_update( void )
   snprintf( &buffer[6], 80, format_8_bit(), ( R & 0x7f ) | ( R7 & 0x80 ) );
   gtk_label_set_text( GTK_LABEL( registers[13] ), buffer );
 
-  snprintf( buffer, 80, "T-states %5d", tstates );
+  snprintf( buffer, 80, "T-states %5d\nHalted %d", tstates, z80.halted );
   gtk_label_set_text( GTK_LABEL( registers[14] ), buffer );
   snprintf( buffer, 80, "  IM %d\nIFF1 %d\nIFF2 %d", IM, IFF1, IFF2 );
   gtk_label_set_text( GTK_LABEL( registers[15] ), buffer );

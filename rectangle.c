@@ -72,8 +72,7 @@ rectangle_add( int y, int x, int w )
                 2 * rectangle_active_allocated :
                 8;
 
-    ptr = libspectrum_realloc( rectangle_active,
-                               new_alloc * sizeof( struct rectangle ) );
+    ptr = libspectrum_renew( struct rectangle, rectangle_active, new_alloc );
 
     rectangle_active_allocated = new_alloc; rectangle_active = ptr;
   }
@@ -89,7 +88,7 @@ rectangle_add( int y, int x, int w )
 #define MIN(a,b)    (((a) < (b)) ? (a) : (b))
 #endif
 
-inline static int
+static inline int
 compare_and_merge_rectangles( struct rectangle *source )
 {
   size_t z;
@@ -170,8 +169,8 @@ rectangle_end_line( int y )
 	          2 * rectangle_inactive_allocated :
 	          8;
 
-      ptr = libspectrum_realloc( rectangle_inactive,
-                                 new_alloc * sizeof( struct rectangle ) );
+      ptr =
+        libspectrum_renew( struct rectangle, rectangle_inactive, new_alloc );
 
       rectangle_inactive_allocated = new_alloc; rectangle_inactive = ptr;
     }

@@ -91,7 +91,7 @@ menu_machine_pokefinder( GtkAction *gtk_action GCC_UNUSED,
   update_pokefinder();
 }
 
-GtkWidget *
+static GtkWidget *
 create_location_list( void )
 {
   GtkWidget *view;
@@ -170,7 +170,7 @@ create_dialog( void )
     };
     btn[2].actiondata = G_OBJECT( entry );
     accel_group = gtkstock_create_buttons( dialog, NULL, btn,
-					   sizeof( btn ) / sizeof( btn[0] ) );
+					   ARRAY_SIZE( btn ) );
     gtkstock_create_close( dialog, accel_group,
 			   G_CALLBACK( gtkui_pokefinder_close ), TRUE );
   }
@@ -238,6 +238,14 @@ gtkui_pokefinder_close( GtkWidget *widget, gpointer user_data GCC_UNUSED )
   gtk_widget_hide( widget );
 }
 
+static gboolean
+widget_delayed_show( GtkWidget *item )
+{
+  gtk_widget_show( item );
+
+  return FALSE;
+}
+
 static void
 update_pokefinder( void )
 {
@@ -277,7 +285,9 @@ update_pokefinder( void )
 	}
     }
 
-    gtk_widget_show( location_list );
+    /* Show widget when the GtkTreeView has been filled with data. Fix an empty
+       list on GTK+ 3.10 (and maybe other versions) */
+    g_idle_add( (GSourceFunc)widget_delayed_show, location_list );
 
   } else {
     gtk_widget_hide( location_list );

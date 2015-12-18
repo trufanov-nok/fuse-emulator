@@ -54,9 +54,9 @@ static int zxcf_memory_source;
 
 static void set_zxcf_bank( int bank );
 static libspectrum_byte zxcf_memctl_read( libspectrum_word port,
-					  int *attached );
+					  libspectrum_byte *attached );
 static void zxcf_memctl_write( libspectrum_word port, libspectrum_byte data );
-static libspectrum_byte zxcf_ide_read( libspectrum_word port, int *attached );
+static libspectrum_byte zxcf_ide_read( libspectrum_word port, libspectrum_byte *attached );
 static void zxcf_ide_write( libspectrum_word port, libspectrum_byte data );
 static void zxcf_activate( void );
 
@@ -69,10 +69,10 @@ static const periph_port_t zxcf_ports[] = {
 };
 
 static const periph_t zxcf_periph = {
-  &settings_current.zxcf_active,
-  zxcf_ports,
-  1,
-  zxcf_activate
+  /* .option = */ &settings_current.zxcf_active,
+  /* .ports = */ zxcf_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ zxcf_activate,
 };
 
 static int zxcf_writeenable;
@@ -93,16 +93,16 @@ static void zxcf_to_snapshot( libspectrum_snap *snap );
 
 static module_info_t zxcf_module_info = {
 
-  zxcf_reset,
-  zxcf_memory_map,
-  NULL,
-  zxcf_from_snapshot,
-  zxcf_to_snapshot,
+  /* .reset = */ zxcf_reset,
+  /* .romcs = */ zxcf_memory_map,
+  /* .snapshot_enabled = */ NULL,
+  /* .snapshot_from = */ zxcf_from_snapshot,
+  /* .snapshot_to = */ zxcf_to_snapshot,
 
 };
 
 /* Debugger events */
-static const char *event_type_string = "zxcf";
+static const char * const event_type_string = "zxcf";
 static int page_event, unpage_event;
 
 /* Housekeeping functions */
@@ -219,9 +219,9 @@ set_zxcf_bank( int bank )
 /* Port read/writes */
 
 static libspectrum_byte
-zxcf_memctl_read( libspectrum_word port GCC_UNUSED, int *attached )
+zxcf_memctl_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
 {
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
 
   return 0xff;
 }
@@ -255,11 +255,11 @@ zxcf_last_memctl( void )
 }
 
 static libspectrum_byte
-zxcf_ide_read( libspectrum_word port, int *attached )
+zxcf_ide_read( libspectrum_word port, libspectrum_byte *attached )
 {
   libspectrum_ide_register idereg = ( port >> 8 ) & 0x07;
   
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
 
   return libspectrum_ide_read( zxcf_idechn, idereg ); 
 }
@@ -322,11 +322,7 @@ zxcf_to_snapshot( libspectrum_snap *snap )
 
   for( i = 0; i < ZXCF_PAGES; i++ ) {
 
-    buffer = malloc( ZXCF_PAGE_LENGTH * sizeof( libspectrum_byte ) );
-    if( !buffer ) {
-      ui_error( UI_ERROR_ERROR, "Out of memory at %s:%d", __FILE__, __LINE__ );
-      return;
-    }
+    buffer = libspectrum_new( libspectrum_byte, ZXCF_PAGE_LENGTH );
 
     memcpy( buffer, ZXCFMEM[ i ], ZXCF_PAGE_LENGTH );
     libspectrum_snap_set_zxcf_ram( snap, i, buffer );

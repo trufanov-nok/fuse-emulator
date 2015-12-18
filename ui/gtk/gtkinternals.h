@@ -76,7 +76,7 @@ GtkAccelGroup* gtkstock_add_accel_group( GtkWidget *widget );
  * For either, GDK_KEY_VoidSymbol means "no accel key".
  */
 typedef struct gtkstock_button {
-  gchar *label;
+  const gchar *label;
   GCallback action;		/* "clicked" func; data is actiondata. */
   gpointer actiondata;
   GCallback destroy;	/* "clicked" func; data is parent widget */
@@ -89,9 +89,7 @@ typedef struct gtkstock_button {
 /* GTK1: create a simple button with the given label.
  *   "gtk-" prefixes are stripped and are used to select default accel keys.
  * GTK2: chooses between stock and normal based on "gtk-" prefix.
- *
- * Some stock labels are defined below for use with GTK1: their names are the
- * same as in GTK2, but the strings are different.
+ * GTK3: GtkStock has been deprecated, we should not use "gtk-" prefix.
  *
  * If the target widget is a GtkDialog, then created buttons are put in its
  * action area.

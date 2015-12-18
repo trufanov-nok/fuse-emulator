@@ -31,8 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debugger.h"
-#include "debugger_internals.h"
+#include "debugger/debugger.h"
+#include "debugger/debugger_internals.h"
 #include "mempool.h"
 #include "ui/ui.h"
 #include "z80/z80.h"
@@ -303,7 +303,7 @@ expression:   NUMBER { $$ = debugger_expression_new_number( $1, debugger_memory_
 
 debuggercommands:   debuggercommand { $$ = $1; }
                   | debuggercommands debuggercommand {
-                      $$ = mempool_alloc( debugger_memory_pool, strlen( $1 ) + strlen( $2 ) + 2 );
+                      $$ = mempool_new( debugger_memory_pool, char, strlen( $1 ) + strlen( $2 ) + 2 );
                       sprintf( $$, "%s\n%s", $1, $2 );
                     }
 

@@ -162,7 +162,7 @@ scaler_type widget_select_scaler( int (*selector)( scaler_type ) );
 typedef struct widget_select_t {
 
   const char *title;	/* Dialog title */
-  const char **options;	/* The available options */
+  const char * const *options;	/* The available options */
   size_t count;		/* The number of options */
   size_t current;	/* Which option starts active? */
 
@@ -239,6 +239,7 @@ typedef struct widget_roms_info {
 
   const char *title;
   size_t start, count;
+  int is_peripheral;
 
 } widget_roms_info;
 

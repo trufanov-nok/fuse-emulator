@@ -42,6 +42,7 @@
 #include "peripherals/if2.h"
 #include "peripherals/speccyboot.h"
 #include "peripherals/ula.h"
+#include "peripherals/usource.h"
 #include "settings.h"
 #include "unittests.h"
 
@@ -234,13 +235,17 @@ mempool_test( void )
   TEST_ASSERT( mempool_get_pools() == initial_pools + 1 );
   TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
 
-  mempool_alloc( pool1, 23 );
+  mempool_malloc( pool1, 23 );
 
   TEST_ASSERT( mempool_get_pool_size( pool1 ) == 1 );
 
-  mempool_alloc( pool1, 42 );
+  mempool_malloc_n( pool1, 42, 4 );
 
   TEST_ASSERT( mempool_get_pool_size( pool1 ) == 2 );
+
+  mempool_new( pool1, libspectrum_word, 5 );
+
+  TEST_ASSERT( mempool_get_pool_size( pool1 ) == 3 );
 
   mempool_free( pool1 );
 
@@ -251,17 +256,25 @@ mempool_test( void )
   TEST_ASSERT( mempool_get_pools() == initial_pools + 2 );
   TEST_ASSERT( mempool_get_pool_size( pool2 ) == 0 );
 
-  mempool_alloc( pool1, 23 );
+  mempool_malloc( pool1, 23 );
 
   TEST_ASSERT( mempool_get_pool_size( pool2 ) == 0 );
 
-  mempool_alloc( pool2, 42 );
+  mempool_malloc_n( pool1, 6, 7 );
+
+  TEST_ASSERT( mempool_get_pool_size( pool2 ) == 0 );
+
+  mempool_new( pool1, libspectrum_byte, 5 );
+
+  TEST_ASSERT( mempool_get_pool_size( pool2 ) == 0 );
+
+  mempool_malloc( pool2, 42 );
   
   TEST_ASSERT( mempool_get_pool_size( pool2 ) == 1 );
 
   mempool_free( pool2 );
 
-  TEST_ASSERT( mempool_get_pool_size( pool1 ) == 1 );
+  TEST_ASSERT( mempool_get_pool_size( pool1 ) == 3 );
   TEST_ASSERT( mempool_get_pool_size( pool2 ) == 0 );
   
   mempool_free( pool1 );
@@ -286,6 +299,12 @@ assert_page( libspectrum_word base, libspectrum_word length, int source, int pag
   }
 
   return 0;
+}
+
+int
+unittests_assert_2k_page( libspectrum_word base, int source, int page )
+{
+  return assert_page( base, 0x0800, source, page );
 }
 
 int
@@ -345,7 +364,7 @@ assert_all_ram( int ram0000, int ram4000, int ram8000, int ramc000 )
 }
 
 static int
-paging_test_16()
+paging_test_16( void )
 {
   int r = 0;
 
@@ -715,6 +734,7 @@ paging_test( void )
     r += if1_unittest();
     r += if2_unittest();
     r += speccyboot_unittest();
+    r += usource_unittest();
 
     r += beta_unittest();
     r += disciple_unittest();

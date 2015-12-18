@@ -37,9 +37,11 @@
 #include "compat.h"
 #include "machines/specplus3.h"
 #include "peripherals/disk/beta.h"
+#include "peripherals/disk/didaktik.h"
 #include "peripherals/disk/disciple.h"
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
+#include "svg.h"
 #include "ui/scaler/scaler.h"
 
 /* The various severities of error level, increasing downwards */
@@ -60,8 +62,10 @@ int ui_end(void);
 int ui_error( ui_error_level severity, const char *format, ... )
      GCC_PRINTF( 2, 3 );
 libspectrum_error ui_libspectrum_error( libspectrum_error error,
-					const char *format, va_list ap );
-int ui_verror( ui_error_level severity, const char *format, va_list ap );
+					const char *format, va_list ap )
+     GCC_PRINTF( 2, 0 );
+int ui_verror( ui_error_level severity, const char *format, va_list ap )
+     GCC_PRINTF( 2, 0 );
 int ui_error_specific( ui_error_level severity, const char *message );
 void ui_error_frame( void );
 
@@ -131,9 +135,11 @@ int ui_get_rollback_point( GSList *points );
 typedef enum ui_menu_item {
 
   UI_MENU_ITEM_INVALID = 0,
+  UI_MENU_ITEM_FILE_SVG_CAPTURE,
   UI_MENU_ITEM_FILE_MOVIE_RECORDING,
   UI_MENU_ITEM_FILE_MOVIE_PAUSE,
   UI_MENU_ITEM_MACHINE_PROFILER,
+  UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP,
   UI_MENU_ITEM_MEDIA_CARTRIDGE,
   UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK,
   UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK_EJECT,
@@ -194,6 +200,15 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_MEDIA_DISK_PLUSD_2_EJECT,
   UI_MENU_ITEM_MEDIA_DISK_PLUSD_2_FLIP_SET,
   UI_MENU_ITEM_MEDIA_DISK_PLUSD_2_WP_SET,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_EJECT,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_FLIP_SET,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_WP_SET,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_EJECT,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_FLIP_SET,
+  UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_WP_SET,
   UI_MENU_ITEM_MEDIA_DISK_DISCIPLE,
   UI_MENU_ITEM_MEDIA_DISK_DISCIPLE_1,
   UI_MENU_ITEM_MEDIA_DISK_DISCIPLE_1_EJECT,

@@ -71,7 +71,7 @@ dck_eject( void )
     return;
   }
 
-  if( settings_current.dck_file ) free( settings_current.dck_file );
+  if( settings_current.dck_file ) libspectrum_free( settings_current.dck_file );
   settings_current.dck_file = NULL;
 
   dck_active = 0;
@@ -87,13 +87,10 @@ dck_get_memory_page( libspectrum_dck_bank bank, size_t index )
     switch( bank ) {
     case LIBSPECTRUM_DCK_BANK_HOME:
       return timex_home[ index ];
-      break;
     case LIBSPECTRUM_DCK_BANK_DOCK:
       return &timex_dock[ index ];
-      break;
     case LIBSPECTRUM_DCK_BANK_EXROM:
       return &timex_exrom[ index ];
-      break;
     default:
       return NULL;
     }
@@ -204,6 +201,9 @@ dck_reset( void )
   }
 
   dck_active = 1;
+
+  /* Reset contention for pages */
+  scld_set_exrom_dock_contention();
 
   /* Make the menu item to eject the cartridge active */
   ui_menu_activate( UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK_EJECT, 1 );

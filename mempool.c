@@ -57,7 +57,7 @@ mempool_register_pool( void )
 }
 
 void*
-mempool_alloc( int pool, size_t size )
+mempool_malloc( int pool, size_t size )
 {
   void *ptr;
 
@@ -73,12 +73,29 @@ mempool_alloc( int pool, size_t size )
   return ptr;
 }
 
+void *
+mempool_malloc_n( int pool, size_t nmemb, size_t size )
+{
+  void *ptr;
+
+  if( pool == MEMPOOL_UNTRACKED ) return libspectrum_malloc_n( nmemb, size );
+
+  if( pool < 0 || pool >= memory_pools->len ) return NULL;
+
+  ptr = libspectrum_malloc_n( nmemb, size );
+  if( !ptr ) return NULL;
+
+  g_array_append_val( g_array_index( memory_pools, GArray*, pool ), ptr );
+
+  return ptr;
+}
+
 char*
 mempool_strdup( int pool, const char *string )
 {
   size_t length = strlen( string ) + 1;
 
-  char *ptr = mempool_alloc( pool, length );
+  char *ptr = mempool_malloc( pool, length );
   if( !ptr ) return NULL;
 
   memcpy( ptr, string, length );

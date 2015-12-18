@@ -41,12 +41,12 @@ while(<>) {
     my( $name, $type, $default, $short, $commandline, $configfile ) =
 	split /\s*,\s*/;
 
-    if( not defined $commandline ) {
+    if( ( not defined $commandline ) || ( $commandline eq '' ) ) {
 	$commandline = $name;
 	$commandline =~ s/_/-/g;
     }
 
-    if( not defined $configfile ) {
+    if( ( not defined $configfile ) || ( $configfile eq '' ) ) {
 	$configfile = $commandline;
 	$configfile =~ s/-//g;
     }
@@ -111,7 +111,11 @@ CODE
 
     foreach my $name ( sort keys %options ) {
 	next if $options{$name}->{type} eq 'null';
-	print "  /* $name */ $options{$name}->{default},\n";
+        if( $options{$name}->{type} eq 'string' ) {
+	  print "  /* $name */ (char *)$options{$name}->{default},\n";
+	} else {
+	  print "  /* $name */ $options{$name}->{default},\n";
+	}
     }
 
 print hashline( __LINE__ ), << 'CODE';
@@ -449,7 +453,7 @@ parse_ini( utils_file *file, settings_info *settings )
 	    libspectrum_free( *val_char );
 	    *val_char = NULL;
 	  }
-	  *val_char = libspectrum_malloc( n + 1 );
+	  *val_char = libspectrum_new( char, n + 1 );
 	  (*val_char)[n] = '\\0';
 	  memcpy( *val_char, value, n );
 	}
@@ -714,56 +718,65 @@ void settings_copy( settings_info *dest, settings_info *src )
 }
 
 char **
-settings_get_rom_setting( settings_info *settings, size_t which )
+settings_get_rom_setting( settings_info *settings, size_t which,
+			  int is_peripheral )
 {
-  switch( which ) {
-  case  0: return &( settings->rom_16       );
-  case  1: return &( settings->rom_48       );
-  case  2: return &( settings->rom_128_0    );
-  case  3: return &( settings->rom_128_1    );
-  case  4: return &( settings->rom_plus2_0  );
-  case  5: return &( settings->rom_plus2_1  );
-  case  6: return &( settings->rom_plus2a_0 );
-  case  7: return &( settings->rom_plus2a_1 );
-  case  8: return &( settings->rom_plus2a_2 );
-  case  9: return &( settings->rom_plus2a_3 );
-  case 10: return &( settings->rom_plus3_0  );
-  case 11: return &( settings->rom_plus3_1  );
-  case 12: return &( settings->rom_plus3_2  );
-  case 13: return &( settings->rom_plus3_3  );
-  case 14: return &( settings->rom_plus3e_0 );
-  case 15: return &( settings->rom_plus3e_1 );
-  case 16: return &( settings->rom_plus3e_2 );
-  case 17: return &( settings->rom_plus3e_3 );
-  case 18: return &( settings->rom_tc2048   );
-  case 19: return &( settings->rom_tc2068_0 );
-  case 20: return &( settings->rom_tc2068_1 );
-  case 21: return &( settings->rom_ts2068_0 );
-  case 22: return &( settings->rom_ts2068_1 );
-  case 23: return &( settings->rom_pentagon_0 );
-  case 24: return &( settings->rom_pentagon_1 );
-  case 25: return &( settings->rom_pentagon_2 );
-  case 26: return &( settings->rom_pentagon512_0 );
-  case 27: return &( settings->rom_pentagon512_1 );
-  case 28: return &( settings->rom_pentagon512_2 );
-  case 29: return &( settings->rom_pentagon512_3 );
-  case 30: return &( settings->rom_pentagon1024_0 );
-  case 31: return &( settings->rom_pentagon1024_1 );
-  case 32: return &( settings->rom_pentagon1024_2 );
-  case 33: return &( settings->rom_pentagon1024_3 );
-  case 34: return &( settings->rom_scorpion_0 );
-  case 35: return &( settings->rom_scorpion_1 );
-  case 36: return &( settings->rom_scorpion_2 );
-  case 37: return &( settings->rom_scorpion_3 );
-  case 38: return &( settings->rom_spec_se_0 );
-  case 39: return &( settings->rom_spec_se_1 );
-  case 40: return &( settings->rom_interface_i );
-  case 41: return &( settings->rom_beta128 );
-  case 42: return &( settings->rom_plusd );
-  case 43: return &( settings->rom_disciple );
-  case 44: return &( settings->rom_opus );
-  case 45: return &( settings->rom_speccyboot );
-  default: return NULL;
+  if( !is_peripheral ) {
+    switch( which ) {
+    case  0: return &( settings->rom_16       );
+    case  1: return &( settings->rom_48       );
+    case  2: return &( settings->rom_128_0    );
+    case  3: return &( settings->rom_128_1    );
+    case  4: return &( settings->rom_plus2_0  );
+    case  5: return &( settings->rom_plus2_1  );
+    case  6: return &( settings->rom_plus2a_0 );
+    case  7: return &( settings->rom_plus2a_1 );
+    case  8: return &( settings->rom_plus2a_2 );
+    case  9: return &( settings->rom_plus2a_3 );
+    case 10: return &( settings->rom_plus3_0  );
+    case 11: return &( settings->rom_plus3_1  );
+    case 12: return &( settings->rom_plus3_2  );
+    case 13: return &( settings->rom_plus3_3  );
+    case 14: return &( settings->rom_plus3e_0 );
+    case 15: return &( settings->rom_plus3e_1 );
+    case 16: return &( settings->rom_plus3e_2 );
+    case 17: return &( settings->rom_plus3e_3 );
+    case 18: return &( settings->rom_tc2048   );
+    case 19: return &( settings->rom_tc2068_0 );
+    case 20: return &( settings->rom_tc2068_1 );
+    case 21: return &( settings->rom_ts2068_0 );
+    case 22: return &( settings->rom_ts2068_1 );
+    case 23: return &( settings->rom_pentagon_0 );
+    case 24: return &( settings->rom_pentagon_1 );
+    case 25: return &( settings->rom_pentagon_2 );
+    case 26: return &( settings->rom_pentagon512_0 );
+    case 27: return &( settings->rom_pentagon512_1 );
+    case 28: return &( settings->rom_pentagon512_2 );
+    case 29: return &( settings->rom_pentagon512_3 );
+    case 30: return &( settings->rom_pentagon1024_0 );
+    case 31: return &( settings->rom_pentagon1024_1 );
+    case 32: return &( settings->rom_pentagon1024_2 );
+    case 33: return &( settings->rom_pentagon1024_3 );
+    case 34: return &( settings->rom_scorpion_0 );
+    case 35: return &( settings->rom_scorpion_1 );
+    case 36: return &( settings->rom_scorpion_2 );
+    case 37: return &( settings->rom_scorpion_3 );
+    case 38: return &( settings->rom_spec_se_0 );
+    case 39: return &( settings->rom_spec_se_1 );
+    default: return NULL;
+    }
+  } else {
+    switch( which ) {
+    case  0: return &( settings->rom_interface_1 );
+    case  1: return &( settings->rom_beta128 );
+    case  2: return &( settings->rom_plusd );
+    case  3: return &( settings->rom_didaktik80 );
+    case  4: return &( settings->rom_disciple );
+    case  5: return &( settings->rom_opus );
+    case  6: return &( settings->rom_speccyboot );
+    case  7: return &( settings->rom_usource );
+    default: return NULL;
+    }
   }
 }
 

@@ -52,11 +52,11 @@ print Fuse::GPL( 'options.c: options dialog boxes',
 #include "options_internals.h"
 #include "periph.h"
 #include "settings.h"
+#include "ui/win32/win32internals.h"
 #include "utils.h"
-#include "win32internals.h"
 
 static int
-option_enumerate_combo( const char **options, char *value, int count,
+option_enumerate_combo( const char * const *options, char *value, int count,
                         int def ) {
   int i;
   if( value != NULL ) {
@@ -95,7 +95,7 @@ foreach( @dialogs ) {
 
 		    print << "CODE";
 
-static const char *$_->{name}_$widget->{value}_combo[] = {
+static const char * const $_->{name}_$widget->{value}_combo[] = {
 CODE
 		    foreach( split( /\|/, $widget->{data1} ) ) {
 			print << "CODE";
@@ -237,7 +237,7 @@ CODE
 	} elsif( $widget->{type} eq "Combo" ) {
 	    my $idcname = uc( "$widget->{value}" );
 	    print << "CODE";
-  free( settings_current.$widget->{value} );
+  libspectrum_free( settings_current.$widget->{value} );
   settings_current.$widget->{value} =
     utils_safe_strdup( $_->{name}_$widget->{value}_combo[
     SendDlgItemMessage( hwndDlg, IDC_${optname}_${idcname}, CB_GETCURSEL, 0, 0 ) ] );

@@ -38,7 +38,7 @@
 
 /* Private function prototypes */
 
-static libspectrum_byte simpleide_read( libspectrum_word port, int *attached );
+static libspectrum_byte simpleide_read( libspectrum_word port, libspectrum_byte *attached );
 static void simpleide_write( libspectrum_word port, libspectrum_byte data );
 
 /* Data */
@@ -49,10 +49,10 @@ static const periph_port_t simpleide_ports[] = {
 };
 
 static const periph_t simpleide_periph = {
-  &settings_current.simpleide_active,
-  simpleide_ports,
-  1,
-  NULL
+  /* .option = */ &settings_current.simpleide_active,
+  /* .ports = */ simpleide_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL,
 };
 
 static libspectrum_ide_channel *simpleide_idechn;
@@ -62,11 +62,11 @@ static void simpleide_to_snapshot( libspectrum_snap *snap );
 
 static module_info_t simpleide_module_info = {
 
-  simpleide_reset,
-  NULL,
-  NULL,
-  simpleide_from_snapshot,
-  simpleide_to_snapshot,
+  /* .reset = */ simpleide_reset,
+  /* .romcs = */ NULL,
+  /* .snapshot_enabled = */ NULL,
+  /* .snapshot_from = */ simpleide_from_snapshot,
+  /* .snapshot_to = */ simpleide_to_snapshot,
 
 };
 
@@ -175,11 +175,11 @@ simpleide_eject( libspectrum_ide_unit unit )
 /* Port read/writes */
 
 static libspectrum_byte
-simpleide_read( libspectrum_word port, int *attached )
+simpleide_read( libspectrum_word port, libspectrum_byte *attached )
 {
   libspectrum_ide_register idereg;
   
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
   
   idereg = ( ( port >> 8 ) & 0x01 ) | ( ( port >> 11 ) & 0x06 );
   

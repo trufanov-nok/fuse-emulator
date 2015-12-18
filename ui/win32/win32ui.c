@@ -31,7 +31,6 @@
 #include "fuse.h"
 #include "keyboard.h"
 #include "menu.h"
-#include "menu_data.h"
 #include "peripherals/joystick.h"
 #include "psg.h"
 #include "rzx.h"
@@ -42,6 +41,7 @@
 #include "tape.h"
 #include "timer/timer.h"
 #include "ui/ui.h"
+#include "ui/win32/menu_data.h"
 #include "utils.h"
 #include "win32internals.h"
 #include "win32joystick.h"
@@ -77,7 +77,7 @@ typedef struct win32ui_select_info {
   int length;
   int selected;
   const char **labels;
-  TCHAR *dialog_title;
+  LPCTSTR dialog_title;
 
 } win32ui_select_info;
 
@@ -92,8 +92,6 @@ static BOOL win32ui_window_resizing( HWND hWnd, WPARAM wParam, LPARAM lParam );
 
 static int
 selector_dialog( win32ui_select_info *items );
-
-#define DIM(X) sizeof((X)) / sizeof((X)[0])
 
 static void
 handle_drop( HDROP hDrop )
@@ -303,7 +301,14 @@ WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
   fuse_nCmdShow = nCmdShow;
   fuse_hPrevInstance = hPrevInstance;
 
-  return fuse_main(__argc, __argv);
+/* HACK: __argc, __argv are broken and return zero when using mingwrt 4.0+
+   on MinGW */
+#if defined( __GNUC__ ) && defined( __MINGW32__ ) && !defined( __MINGW64__ )
+  return fuse_main( _argc, _argv );
+#else
+  return fuse_main( __argc, __argv );
+#endif
+
   /* FIXME: how do deal with returning wParam */
 }
 
@@ -389,7 +394,9 @@ win32ui_make_menu( void )
   ui_menu_activate( UI_MENU_ITEM_RECORDING, 0 );
   ui_menu_activate( UI_MENU_ITEM_RECORDING_ROLLBACK, 0 );
   ui_menu_activate( UI_MENU_ITEM_TAPE_RECORDING, 0 );
-
+#ifdef HAVE_LIB_XML2
+  ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 0 );
+#endif
   return FALSE;
 }
 
@@ -694,7 +701,7 @@ ui_confirm_joystick_t
 ui_confirm_joystick( libspectrum_joystick libspectrum_type, int inputs )
 {
   win32ui_select_info items;
-  char title[ 80 ];
+  TCHAR title[ 80 ];
   int i, selection;
   int selected_joystick;
 
@@ -711,7 +718,8 @@ ui_confirm_joystick( libspectrum_joystick libspectrum_type, int inputs )
   fuse_emulation_pause();
 
   /* Populate win32ui_select_info */
-  _sntprintf( title, sizeof( title ), "Fuse - Configure %s Joystick",
+  /* FIXME: libspectrum_joystick_name is not unicode compliant */
+  _sntprintf( title, ARRAY_SIZE( title ), _T( "Fuse - Configure %s Joystick" ),
 	    libspectrum_joystick_name( libspectrum_type ) );
   items.dialog_title = title;
   items.length = JOYSTICK_CONN_COUNT; 
@@ -764,7 +772,7 @@ win32ui_get_monospaced_font( HFONT *font )
 }
 
 int
-window_recommended_width( HWND hwndDlg, TCHAR *title )
+window_recommended_width( HWND hwndDlg, LPCTSTR title )
 {
   HDC dc;
   SIZE sz;
@@ -1178,7 +1186,7 @@ win32ui_process_messages( int process_queue_once )
       /* FIXME: rethink this loop, IsDialogMessage in particular */
       processMsg = TRUE;
 
-      for( i = 0; processMsg && i < DIM( hModelessDlgs ); i++) {
+      for( i = 0; processMsg && i < ARRAY_SIZE( hModelessDlgs ); i++) {
         if( IsDialogMessage( hModelessDlgs[i], &msg ) ) processMsg = FALSE;
       }
 
