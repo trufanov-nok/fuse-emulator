@@ -4998,3 +4998,5 @@
 20151208 ui/gtk/gtkmouse.c: replace deprecated gdk_cursor_new() on GTK+ 3 UI
          (Sergio).
 20151218 peripherals/ulaplus.c: use lowercase for hex values (Fred).
+20151218 peripherals/ulaplus.c: track port attachment for each data bus line
+         (Sergio).

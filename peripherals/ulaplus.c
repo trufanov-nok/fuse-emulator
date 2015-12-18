@@ -51,7 +51,7 @@ static void ulaplus_to_snapshot( libspectrum_snap *snap );
 static void ulaplus_registerport_write( libspectrum_word port,
                                         libspectrum_byte value );
 static libspectrum_byte ulaplus_dataport_read( libspectrum_word port,
-                                               int *attached );
+                                               libspectrum_byte *attached );
 static void ulaplus_dataport_write( libspectrum_word port,
                                     libspectrum_byte value );
 static void ulaplus_videomode_write( libspectrum_word port,
@@ -120,13 +120,14 @@ ulaplus_registerport_write( libspectrum_word port GCC_UNUSED,
    (0 - normal mode, 1 - 64 colour mode).
    Register range 65-255 is reserved. */
 libspectrum_byte
-ulaplus_dataport_read( libspectrum_word port GCC_UNUSED, int *attached )
+ulaplus_dataport_read( libspectrum_word port GCC_UNUSED,
+                       libspectrum_byte *attached )
 {
   if( ulaplus_current_register <= 63 ) {
-    *attached = 1;
+    *attached = 0xff; /* TODO: check this */
     return ulaplus_palette[ ulaplus_current_register ];
   } else if( ulaplus_current_register == 64 ) {
-    *attached = 1;
+    *attached = 0xff; /* TODO: check this */
     return ulaplus_palette_enabled;
   }
 
