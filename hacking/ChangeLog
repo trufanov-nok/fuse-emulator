@@ -5000,3 +5000,5 @@
 20151218 peripherals/ulaplus.c: use lowercase for hex values (Fred).
 20151218 peripherals/ulaplus.c: track port attachment for each data bus line
          (Sergio).
+20151218 peripherals/ulaplus.c: add C99-style named initialisers in comments
+         (Sergio).

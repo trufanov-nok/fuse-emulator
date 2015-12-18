@@ -73,10 +73,10 @@ static const periph_port_t ulaplus_ports[] = {
 };
 
 static const periph_t ulaplus_periph = {
-  &settings_current.ulaplus,
-  ulaplus_ports,
-  1,
-  NULL
+  /* .option = */ &settings_current.ulaplus,
+  /* .ports = */ ulaplus_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL,
 };
 
 void
