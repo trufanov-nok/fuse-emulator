@@ -5002,3 +5002,4 @@
          (Sergio).
 20151218 peripherals/ulaplus.c: add C99-style named initialisers in comments
          (Sergio).
+20151218 peripherals/ulaplus.c: switch to using libspectrum_new (Sergio).

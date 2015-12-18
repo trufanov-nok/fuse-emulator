@@ -243,9 +243,7 @@ ulaplus_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_ulaplus_current_register( snap,
                                                  ulaplus_current_register );
 
-  buffer =
-    libspectrum_malloc( ULAPLUS_CLUT_MAX_COLOURS * sizeof( libspectrum_byte ) );
-
+  buffer = libspectrum_new( libspectrum_byte, ULAPLUS_CLUT_MAX_COLOURS );
   memcpy( buffer, ulaplus_palette, ULAPLUS_CLUT_MAX_COLOURS );
   libspectrum_snap_set_ulaplus_palette( snap, 0, buffer );
 
