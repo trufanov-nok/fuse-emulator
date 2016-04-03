@@ -153,14 +153,14 @@ my %ui_data = (
 	      function => \&wii_keysym
 	    },
 
-    gtk  => { headers => [ 'gdk/gdkkeysyms.h', 'gtkcompat.h' ],
+    gtk  => { headers => [ 'gdk/gdkkeysyms.h', 'ui/gtk/gtkcompat.h' ],
 	      max_length => 16,
 	      skips => { },
 	      translations => { },
 	      function => sub ($) { "GDK_KEY_$_[0]" },
     	    },
 
-    sdl  => { headers => [ 'SDL.h', 'sdl2keyboard.h' ],
+    sdl  => { headers => [ 'SDL.h', 'ui/sdl/sdl2keyboard.h' ],
 	      max_length => 15,
 	      skips => { map { $_ => 1 } ( 'Hyper_L','Hyper_R','Caps_Lock',
                          'A' .. 'Z', 'bar', 'percent', 'dead_circumflex',

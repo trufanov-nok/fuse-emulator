@@ -152,8 +152,8 @@ sub dump_widget ($) {
 
     print << "HEADERS";
 #include "input.h"
-#include "options_internals.h"
-#include "widget_internals.h"
+#include "ui/widget/options_internals.h"
+#include "ui/widget/widget_internals.h"
 
 HEADERS
 
@@ -239,8 +239,7 @@ HEADERS
 
 };
 
-guint gtkui_menu_data_size =
-  sizeof( gtkui_menu_data ) / sizeof( GtkActionEntry );
+guint gtkui_menu_data_size = ARRAY_SIZE( gtkui_menu_data );
 CODE
 
  } elsif( $mode eq 'ui' ) {
@@ -294,7 +293,7 @@ sub _dump_gtk ($$$$$) {
 
     if( $mode eq 'callbacks' ) {
       if( $item->{type} eq 'Item' && $item->{action} ) {
-        print "MENU_CALLBACK( ", $function, " )\n{\n";
+        print "static MENU_CALLBACK( ", $function, " )\n{\n";
         print "  $binded_function( gtk_action, $item->{action} );\n}\n\n";
       }
     } elsif( $mode eq 'ui' ) {
@@ -342,7 +341,7 @@ sub dump_win32 ($$) {
 
     if( $mode eq 'c' ) {
 	print << "CODE";
-#include "menu_data.h"
+#include "ui/win32/menu_data.h"
 
 int handle_menu( DWORD cmd, HWND window )
 {
@@ -357,7 +356,7 @@ CODE
     } elsif( $mode eq 'rc' ) {
 	print << "CODE";
 #include <windows.h>
-#include "menu_data.h"
+#include "ui/win32/menu_data.h"
 
 win32_menu MENU
 {

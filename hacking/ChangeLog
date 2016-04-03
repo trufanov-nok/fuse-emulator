@@ -1619,7 +1619,7 @@
 20070512 ui/scaler/scalers.c: make sure ABS is correctly defined
          (Release-0_8_0-branch) (Fred).
 20070512 hacking/cvs-tags: document merge to trunk (Release-0_8_0-branch).
-20070512 Merge from Release-0_8_0-branch).
+20070512 Merge from Release-0_8_0-branch.
 20070512 TAG: Release-0_8_0-merge-1
 20070513 dck.h,if1.[ch],if2.h,snapshot.h,debugger/{debugger.c,disassemble.c},
          ui/{ggi/ggidisplay.c,gtk/rollback.c,xlib/xjoystick.c},z80/z80.pl:
@@ -2475,7 +2475,7 @@
 20080227 disk/disk.c: auto disk density selection fix (part of patch #1894441)
          (Gergely Szasz).
 20080227 disk/disk.c: track length calculation fixes (include gap lengths and
-         use sector headers rather than file header lengths (part of patch
+         use sector headers rather than file header lengths) (part of patch
          #1894441) (Gergely Szasz).
 20080227 disk/disk.c: add support for DSK/EDSK files with weak sectors, use the
          first 'copy' of the weak sector and fix sector lengths when there are
@@ -2582,7 +2582,7 @@
          than 6144 bytes (primarily Coin Op Hits with 6500 bytes per track)
          (part of patch #1882836) (Gergely Szasz).
 20080325 README,Makefile.am,configure.in,
-         disk/{Makefile.am,upd_fdc.[ch]},event.[ch]},machine.c,
+         disk/{Makefile.am,upd_fdc.[ch]},event.[ch],machine.c,
          machines/{specplus3.[ch],specplus3e.c},man/fuse.1,menu.c,
          menu_data.dat,ui.c,ui/ui.h,utils.c: replace lib765 and libdsk with
          new upd765 FDC emulation for +3 (remainder of patch #1882836)
@@ -2714,7 +2714,7 @@
 20080610 ui/{fb/fbdisplay.c,sdl/sdldisplay.c,svga/svgadisplay.c,uidisplay.h,
          widget/{browse.c,debugger.c,error.c,filesel.c,menu.c,options.pl,
          pokefinder.c,query.c,roms.c,select.c,text.c,widget.[ch],
-         widget_internals.h,xlib/xdisplay.c}: modify widget UI to have a
+         widget_internals.h},xlib/xdisplay.c}: modify widget UI to have a
          Spectrum 128 style look and feel based on FuseX (Fred).
 20080612 ui/widget/{widget_internals.h,widget.c,options.pl}: allow options
          dialogs to be navigated by cursor keys (Fred).
@@ -2918,7 +2918,7 @@
          works (bug #2212424) (Gergely Szasz; thanks, Mark Woodmass).
 20081102 ui/win32/win32ui.c: Win32: Made ui_error_specific function work
 	 similarly to the gtk ui equivalent (Marek).
-20081102 ui/win32/{win32ui.c,win32internals.h,win32joystick.[ch}: Win32:
+20081102 ui/win32/{win32ui.c,win32internals.h,win32joystick.[ch]}: Win32:
 	 Implemented joystick handling using mmsystem API (and tested using
          PPJoy joystick emulator, hope it works with real hardware) (Marek).
 20081108 disk/disk.c: prevent array overrun (bug #2240211) (Gergely Szasz).
@@ -3074,7 +3074,7 @@
          ui/win32/{options-resource.pl,options-header.pl}: add a new "Combo"
          type for options entry, for a selection from a defined list (patch
          #2637346) (Gergely Szasz).
-20090329 disk/{beta.c,fdd.[ch],plusd.c},machines/{specplus3.[ch},specplus3e.c},
+20090329 disk/{beta.c,fdd.[ch],plusd.c},machines/{specplus3.[ch],specplus3e.c},
          menu.h,menu_data.dat,settings.dat,ui.c,ui/gtk/options.pl,
          ui/{options.dat,ui.h},ui/widget/{menu.c,options.pl,widget.[ch]}:
          allow the configuration of the drives attached to the various disk
@@ -3644,7 +3644,7 @@
 20110509 machine.[ch],machines/{pentagon1024.c,pentagon512.c,pentagon.c,
          scorpion.c,spec128.c,spec16.c,spec48.c,spec48_ntsc.c,specplus2a.c,
          specplus2.c,specplus3.c,specplus3e.c,spec_se.c,tc2048.c,tc2068.c,
-         ts2068.c},memory.[ch], peripherals/{disk/beta.c,disciple.c,opus.c,
+         ts2068.c},memory.[ch],peripherals/{disk/{beta.c,disciple.c,opus.c,
          plusd.c},if1.c,if2.c,speccyboot.c}: get 128K machine working with 4Kb
          pages.
 20110509 machines/machines_periph.c,peripherals/ay.c,periph.h: reading from
@@ -4632,6 +4632,377 @@
          sdl2display.c,sdl2keyboard.h,sdldisplay.h,sdljoystick.c,
          sdlkeyboard.[c|h],sdlui.c},ui/widget/widget.c: initial SDL2 UI code
          (patch #326) (Gergely Szasz).
+20141230 fuse.c: abort start if we can't drop root priveleges (thanks, clang
+         static analyser) (Fred).
+20141230 peripherals/disk/disk.c: avoid passing null argument to strcasecmp() if
+         filename is less than 4 characters in disk_write() (thanks, clang
+         static analyser) (Fred).
+20150104 debugger/disassemble.c: remove redundant code (Sergio).
 20150104 ui/sdl/{sdl2display.c,sdlui.c}: clear renderer on every frame to remove
          garbage (Sergio).
 20150104 ui/sdl/sdl2display.c: remove unused parameters (Sergio).
+20150106 debugger/breakpoint.c,peripherals/disk/disk.c: avoid the use of memory
+         after it is freed (thanks, clang static analyser) (Sergio).
+20150107 ui/scaler/scalers.c: remove unused code (thanks, clang static analyser)
+         (Sergio).
+20150221 hacking/peripheral_tests.txt: add a couple of implicit steps (Fred).
+20150301 machines/specplus3.c,peripherals/disk/{beta.c,disciple.c,disk.h,
+         fdd.[ch],opus.c,plusd.c,upd_fdc.[ch],wd_fdc.[ch]},ui/uimedia.h,
+         uimedia.c: migrate "index event" handling to the FDD layer and have FDC
+         layer use it for their STATUS registers (fixes bug #311) (Gergely
+         Szasz).
+20150301 hacking/peripheral_tests.txt: fix details for Disciple test (Fred).
+20150302 compat/win32/socket.c,compat.h,menu_data.pl,ui/{gtk/{confirm.c,
+         debugger.c,gtkjoystick.c,gtkui.c,pokefinder.c,stock.c},widget/query.c,
+         win32/win32ui.c}: add and use ARRAY_SIZE macro (Stuart).
+20150302 display.c,event.c,machine.c,memory.c,periph.c,rectangle.c,sound.c: use
+         libspectrum_{new,new0,renew}() macros where sizeof(elem) > 1 (Stuart).
+20150302 fuse.c,memory.c,peripherals/disk/disk.c,rzx.c,settings.pl,slt.c,tape.c,
+         ui/widget/text.c,utils.c: use libspectrum_{new,new0,renew}() macros
+         where sizeof(elem) == 1 (Stuart).
+20150303 debugger/{commandy.y,expression.c},mempool.[ch],unittests/unittests.c:
+         rename mempool_alloc() to mempool_malloc() to match libspectrum and
+         GLib (Stuart).
+20150303 debugger/commandy.y,debugger/expression.c,mempool.[ch],
+         unittests/unittests.c: add and use mempool_new() macro (Stuart).
+20150303 peripherals/disk/{fdd.[ch],upd_fdc.c,wd_fdc.c}: use separate functions
+         for reading and writing (Stuart).
+20150303 peripherals/nic/w5100_internals.h,ui/ui.h: add missing GCC_PRINTF
+         annotations (Stuart).
+20150303 peripherals/nic/w5100_socket.c: fix segfault in error handling when
+         setting SO_REUSEADDR (Stuart).
+20150314 compat/{unix/socket.c,win32/socket.c},debugger/{breakpoint.c,
+         expression.c},machine.c,peripherals/{if1.c,if2.c,disk/{beta.c,opus.c,
+         plusd.c,upd_fdc.c,wd_fdc.c},flash/am29f010.c,ide/{divide.c,zxatasp.c,
+         zxcf.c},nic/{enc28j60.c,w5100.c},scld.c,spectranet.c},
+         pokefinder/pokemem.c,sound/sdlsound.c,ui/uijoystick.c: switch to using
+         libspectrum_new over raw malloc (Sergio).
+20150315 compat/{unix/socket.c,win32/socket.c},debugger/{breakpoint.c,
+         expression.c},machine.c,peripherals/{disk/{beta.c,disk.c,opus.c,
+         plusd.c,upd_fdc.c,wd_fdc.c},flash/am29f010.c,ide/{divide.c,zxatasp.c,
+         zxcf.c},if1.c,if2.c,nic/{enc28j60.c,w5100.c},scld.c,spectranet.c},
+         slt.c: remove unneeded "out of memory" error handling (Sergio).
+20150315 peripherals/disk/disk.c: use libspectrum_new0 where appropriate
+         (Sergio).
+20150315 peripherals/nic/w5100_socket.c: initialise sockaddr_in (Sergio).
+20150316 compat/win32/socket.c: fix misuse of ARRAY_SIZE (Sergio).
+20150316 configure.ac: check for libspectrum before checking for UIs (Stuart).
+20150316 configure.ac: check for libspectrum's own GLib replacement (Stuart).
+20150316 configure.ac: use real GLib iff libspectrum does and make GTK+ UI
+         depend on real GLib (Stuart).
+20150316 configure.ac: add missing quotes to AC_MSG_ERROR for GLib (Stuart).
+20150316 configure.ac: remove duplicate 'checking for GLib' message (Stuart).
+20150316 configure.ac: remove duplicate HAVE_LIB_GLIB definition (Stuart).
+20150316 configure.ac: always use -Wwrite-strings when using GCC (Stuart).
+20150316 movie.c,screenshot.c: define ZLIB_CONST when including <zlib.h>
+         (Stuart).
+20150316 fuse.[ch],movie.c,settings.pl,ui/gtk/{debugger.c,gtkinternals.h,
+         gtkui.c}: add missing const qualifiers and casts (Stuart).
+20150316 ui/xlib/xui.c: add casts to silence warnings (Stuart).
+20150316 INSTALL: replace libspectrum's --without-glib with --with-fake-glib
+         (Stuart).
+20150316 ui/{gtk/debugger.c,widget/debugger.c,win32/debugger.{c,rc}}: show
+         the status of the halted flag in the debugger (Stuart).
+20150316 z80/{tests/tests.expected,z80.{c,h,pl},z80_checks.h,z80_ops.c}:
+         accurate emulation of the HALT instruction (Stuart).
+20150317 utils.c: use libspectrum's memory management in utils_safe_strdup
+         (Sergio).
+20150317 sound/win32sound.c: don't free static buffers (Sergio).
+20150317 compat/{unix/socket.c,win32/socket.c},debugger/{breakpoint.c,
+         command.c,event.c,expression.c,variable.c},peripherals/{dck.c,
+         disk/{beta.c,disciple.c,disk.c,opus.c,plusd.c},flash/am29f010.c,
+         ide/ide.c,if1.c,if2.c,nic/{enc28j60.c,w5100.c}},pokefinder/pokemem.c,
+         sound/{aosound.c,sdlsound.c},ui/{gtk/options.pl,scaler/scaler.c,
+         win32/options.pl},uimedia.c: use libspectrum_free where appropriate
+         (Sergio).
+20150317 z80/z80.c: set AF, AF' and SP to 0xffff on reset (Stuart).
+20150317 z80/z80.c: leave most registers unchanged on a soft reset (Stuart).
+20150317 z80/z80.c: document emulation of interrupt modes (Stuart).
+20150318 z80/z80.c: emulate interrupt and NMI timings more precisely (Stuart).
+20150318 z80/z80.c: really emulate interrupt timings more precisely (Stuart).
+20150318 z80/z80.c: really emulate NMI timings more precisely (Stuart).
+20150318 z80/z80_ops.c: don't trap on breakpoints whilst halted (Stuart).
+20150318 z80/z80.pl: refactor generation of LD r,r handling (Stuart).
+20150318 settings.dat,ui/options.dat,z80/{coretest.c,z80.{c,h,pl},z80_checks.h,
+         z80_macros.h,z80_ops.c}: emulate NMOS and CMOS Z80 variants (Stuart).
+20150318 man/fuse.1: document the CMOS Z80 option (Stuart).
+20150318 man/fuse.1,menu.h,menu_data.dat,ui/{options.dat,widget/{menu.c,
+         widget.[ch]}}: split tape/Microdrive options into a new Media Options
+         dialogue (Stuart).
+20150318 man/fuse.1,ui/options.dat: reorder General and Media options (Stuart).
+20150318 man/fuse.1: reflect split of Peripherals Options dialogue into General
+         and Disk options (Stuart).
+20150319 ui/widget/{debugger.c,error.c,filesel.c,menu.c,options.pl,pokemem.c,
+         roms.c,widget.[ch]}: add wrappers around widget_do() for better type
+         safety (Stuart).
+20150319 ui/widget/widget.c: fix incorrect but benign referencing of widget_menu
+         array (Stuart).
+20150319 bitmap.h,display.c,rectangle.c: replace inline static with static
+         inline (Stuart).
+20150319 ui/win32/debugger.h: add missing IDC_DBG_REG_HALTED macro (Stuart).
+20150319 fuse.c,menu.c,periph.c,peripherals/{disk/{disk.c,fdd.c},ide/{divide.c,
+         zxatasp.c,zxcf.c},if1.c,printer.c,spectranet.c},rzx.c,sound/aosound.c,
+         tape.c,ui/{fb/fbdisplay.c,gtk/options.pl,widget/{menu.c,,options.pl,
+         pokefinder.c,query.c,select.c,widget_internals.h},win32/options.pl}:
+         add missing const qualifiers (Stuart).
+20150319 ui/win32/debugger.[c|h|rc]: relocate halted flag and set monospaced
+         font (Sergio).
+20150319 ui/uijoystick.c: fix memory leak and remove unneeded "out of memory"
+         error handling (Sergio).
+20150322 menu.c,tape.[c|h]: don't show an error when rewinding an empty tape
+         (Sergio).
+20150322 ui/gtk/{confirm.c,fileselector.c,gtkinternals.h,pokemem.c,stock.c}:
+         replace deprecated GtkStock (Sergio).
+20150322 ui/gtk/browse.c: clear out row mark in tape browser when selecting
+         another block (Sergio).
+20150328 debugger/breakpoint.c: store the matched breakpoint before removing it
+         from the list and freeing it (fixes bug #317) (Tom Seddon).
+20150402 man/fuse.1: adjust some references to peripherals options (Sergio).
+20150402 compat/win32/distribution.mk,ui/win32/installer/fuse.nsi.in: prefer
+         groff over man2html. Ensure tables are not broken. Distribute images
+         referenced in the manual (Sergio).
+20150405 man/fuse.1: adjust some cross-references (Sergio).
+20150405 compat/win32/osname.c,sound/win32sound.c,ui/win32/{browse.c,debugger.c,
+         pokefinder.c,ui/win32/pokemem.c,rollback.c,win32ui.c}: add missing
+         const qualifiers and casts (Sergio).
+20150411 compat/win32/distribution.mk: revert the use of variables for groff and
+         man2html, escape variable substitution (thanks, Stuart) (Sergio).
+20150425 z80/z80_ops.c: fix timing of events when emulating Scorpion (Stuart).
+20150428 fuse.c,machines/machines_periph.c,man/fuse.1,periph.h,
+         peripherals/{Makefile.am,usource.[ch]},settings.dat,ui/options.dat,
+         unittests/unittests.c,z80/{coretest.c,z80_checks.h,z80_ops.c}:
+         add Currah µSource emulation (Stuart).
+20150429 menu.c,menu_data.c: add menu item for Currah µSource ROM selection
+         (Stuart).
+20150429 menu_data.c: split Select ROMs menu into Machines and Peripherals
+         (part of patch #87) (Gergely Szasz).
+20150429 settings.pl: add Currah µSource ROM setting (Stuart).
+20150429 peripherals/disk/opus.c: clear all Opus RAM on hard reset (Stuart).
+20150429 peripherals/disk/opus.c: add provision for 2K page size (Stuart).
+20150502 menu.[ch],menu_data.dat,settings-header.pl,settings.pl,ui/{gtk/roms.c,
+         widget/{menu.c,roms.c,widget_internals.h},win32/roms.c}: number
+         machine and peripheral ROMs separately (Stuart).
+20150502 peripherals/usource.c: add missing inclusion of unittests/unittests.h
+         (Stuart).
+20150504 memory.[ch],unittests/unittests.[ch]: switch to 2KB page size (Stuart).
+20150504 peripherals/disk/opus.c: remove workaround for 4KB page size (Stuart).
+20150505 man/fuse.1: split machine and peripheral ROM command line options into
+         separate lists (Stuart).
+20150505 man/fuse.1: sort peripheral ROM options to match UI (Stuart).
+20150505 menu_data.pl,peripherals/{fuller.h,melodik.h}, ui/widget/mkfusefont.pl,
+         ui/win32/{installer,installer/fuse.nsi.in}: add missing properties and
+         adjust existing ones (Sergio).
+20150506 peripherals/disk/wd_fdc.c: refactor use of f->current_drive (thanks,
+	 Gergely) (Stuart).
+20150506 peripherals/disk/{opus.c,wd_fdc.[ch]}: rename WD_FLAG_OPUS to
+	 WD_FLAG_DRQ (part of patch #330) (Gergely Szasz).
+20150506 peripherals/disk/wd_fdc.h: tidy up comments (Stuart).
+20150506 peripherals/disk/{fdd.[ch],wd_fdc.[ch]}: implement WD2797 emulation
+         (more of patch #330) (Gergely Szasz).
+20150506 peripherals/disk/wd_fdc.h: use enums for status register bits and
+         configuration flags (Stuart).
+20150507 memory.[ch],peripherals/{disk/beta.c,if2.c,spectranet.c}: rename
+         memory_map_romcs() to memory_map_romcs_full() (Stuart).
+20150507 peripherals/disk/wd_fdc.c: fix WD2797 side selection (more of patch
+         #330) (Gergely Szasz).
+20150508 peripherals/disk/wd_fdc.c: really fix WD2797 side selection (even more
+         of patch #330) (Gergely Szasz).
+20150508 peripherals/disk/wd_fdc.c: implement WD2797 side comparison (rest of
+         patch #330) (Gergely Szasz).
+20150508 peripherals/disk/wd_fdc.c: remove trailing whitespace (Stuart).
+20150509 machine.c: only try to load the fallback ROM if it is different to the
+         standard one (Fred).
+20150510 ui/widget/filesel.c: use PATH_MAX instead of FILENAME_MAX as our
+         standard compatibility define (thanks, Brian Ruthven) (Fred).
+20150510 ui/widget/filesel.c: use ENTRIES_PER_SCREEN rather than PAGESIZE due
+         to name clash on Solaris (thanks, Brian Ruthven) (Fred).
+20150510 Makefile.am,m4/pkg.m4: update pkg.m4 and add explicit distribution rule
+         for ax_pthread.m4 (Sergio).
+20150511 fuse.c,hacking/ChangeLog,machines/machines_periph.c,menu.[ch],
+         menu_data.dat,periph.h,peripherals/disk/{Makefile.am,didaktik.[ch],
+         disk.[ch],wd_fdc.c},settings.{dat,pl},ui.c,ui/{options.dat,ui.h,
+         uimedia.h},utils.c,z80/{coretest.c,z80_checks.h,z80_ops.c}: add
+         Didaktik 80/40 emulation (part of patch #331) (Gergely Szasz).
+20150511 man/fuse.1: add initial Didaktik 80/40 documentation (Stuart).
+20150511 AUTHORS,man/fuse.1: note authorship of ALSA driver and Didaktik 80
+         emulation (Stuart).
+20150511 peripherals/{ay.c,disk/{beta.c,didaktik.c,disciple.c,opus.c,plusd.c},
+         fuller.c,ide/{divide.c,simpleide.c,zxatasp.c,zxcf.c},if1.c,if2.c,
+         joystick.c,kempmouse.c,melodik.c,printer.c,scld.c,speccyboot.c,
+         specdrum.c,spectranet.c,ula.c,usource.c}: add C99-style named
+         initialisers in comments (Stuart).
+20150512 event.c,machines/{spec16.c,tc2068.c},periph.c,peripherals/{nic/{
+         w5100.c,w5100_socket.c},spectranet.c},ui.c,ui/{sdl/sdldisplay.c,
+         widget/{filesel.c,pokemem.c}}: avoid mixing declarations and code for
+         C89 compilers (Adrien Destugues).
+20150513 peripherals/disk/wd_fdc.[ch]: add WD2797 non-IBM sector sizes (addition
+         to patch #330) (Gergely Szasz).
+20150513 compat.h: fix ARRAY_SIZE when using a modern GCC with strict C89 syntax
+         (Sergio).
+20150513 peripherals/disk/wd_fdc.c,ui/svga/svgadisplay.c: avoid C99 comments
+         (Stuart).
+20150514 ui/gtk/gtkjoystick.c,ui/sdl/sdljoystick.c,ui/svga/svgajoystick.c,
+         ui/uijoystick.[ch],ui/win32/win32joystick.[c|h|rc]: standardise the
+         number of joystick buttons across UIs (fixes bug #332) (UB880D).
+20150514 peripherals/nic/w5100_internals.h: #include <sys/select.h> for POSIX
+         systems (Adrien Destugues).
+20150515 peripherals/disk/didaktik.c: fix address of i8255 port (more of patch
+         #331) (thanks, UB880D) (Gergely Szasz).
+20150517 peripherals/spectranet.[ch]: add missing inclusion of spectranet.h and
+         fix declaration of spectranet_programmable_trap (thanks, LTO) (Stuart).
+20150518 peripherals/disk/disk.c: fix use of uninitialized variable (Sergio).
+20150518 peripherals/speccyboot.c,ui/widget/options.pl: avoid mixing
+         declarations and code for C89 compilers (Sergio).
+20150524 movie.c,ui/{fb/fbui.c,win32/{debugger.c,pokefinder.c},xlib/{xdisplay.c,
+         xstatusbar.pl}},unittests/unittests.c: use C90 parameter lists
+         (Stuart).
+20150525 z80/coretest.c: fix parameter list of spectranet_page() definition in
+         coretest (Stuart).
+20150526 event.c,menu_data.pl,peripherals/disk/disciple.c,rzx.c,ui/{gtk/{
+         binary.c,browse.c,gtkjoystick.c,memory.c,pokefinder.c},sdl/sdlui.c,
+         widget/{menu.c,query.c,widget.c},xlib/xstatusbar.pl}: add static to
+         functions where appropriate (Stuart).
+20150526 ui/{gtk,win32}/roms.c: add static to roms[] arrays (Stuart).
+20150526 movie.c,z80/coretest.c: add missing includes (Stuart).
+20150526 peripherals/disk/wd_fdc.c: remove return statement at end of void
+         function (Stuart).
+20150526 movie.c,peripherals/{dck.c,disk/upd_fdc.c,joystick.c},rzx.c,ui/widget/{
+         options.pl,query.c}: remove unreachable breaks after returns (Stuart).
+20150527 peripherals/disk/plusd.h: remove unused plusd_joy_read() prototype
+         (Stuart).
+20150527 peripherals/{disk/{disciple.[ch],plusd.[ch]},if1.[ch]}: make DISCiPLE,
+         +D and IF1 port handlers be static (Stuart).
+20150527 peripherals/disk/opus.h: remove unused opus_joy_read() prototype
+         (Stuart).
+20150527 machines/{pentagon.[ch],specplus3.[ch],tc2068.[ch]},periph.[ch],
+         peripherals/{ay.[ch],disk/{beta.[ch],didaktik.c,disciple.c,plusd.c},
+         ide/{divide.c,simpleide.c,zxatasp.c,zxcf.c},if1.c,joystick.[ch],
+         kempmouse.c,printer.c,scld.c,speccyboot.c,spectranet.c,ula.c,
+         usource.c}: track port attachment for each data bus line (Stuart).
+20150601 man/fuse.1: sort fbmode and sound-freq options. Remove duplicate
+         doublescan-mode option (Sergio).
+20150601 man/fuse.1: add available values for --drive-*-type options (Sergio).
+20150601 configure.ac: fix GTK+2 detection when GTK+3 is not available (Sergio).
+20150601 peripherals/ide/zxatasp.c: replace bitwise operators with logical
+         operators (Stuart).
+20150602 Makefile.am,configure.ac: handle libpng being in a non-default
+         directory (Fred).
+20150603 man/fuse.1: document disabling of disk drives (Stuart).
+20150603 utils.c: ensure we have successfully selected a Pentagon or a Timex
+         machine before inserting the media (Fred).
+20150603 slt.c: remove redundant declaration of buffer (Fred).
+20150607 pokefinder/pokemem.c: recognise that libspectrum memory alloation never
+         fails (Fred).
+20150607 pokefinder/pokemem.c: change functions that cannot fail to return type
+         void and make local functions static (Fred).
+20150607 ui/scaler/Makefile.am,z80/Makefile.am: use AM_V_CC verbosity for custom
+         built sources (thanks, Stuart) (Sergio).
+20150613 m4/ax_create_stdint_h.m4: Add AX_CREATE_STDINT_H macro from the GNU
+         Autoconf Archive (Stuart).
+20150613 peripherals/specdrum.h: remove unused specdrum_present member of
+         specdrum_info (Fred).
+20150614 Makefile.am,compat,compat/{Makefile.am,amiga,linux,morphos,unix,wii,
+         win32},configure.ac,data,data/Makefile.am,debugger,
+         debugger/{Makefile.am,commandl.l,commandy.y},hacking,
+         hacking/Makefile.am,keysyms.pl,lib,lib/Makefile.am,machines,
+         machines/Makefile.am,man,man/Makefile.am,menu_data.pl,peripherals,
+         peripherals/{Makefile.am,disk,disk/Makefile.am,flash,
+         flash/Makefile.am,ide,ide/Makefile.am,nic,nic/Makefile.am},perl,
+         perl/{Fuse,Fuse/Makefile.am,Makefile.am},pokefinder,
+         pokefinder/Makefile.am,roms,roms/Makefile.am,sound,sound/Makefile.am,
+         timer,timer/Makefile.am,ui,ui/{Makefile.am,fb,fb/Makefile.am,gtk,
+         gtk/{Makefile.am,options.pl},scaler,scaler/Makefile.am,sdl,
+         sdl/Makefile.am,svga,svga/Makefile.am,widget,widget/{Makefile.am,
+         widget.c},wii,wii/Makefile.am,win32,win32/{Makefile.am,icons,
+         icons/Makefile.am,options.pl,win32ui.c},xlib,xlib/{Makefile.am,
+         xdisplay.c}},unittests,unittests/Makefile.am,z80,
+         z80/{Makefile.am,tests,tests/Makefile.am,z80_ops.c}: switch to using
+         non-recursive makefile (patch #321) (thanks, Stuart) (Sergio).
+20150617 Makefile.am,data/Makefile.am,ui/{fb,gtk,sdl,svga,widget,wii,win32,
+         xlib}/Makefile.am,z80/Makefile.am: enable silent rules for perl and 
+         windres commands (Sergio).
+20150618 ui/{svga/svgajoystick.c,uijoystick.h,widget/menu.c}: define
+         NUM_JOY_BUTTONS for SVGAlib UI and avoid generation of unused functions
+         (Sergio).
+20150621 Makefile.am,compat/Makefile.am,configure.ac,data/Makefile.am,
+         data/win32,data/win32/{distribution.mk,fuse.manifest.in,
+         installer.nsi.in,winfuse.ico},windres.rc: move Windows resources that
+         are UI-independent to data/win32 (Sergio).
+20150622 ui/widget/filesel.c: add missing const qualifiers (Sergio).
+20150623 peripherals/{nic/{enc28j60.c,w5100.c,w5100_socket.c},speccyboot.c,
+         spectranet.c},sound/blipbuffer.h: use '#include <config.h>' instead of
+         '#include "config.h"' (thanks, Stuart) (Sergio).
+20150704 tape.c: skip tape traps if VERIFY is requested (patch #337) (UB880D).
+20150726 machines/{spec_se.c,tc2048.c,tc2068.[ch],ts2068.c},
+         peripherals/{dck.c,scld.[ch]}: The Timex SCLD (on daughterboard in
+         the TS2068) is contended in all of the home, Dock and Exrom banks in
+         the 0x4000 - 0x7FFF range (thanks, rga24 from WoS) (Fred).
+20150803 peripherals/printer.c: make the partial decode ZX Printer not require a
+         hard reset to enable (thanks, RMartins) (Fred).
+20150824 Makefile.am,fuse.c,man/fuse.1,memory.[c|h],menu.[c|h],menu_data.dat,
+         svg.[c|h],tape.c,ui.c,ui/{gtk/gtkui.c,ui.h,widget/widget.c,
+         win32/win32ui.c},z80/{coretest.c,z80_checks.h,z80_ops.c}: capture BASIC
+         video functions to SVG file (patch #322) (Stefano Bodrato).
+20150824 ui/widget/widget.c: remove unused function (Sergio).
+20151008 sound.c: remove DC offset compensation as it results in inaccurate
+         output when envelopes are used and is not required when using the
+         filtered sound output which removes the DC offset anyway (patch #339)
+         (Matthew Westcott and Fred)
+20151020 z80/z80_checks.h: fix segfault due to inconsistent SETUP_CHECK() and
+         CHECK() ordering (UB880D; thanks, Guesser).
+20151108 hacking/{code_beautifiers.txt,uncrustify.cfg}: document Uncrustify and
+         Indent code beautifiers (patch #340) (Sergio).
+20151108 man/fuse.1: fix pal-tv2x and Pentagon ROMs command line options
+         (Sergio).
+20151109 configure.ac,data/{Makefile.am,shell-completion/bash/fuse}: support 
+         bash completion (patch #335) (Sergio).
+20151115 hacking/Makefile.am: add missing files (Sergio).
+20151115 data/{Makefile.am,shell-completion/diff_options.sh}: add a script to
+         keep options in sync (Sergio).
+20151115 hacking/ChangeLog,man/fuse.1: add missing --drive-didaktik80[a|b]-type
+         options (Sergio).
+20151122 peripherals/if1.c,settings.[dat|pl]: more from rename 'Interface I' to
+         'Interface 1' (thanks, Stuart) (Sergio).
+20151130 ui/win32/options-resource.pl: remove redundant argument on button
+         creation (Sergio).
+20151130 ui/win32/win32ui.c: fix compilation with mingwrt 4.0+ (Kirben).
+20151208 sound/blipbuffer.h: remove second inline declaration of
+         blip_buffer_samples_avail() (Sergio).
+20151208 ui/gtk/pokemem.c: do not use deprecated gtk_tree_view_set_rules_hint()
+         on GTK+ 3 UI (Sergio).
+20151208 ui/gtk/gtkmouse.c: replace deprecated gdk_cursor_new() on GTK+ 3 UI
+         (Sergio).
+20151223 m4/ax_pthread.m4: update macro that checks POSIX threads (Sergio).
+20151223 Makefile.am,configure.ac: don't use CFLAGS user variable for warnings
+         or pthread options (Sergio).
+20151228 configure.ac: remove duplicate sdl-config calls and avoid the use of
+         CPPFLAGS (Sergio).
+20151228 configure.ac: use PKG_CHECK_MODULES for GLib detection rather than raw
+         pkg-config, that doesn't play well when cross-compiling (Sergio).
+20151228 ui/gtk/gtkui.c: update properties used in GtkAboutDialog (Sergio).
+20160106 man/fuse.1,peripherals/speccyboot.[ch]: update SpeccyBoot URL (Sergio).
+20160106 peripherals/{ide/{simpleide.c,zxatasp.c,zxcf.c},kempmouse.c,printer.c}:
+         fix some peripherals activation when loading snapshots (fixes bug #328)
+         (Sergio).
+20160111 man/fuse.1: fix spelling (Sergio).
+20160224 AUTHORS,THANKS,hacking/peripheral_tests.txt,man/fuse.1: fix broken URLs
+         (Sergio).
+20160301 peripherals/ula.c,sound.[ch],tape.c: add tape data playback in tape
+         edge handling and correct time sound from tape edge starts (fixes bug
+         #330) (Fred).
+20160302 peripherals/ula.c: add parens to avoid gcc warning (more from bug #330)
+         (thanks, Sergio) (Fred).
+20160325 machines/specplus3.c,peripherals/disk/{beta.c,didaktik.c,disciple.c,
+         fdd.c,opus.c,plusd.c,wd_fdc.c}: move the "Disk icon" update code to
+         fdd.c (patch #348) (Gergely Szasz).
+20160325 tape.c: also check if data blocks are headers for handling PZX files
+         (Fred).
+20160325 tape.c: correctly count number of pulses in PZX pulse block for tape
+         browser (Fred).
+20160325 peripherals/disk/wd_fdc.c: revert mistaken deletion of
+         f->data_offset = 0; from patch #348 (thanks, Stuart and Gergely)
+         (Fred).
+20160330 ui/win32/win32ui.c: fix compilation with MinGW-w64 toolchain
+         (lordhoto).
+20160331 peripherals/disk/didaktik.c: don't enable Didaktik SNAP option if ROM
+         file is missing (Sergio).

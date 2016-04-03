@@ -89,11 +89,11 @@ static void joystick_to_snapshot( libspectrum_snap *snap );
 
 static module_info_t joystick_module_info = {
 
-  NULL,
-  NULL,
-  NULL,
-  joystick_from_snapshot,
-  joystick_to_snapshot,
+  /* .reset = */ NULL,
+  /* .romcs = */ NULL,
+  /* .snapshot_enabled = */ NULL,
+  /* .snapshot_from = */ joystick_from_snapshot,
+  /* .snapshot_to = */ joystick_to_snapshot,
 
 };
 
@@ -103,10 +103,10 @@ static const periph_port_t kempston_strict_decoding[] = {
 };
 
 static const periph_t kempston_strict_periph = {
-  &settings_current.joy_kempston,
-  kempston_strict_decoding,
-  0,
-  NULL
+  /* .option = */ &settings_current.joy_kempston,
+  /* .ports = */ kempston_strict_decoding,
+  /* .hard_reset = */ 0,
+  /* .activate = */ NULL,
 };
 
 static const periph_port_t kempston_loose_decoding[] = {
@@ -115,10 +115,10 @@ static const periph_port_t kempston_loose_decoding[] = {
 };
 
 static const periph_t kempston_loose_periph = {
-  &settings_current.joy_kempston,
-  kempston_loose_decoding,
-  0,
-  NULL
+  /* .option = */ &settings_current.joy_kempston,
+  /* .ports = */ kempston_loose_decoding,
+  /* .hard_reset = */ 0,
+  /* .activate = */ NULL,
 };
 
 /* Init/shutdown functions. Errors aren't important here */
@@ -226,9 +226,9 @@ joystick_press( int which, joystick_button button, int press )
 /* Read functions for specific interfaces */
 
 libspectrum_byte
-joystick_kempston_read( libspectrum_word port GCC_UNUSED, int *attached )
+joystick_kempston_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
 {
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
   return kempston_value;
 }
 
@@ -239,9 +239,9 @@ joystick_timex_read( libspectrum_word port GCC_UNUSED, libspectrum_byte which )
 }
 
 libspectrum_byte
-joystick_fuller_read( libspectrum_word port GCC_UNUSED, int *attached )
+joystick_fuller_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
 {
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
   return fuller_value;
 }
 
@@ -342,7 +342,6 @@ add_joystick( libspectrum_snap *snap, joystick_type_t fuse_type, int inputs )
   case JOYSTICK_TYPE_NONE:
   default:
     return;
-    break;
   }
 
   for( i = 0; i < num_joysticks; i++ ) {

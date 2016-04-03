@@ -51,6 +51,10 @@
 #include <fat.h>
 #endif				/* #ifdef GEKKO */
 
+#ifdef HAVE_LIB_XML2
+#include <libxml/encoding.h>
+#endif
+
 #include "debugger/debugger.h"
 #include "display.h"
 #include "event.h"
@@ -65,6 +69,7 @@
 #include "peripherals/ay.h"
 #include "peripherals/dck.h"
 #include "peripherals/disk/beta.h"
+#include "peripherals/disk/didaktik.h"
 #include "peripherals/disk/fdd.h"
 #include "peripherals/fuller.h"
 #include "peripherals/ide/divide.h"
@@ -81,6 +86,7 @@
 #include "peripherals/speccyboot.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
+#include "peripherals/usource.h"
 #include "pokefinder/pokemem.h"
 #include "profile.h"
 #include "psg.h"
@@ -101,7 +107,7 @@
 #include "z80/z80.h"
 
 /* What name were we called under? */
-char *fuse_progname;
+const char *fuse_progname;
 
 /* A flag to say when we want to exit the emulator */
 int fuse_exiting;
@@ -113,7 +119,7 @@ int fuse_emulation_paused;
 libspectrum_creator *fuse_creator;
 
 /* The earliest version of libspectrum we need */
-static const char *LIBSPECTRUM_MIN_VERSION = "0.5.0";
+static const char * const LIBSPECTRUM_MIN_VERSION = "0.5.0";
 
 /* The various types of file we may want to run on startup */
 typedef struct start_files_t {
@@ -122,6 +128,7 @@ typedef struct start_files_t {
   const char *disk_opus;
   const char *disk_plusd;
   const char *disk_beta;
+  const char *disk_didaktik80;
   const char *disk_disciple;
   const char *dock;
   const char *if2;
@@ -264,12 +271,19 @@ static int fuse_init(int argc, char **argv)
   /* Drop root privs if we have them */
   if( !geteuid() ) {
     error = setuid( getuid() );
-    if( error ) ui_error( UI_ERROR_WARNING, "Could not drop root privileges" );
+    if( error ) {
+      ui_error( UI_ERROR_ERROR, "Could not drop root privileges" );
+      return 1;
+    }
   }
 #endif				/* #ifdef HAVE_GETEUID */
 
   mempool_init();
   memory_init();
+
+#ifdef HAVE_LIB_XML2
+LIBXML_TEST_VERSION
+#endif
 
   debugger_init();
 
@@ -280,6 +294,7 @@ static int fuse_init(int argc, char **argv)
   beta_init();
   opus_init();
   plusd_init();
+  didaktik80_init();
   disciple_init();
   fdd_init_events();
   if( simpleide_init() ) return 1;
@@ -299,6 +314,7 @@ static int fuse_init(int argc, char **argv)
   speccyboot_init();
   specdrum_init();
   spectranet_init();
+  usource_init();
   machines_periph_init();
 
   z80_init();
@@ -366,7 +382,7 @@ int creator_init( void )
 					 version[2] * 0x100 + version[3] );
   if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
 
-  custom = libspectrum_malloc( CUSTOM_SIZE );
+  custom = libspectrum_new( char, CUSTOM_SIZE );
 
   gcrypt_version = libspectrum_gcrypt_version();
   if( !gcrypt_version ) gcrypt_version = "not available";
@@ -485,6 +501,7 @@ setup_start_files( start_files_t *start_files )
   start_files->disk_plus3 = settings_current.plus3disk_file;
   start_files->disk_opus = settings_current.opusdisk_file;
   start_files->disk_plusd = settings_current.plusddisk_file;
+  start_files->disk_didaktik80 = settings_current.didaktik80disk_file;
   start_files->disk_disciple = settings_current.discipledisk_file;
   start_files->disk_beta = settings_current.betadisk_file;
   start_files->dock = settings_current.dck_file;
@@ -584,6 +601,9 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
     case LIBSPECTRUM_CLASS_DISK_OPUS:
       start_files->disk_opus = filename; break;
 
+    case LIBSPECTRUM_CLASS_DISK_DIDAKTIK:
+      start_files->disk_didaktik80 = filename; break;
+
     case LIBSPECTRUM_CLASS_DISK_PLUSD:
       if( periph_is_active( PERIPH_TYPE_DISCIPLE ) )
         start_files->disk_disciple = filename;
@@ -608,6 +628,8 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
           start_files->disk_beta = filename; 
         else if( periph_is_active( PERIPH_TYPE_PLUSD ) )
           start_files->disk_plusd = filename;
+        else if( periph_is_active( PERIPH_TYPE_DIDAKTIK80 ) )
+          start_files->disk_didaktik80 = filename;
         else if( periph_is_active( PERIPH_TYPE_DISCIPLE ) )
           start_files->disk_disciple = filename;
         else if( periph_is_active( PERIPH_TYPE_OPUS ) )
@@ -716,6 +738,11 @@ do_start_files( start_files_t *start_files )
 
   if( start_files->disk_plusd ) {
     error = utils_open_file( start_files->disk_plusd, autoload, NULL );
+    if( error ) return error;
+  }
+
+  if( start_files->disk_didaktik80 ) {
+    error = utils_open_file( start_files->disk_didaktik80, autoload, NULL );
     if( error ) return error;
   }
 
@@ -848,9 +875,11 @@ static int fuse_end(void)
   beta_end();
   opus_end();
   plusd_end();
+  didaktik80_end();
   disciple_end();
   spectranet_end();
   speccyboot_end();
+  usource_end();
 
   machine_end();
 
@@ -867,6 +896,8 @@ static int fuse_end(void)
   mempool_end();
   module_end();
   pokemem_end();
+
+  svg_capture_end();
 
   libspectrum_creator_free( fuse_creator );
   libspectrum_end();

@@ -46,30 +46,19 @@
 #include "options.h"	/* needed for get combo options */
 #include "z80/z80.h"
 
-/* FIXME: this is wrong. Opus has only 2 Kb of RAM, but we can't handle
-   anything less than our page size */
-#define OPUS_RAM_SIZE 0x1000
-
-#define OPUS_RAM_PAGES ( OPUS_RAM_SIZE / MEMORY_PAGE_SIZE \
-  ? OPUS_RAM_SIZE / MEMORY_PAGE_SIZE : 1 )
-
-#define TRUE_OPUS_RAM_SIZE 0x800
+#define OPUS_RAM_SIZE 0x0800
 
 static int opus_rom_memory_source, opus_ram_memory_source;
 
 /* Two memory chunks accessible by the Z80 when /ROMCS is low */
 static memory_page opus_memory_map_romcs_rom[ MEMORY_PAGES_IN_8K ];
-static memory_page opus_memory_map_romcs_ram[ OPUS_RAM_PAGES ];
+static memory_page opus_memory_map_romcs_ram[ MEMORY_PAGES_IN_2K ];
 
 int opus_available = 0;
 int opus_active = 0;
 
-static int opus_index_pulse;
-
-static int index_event;
-
 static wd_fdc *opus_fdc;
-static wd_fdc_drive opus_drives[ OPUS_NUM_DRIVES ];
+static fdd_t opus_drives[ OPUS_NUM_DRIVES ];
 static ui_media_drive_info_t opus_ui_drives[ OPUS_NUM_DRIVES ];
 
 static libspectrum_byte opus_ram[ OPUS_RAM_SIZE ];
@@ -83,24 +72,22 @@ static void opus_memory_map( void );
 static void opus_enabled_snapshot( libspectrum_snap *snap );
 static void opus_from_snapshot( libspectrum_snap *snap );
 static void opus_to_snapshot( libspectrum_snap *snap );
-static void opus_event_index( libspectrum_dword last_tstates, int type,
-			       void *user_data );
 
 static module_info_t opus_module_info = {
 
-  opus_reset,
-  opus_memory_map,
-  opus_enabled_snapshot,
-  opus_from_snapshot,
-  opus_to_snapshot,
+  /* .reset = */ opus_reset,
+  /* .romcs = */ opus_memory_map,
+  /* .snapshot_enabled = */ opus_enabled_snapshot,
+  /* .snapshot_from = */ opus_from_snapshot,
+  /* .snapshot_to = */ opus_to_snapshot,
 
 };
 
 static const periph_t opus_periph = {
-  &settings_current.opus,
-  NULL,
-  1,
-  NULL
+  /* .option = */ &settings_current.opus,
+  /* .ports = */ NULL,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL,
 };
 
 void
@@ -125,7 +112,8 @@ opus_memory_map( void )
   if( !opus_active ) return;
 
   memory_map_romcs_8k( 0x0000, opus_memory_map_romcs_rom );
-  memory_map_romcs_4k( 0x2000, opus_memory_map_romcs_ram );
+  memory_map_romcs_2k( 0x2000, opus_memory_map_romcs_ram );
+  /* FIXME: should we add mirroring at 0x2800, 0x3000 and/or 0x3800? */
 }
 
 static void
@@ -138,26 +126,23 @@ void
 opus_init( void )
 {
   int i;
-  wd_fdc_drive *d;
+  fdd_t *d;
 
-  opus_fdc = wd_fdc_alloc_fdc( WD1770, 0, WD_FLAG_OPUS );
+  opus_fdc = wd_fdc_alloc_fdc( WD1770, 0, WD_FLAG_DRQ );
 
   for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
     d = &opus_drives[ i ];
-    fdd_init( &d->fdd, FDD_SHUGART, NULL, 0 );	/* drive geometry 'autodetect' */
+    fdd_init( d, FDD_SHUGART, NULL, 0 );	/* drive geometry 'autodetect' */
     d->disk.flag = DISK_FLAG_NONE;
   }
 
   opus_fdc->current_drive = &opus_drives[ 0 ];
-  fdd_select( &opus_drives[ 0 ].fdd, 1 );
+  fdd_select( &opus_drives[ 0 ], 1 );
   opus_fdc->dden = 1;
   opus_fdc->set_intrq = NULL;
   opus_fdc->reset_intrq = NULL;
   opus_fdc->set_datarq = opus_set_datarq;
   opus_fdc->reset_datarq = NULL;
-  opus_fdc->iface = NULL;
-
-  index_event = event_register( opus_event_index, "Opus index" );
 
   module_register( &opus_module_info );
 
@@ -165,14 +150,12 @@ opus_init( void )
   opus_ram_memory_source = memory_source_register( "Opus RAM" );
   for( i = 0; i < MEMORY_PAGES_IN_8K; i++ )
     opus_memory_map_romcs_rom[i].source = opus_rom_memory_source;
-  for( i = 0; i < OPUS_RAM_PAGES; i++ )
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
     opus_memory_map_romcs_ram[i].source = opus_ram_memory_source;
 
   periph_register( PERIPH_TYPE_OPUS, &opus_periph );
   for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
-    d = &opus_drives[ i ];
-    opus_ui_drives[ i ].fdd = &d->fdd;
-    opus_ui_drives[ i ].disk = &d->disk;
+    opus_ui_drives[ i ].fdd = &opus_drives[ i ];
     ui_media_drive_register( &opus_ui_drives[ i ] );
   }
 }
@@ -181,12 +164,9 @@ static void
 opus_reset( int hard_reset )
 {
   int i;
-  wd_fdc_drive *d;
 
   opus_active = 0;
   opus_available = 0;
-
-  event_remove_type( index_event );
 
   if( !periph_is_active( PERIPH_TYPE_OPUS ) ) {
     return;
@@ -200,7 +180,7 @@ opus_reset( int hard_reset )
     return;
   }
 
-  for( i = 0; i < OPUS_RAM_PAGES; i++ ) {
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ ) {
     struct memory_page *page =
       &opus_memory_map_romcs_ram[ i ];
     page->page = opus_ram + i * MEMORY_PAGE_SIZE;
@@ -209,7 +189,7 @@ opus_reset( int hard_reset )
 
   machine_current->ram.romcs = 0;
 
-  for( i = 0; i < OPUS_RAM_PAGES; i++ )
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
     opus_memory_map_romcs_ram[ i ].writable = 1;
 
   data_reg_a = 0;
@@ -220,36 +200,28 @@ opus_reset( int hard_reset )
   control_b  = 0;
 
   opus_available = 1;
-  opus_index_pulse = 0;
 
   if( hard_reset )
-    memset( opus_ram, 0, TRUE_OPUS_RAM_SIZE );
+    memset( opus_ram, 0, sizeof( opus_ram ) );
 
   wd_fdc_master_reset( opus_fdc );
 
   for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
-    d = &opus_drives[ i ];
-
-    d->index_pulse = 0;
-    d->index_interrupt = 0;
-
     ui_media_drive_update_menus( &opus_ui_drives[ i ],
                                  UI_MEDIA_DRIVE_UPDATE_ALL );
   }
 
   opus_fdc->current_drive = &opus_drives[ 0 ];
-  fdd_select( &opus_drives[ 0 ].fdd, 1 );
+  fdd_select( &opus_drives[ 0 ], 1 );
   machine_current->memory_map();
-  opus_event_index( 0, index_event, NULL );
 
-  ui_statusbar_update( UI_STATUSBAR_ITEM_DISK, UI_STATUSBAR_STATE_INACTIVE );
 }
 
 void
 opus_end( void )
 {
   opus_available = 0;
-  free( opus_fdc );
+  libspectrum_free( opus_fdc );
 }
 
 /*
@@ -283,16 +255,16 @@ opus_6821_access( libspectrum_byte reg, libspectrum_byte data,
         side = ( data & 0x10 )>>4 ? 1 : 0;
 
         for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
-          fdd_set_head( &opus_drives[ i ].fdd, side );
+          fdd_set_head( &opus_drives[ i ], side );
         }
 
-        fdd_select( &opus_drives[ (!drive) ].fdd, 0 );
-        fdd_select( &opus_drives[ drive ].fdd, 1 );
+        fdd_select( &opus_drives[ (!drive) ], 0 );
+        fdd_select( &opus_drives[ drive ], 1 );
 
         if( opus_fdc->current_drive != &opus_drives[ drive ] ) {
-          if( opus_fdc->current_drive->fdd.motoron ) {        /* swap motoron */
-            fdd_motoron( &opus_drives[ (!drive) ].fdd, 0 );
-            fdd_motoron( &opus_drives[ drive ].fdd, 1 );
+          if( opus_fdc->current_drive->motoron ) {        /* swap motoron */
+            fdd_motoron( &opus_drives[ (!drive) ], 0 );
+            fdd_motoron( &opus_drives[ drive ], 1 );
           }
           opus_fdc->current_drive = &opus_drives[ drive ];
         }
@@ -367,29 +339,7 @@ opus_disk_insert( opus_drive_number which, const char *filename,
 fdd_t *
 opus_get_fdd( opus_drive_number which )
 {
-  return &( opus_drives[ which ].fdd );
-}
-
-static void
-opus_event_index( libspectrum_dword last_tstates, int type GCC_UNUSED,
-                   void *user_data GCC_UNUSED )
-{
-  int next_tstates;
-  int i;
-
-  opus_index_pulse = !opus_index_pulse;
-  for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
-    wd_fdc_drive *d = &opus_drives[ i ];
-
-    d->index_pulse = opus_index_pulse;
-    if( !opus_index_pulse && d->index_interrupt ) {
-      wd_fdc_set_intrq( opus_fdc );
-      d->index_interrupt = 0;
-    }
-  }
-  next_tstates = ( opus_index_pulse ? 10 : 190 ) *
-    machine_current->timings.processor_speed / 1000;
-  event_add( last_tstates + next_tstates, index_event );
+  return &( opus_drives[ which ] );
 }
 
 libspectrum_byte
@@ -450,12 +400,7 @@ static libspectrum_byte *
 alloc_and_copy_page( libspectrum_byte* source_page )
 {
   libspectrum_byte *buffer;
-  buffer = malloc( MEMORY_PAGE_SIZE );
-  if( !buffer ) {
-    ui_error( UI_ERROR_ERROR, "Out of memory at %s:%d", __FILE__,
-              __LINE__ );
-    return 0;
-  }
+  buffer = libspectrum_new( libspectrum_byte, MEMORY_PAGE_SIZE );
 
   memcpy( buffer, source_page, MEMORY_PAGE_SIZE );
   return buffer;
@@ -483,7 +428,7 @@ opus_from_snapshot( libspectrum_snap *snap )
 
   if( libspectrum_snap_opus_ram( snap, 0 ) ) {
     memcpy( opus_ram,
-            libspectrum_snap_opus_ram( snap, 0 ), TRUE_OPUS_RAM_SIZE );
+            libspectrum_snap_opus_ram( snap, 0 ), OPUS_RAM_SIZE );
   }
 
   /* ignore drive count for now, there will be an issue with loading snaps where
@@ -557,7 +502,8 @@ opus_unittest( void )
   opus_page();
 
   r += unittests_assert_8k_page( 0x0000, opus_rom_memory_source, 0 );
-  r += unittests_assert_4k_page( 0x2000, opus_ram_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x2000, opus_ram_memory_source, 0 );
+  /* FIXME: should we add mirroring at 0x2800, 0x3000 and/or 0x3800? */
   r += unittests_assert_4k_page( 0x3000, memory_source_rom, 0 );
   r += unittests_assert_16k_ram_page( 0x4000, 5 );
   r += unittests_assert_16k_ram_page( 0x8000, 2 );

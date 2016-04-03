@@ -32,6 +32,7 @@
 #include "peripherals/scld.h"
 #include "peripherals/spectranet.h"
 #include "rzx.h"
+#include "settings.h"
 #include "spectrum.h"
 #include "ui/ui.h"
 #include "z80.h"
@@ -62,7 +63,7 @@ libspectrum_byte sz53p_table[0x100]; /* OR the above two tables together */
 /* This is what everything acts on! */
 processor z80;
 
-int z80_interrupt_event, z80_nmi_event;
+int z80_interrupt_event, z80_nmi_event, z80_halt_event, z80_nmos_iff2_event;
 
 static void z80_init_tables(void);
 static void z80_from_snapshot( libspectrum_snap *snap );
@@ -100,6 +101,8 @@ z80_init( void )
   z80_interrupt_event = event_register( z80_interrupt_event_fn,
 					"Retriggered interrupt" );
   z80_nmi_event = event_register( z80_nmi, "Non-maskable interrupt" );
+  z80_halt_event = event_register( NULL, "HALT dummy event" );
+  z80_nmos_iff2_event = event_register( NULL, "IFF2 update dummy event" );
 
   module_register( &z80_module_info );
 }
@@ -125,15 +128,21 @@ static void z80_init_tables(void)
 
 /* Reset the z80 */
 void
-z80_reset( int hard_reset GCC_UNUSED )
+z80_reset( int hard_reset )
 {
-  AF =BC =DE =HL =0;
-  AF_=BC_=DE_=HL_=0;
-  IX=IY=0;
+  AF =AF_=0xffff;
   I=R=R7=0;
-  SP=PC=0;
+  PC=0;
+  SP=0xffff;
   IFF1=IFF2=IM=0;
   z80.halted=0;
+  z80.iff2_read=0;
+
+  if( hard_reset ) {
+    BC =DE =HL =0;
+    BC_=DE_=HL_=0;
+    IX=IY=0;
+  }
 
   z80.interrupts_enabled_at = -1;
 }
@@ -149,6 +158,16 @@ z80_interrupt( void )
       tstates < machine_current->timings.interrupt_length &&
       !scld_last_dec.name.intdisable ) {
 
+    if ( z80.iff2_read && !IS_CMOS ) {
+      /* We just executed LD A,I or LD A,R, causing IFF2 to be copied to the
+	 parity flag.  This occured whilst accepting an interrupt.  For NMOS
+	 Z80s only, clear the parity flag to reflect the fact that IFF2 would
+	 have actually been cleared before its value was transferred by LD A,I
+	 or LD A,R.  We cannot do this when emulating LD itself as we cannot
+	 tell whether the next instruction will be interrupted. */
+      F &= ~FLAG_P;
+    }
+
     /* If interrupts have just been enabled, don't accept the interrupt now,
        but check after the next instruction has been executed */
     if( tstates == z80.interrupts_enabled_at ) {
@@ -156,22 +175,33 @@ z80_interrupt( void )
       return 0;
     }
 
-    if( z80.halted ) { PC++; z80.halted = 0; }
-    
+    z80.halted = 0;
     IFF1=IFF2=0;
+    R++; rzx_instructions_offset--;
+
+    tstates += 7; /* Longer than usual M1 cycle */
 
     writebyte( --SP, PCH ); writebyte( --SP, PCL );
 
-    R++; rzx_instructions_offset--;
-
     switch(IM) {
-      case 0: PC = 0x0038; tstates += 7; break;
-      case 1: PC = 0x0038; tstates += 7; break;
+      case 0:
+        /* We assume 0xff (RST 38) is on the data bus, as the Spectrum leaves
+	   it pulled high when the end-of-frame interrupt is delivered.  Only
+	   the first byte is provided directly to the Z80: all remaining bytes
+	   of the instruction are fetched from memory using PC, which is
+	   incremented as normal.  As RST 38 takes a single byte, we do not
+	   emulate fetching of additional bytes. */
+	PC = 0x0038; break;
+      case 1:
+	/* RST 38 */
+	PC = 0x0038; break;
       case 2: 
+	/* We assume 0xff is on the data bus, as the Spectrum leaves it pulled
+	   high when the end-of-frame interrupt is delivered.  Our interrupt
+	   vector is therefore 0xff. */
 	{
 	  libspectrum_word inttemp=(0x100*I)+0xff;
 	  PCL = readbyte(inttemp++); PCH = readbyte(inttemp);
-	  tstates += 7;
 	  break;
 	}
       default:
@@ -196,12 +226,13 @@ z80_nmi( libspectrum_dword ts, int type, void *user_data )
   if( spectranet_available && spectranet_nmi_flipflop() )
     return;
 
-  if( z80.halted ) { PC++; z80.halted = 0; }
-
+  z80.halted = 0;
   IFF1 = 0;
+  R++; tstates += 5;
 
   writebyte( --SP, PCH ); writebyte( --SP, PCL );
 
+  /* TODO: check whether any of these should occur before PC is pushed. */
   if( machine_current->capabilities &
       LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
 
@@ -218,10 +249,7 @@ z80_nmi( libspectrum_dword ts, int type, void *user_data )
     spectranet_nmi();
   }
 
-  /* FIXME: how is R affected? */
-
-  /* FIXME: how does contention apply here? */
-  tstates += 11; PC = 0x0066;
+  PC = 0x0066;
 }
 
 /* Special peripheral processing for RETN */

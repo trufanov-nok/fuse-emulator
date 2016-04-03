@@ -43,6 +43,7 @@ typedef enum periph_type {
   PERIPH_TYPE_BETA128_PENTAGON_LATE, /* Beta128 disk interface as found on later Pentagons */
   PERIPH_TYPE_DIVIDE,         /* DivIDE interface */
   PERIPH_TYPE_PLUSD,          /* +D disk interface */
+  PERIPH_TYPE_DIDAKTIK80,     /* Didaktik 40/80 disk interface */
   PERIPH_TYPE_DISCIPLE,       /* DISCiPLE disk interface */
   PERIPH_TYPE_FULLER,         /* Fuller box */
   PERIPH_TYPE_INTERFACE1,     /* Interface 1 */
@@ -68,6 +69,7 @@ typedef enum periph_type {
   PERIPH_TYPE_ULA,            /* Standard ULA */
   PERIPH_TYPE_ULA_FULL_DECODE,/* Standard ULA responding only to 0xfe */
   PERIPH_TYPE_UPD765,         /* +3 uPD765 FDC */
+  PERIPH_TYPE_USOURCE,        /* Currah uSource interface */
   PERIPH_TYPE_ZXATASP,        /* ZXATASP IDE interface */
   PERIPH_TYPE_ZXCF,           /* ZXCF IDE interface */
   PERIPH_TYPE_ZXPRINTER,      /* ZX Printer */
@@ -86,7 +88,7 @@ typedef enum periph_present {
 } periph_present;
 
 typedef libspectrum_byte (*periph_port_read_function)( libspectrum_word port,
-						       int *attached );
+						       libspectrum_byte *attached );
 typedef void (*periph_port_write_function)( libspectrum_word port,
 					    libspectrum_byte data );
 

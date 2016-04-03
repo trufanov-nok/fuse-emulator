@@ -75,11 +75,8 @@ compat_socket_selfpipe_t* compat_socket_selfpipe_alloc( void )
   int error;
   int pipefd[2];
 
-  compat_socket_selfpipe_t *self = malloc( sizeof( *self ) );
-  if( !self ) {
-    ui_error( UI_ERROR_ERROR, "%s: %d: out of memory", __FILE__, __LINE__ );
-    fuse_abort();
-  }
+  compat_socket_selfpipe_t *self =
+    libspectrum_new( compat_socket_selfpipe_t, 1 );
 
   error = pipe( pipefd );
   if( error ) {
@@ -97,7 +94,7 @@ void compat_socket_selfpipe_free( compat_socket_selfpipe_t *self )
 {
   close( self->read_fd );
   close( self->write_fd );
-  free( self );
+  libspectrum_free( self );
 }
 
 compat_socket_t compat_socket_selfpipe_get_read_fd( compat_socket_selfpipe_t *self )

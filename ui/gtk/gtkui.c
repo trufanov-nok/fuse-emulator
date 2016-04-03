@@ -101,7 +101,7 @@ static void menu_machine_select_done( GtkWidget *widget, gpointer user_data );
 
 static const GtkTargetEntry drag_types[] =
 {
-    { "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
+    { (gchar *)"text/uri-list", GTK_TARGET_OTHER_APP, 0 }
 };
 
 static void gtkui_drag_data_received( GtkWidget *widget GCC_UNUSED,
@@ -185,7 +185,7 @@ ui_init( int *argc, char ***argv )
   gtk_drag_dest_set( GTK_WIDGET( gtkui_window ),
                      GTK_DEST_DEFAULT_ALL,
                      drag_types,
-                     G_N_ELEMENTS( drag_types ),
+                     ARRAY_SIZE( drag_types ),
                      GDK_ACTION_COPY | GDK_ACTION_PRIVATE | GDK_ACTION_MOVE );
                      /* GDK_ACTION_PRIVATE alone DNW with ROX-Filer,
                         GDK_ACTION_MOVE allow DnD from KDE */
@@ -294,7 +294,9 @@ gtkui_make_menu(GtkAccelGroup **accel_group,
   ui_menu_activate( UI_MENU_ITEM_RECORDING, 0 );
   ui_menu_activate( UI_MENU_ITEM_RECORDING_ROLLBACK, 0 );
   ui_menu_activate( UI_MENU_ITEM_TAPE_RECORDING, 0 );
-
+#ifdef HAVE_LIB_XML2
+  ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 0 );
+#endif
   return FALSE;
 }
 
@@ -656,10 +658,12 @@ menu_help_keyboard( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 void
 menu_help_about( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
+  /* TODO: show Fuse icon */
   gtk_show_about_dialog( GTK_WINDOW( gtkui_window ),
-                         "name", "Fuse",
+                         "program-name", "Fuse",
                          "comments", "The Free Unix Spectrum Emulator",
                          "copyright", FUSE_COPYRIGHT,
+                         "logo-icon-name", NULL,
                          "version", VERSION,
                          "website", PACKAGE_URL,
                          NULL );

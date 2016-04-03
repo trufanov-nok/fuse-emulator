@@ -83,7 +83,7 @@ static inline const char *format_16_bit( void )
 
 int ui_debugger_activate( void )
 {
-  return widget_do( WIDGET_TYPE_DEBUGGER, NULL );
+  return widget_do_debugger();
 }
 
 int ui_debugger_deactivate( int interruptible GCC_UNUSED )
@@ -211,7 +211,7 @@ void widget_debugger_keyhandler( input_key key )
       text_data.title = "Debugger command";
       text_data.allow = WIDGET_INPUT_ASCII;
       text_data.text[0] = 0;
-      if( !widget_do( WIDGET_TYPE_TEXT, &text_data ) )
+      if( !widget_do_text( &text_data ) )
 	debugger_command_evaluate( widget_text_text );
     }
     break;
@@ -299,10 +299,12 @@ static void display_registers( void )
   show_register0( LC(29), LR(2), "IFF1", IFF1 );
   show_register0( LC(36), LR(2), "IFF2", IFF2 );
 
+  show_register0( LC(36), LR(2), "IFF2", IFF2 );
   show_register2( LC(3),  LR(3), "HL",   HL );
   show_register2( LC(12), LR(3), "HL'",  HL_ );
   widget_printstring_fixed( LC(20) / 8, LR(3) / 8, 5, "SZ5H3PNC" );
-  show_register1( LC(36), LR(3), "ULA",  ula_last_byte() );
+  show_register0( LC(36), LR(3), "HALTED", z80.halted );
+  show_register1( LC(36), LR(4), "ULA",  ula_last_byte() );
 
   sprintf( pbuf, "%d", tstates );
   widget_printstring_right( LC(12) - 4, LR(4), 5, "Tstates" );

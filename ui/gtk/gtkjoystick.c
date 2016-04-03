@@ -63,8 +63,6 @@ struct button_info {
   keyboard_key_name key;
 };
 
-#define NUM_JOY_BUTTONS 15
-
 struct joystick_info {
 
   int *type;
@@ -150,9 +148,7 @@ static key_menu_t key_menu[] = {
 
 };
 
-static const guint key_menu_count = G_N_ELEMENTS( key_menu );
-
-GtkTreeModel *
+static GtkTreeModel *
 create_joystick_options_store( void )
 {
   GtkTreeIter iter, iter2;
@@ -161,7 +157,7 @@ create_joystick_options_store( void )
 
   store = gtk_tree_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_INT );
 
-  for( i = 0; i < key_menu_count; i++ ) {
+  for( i = 0; i < ARRAY_SIZE( key_menu ); i++ ) {
 
     switch( key_menu[i].item ) {
 
@@ -373,7 +369,7 @@ create_fire_button_selector( const char *title, struct button_info *info,
   info->key = *info->setting;
   info->label = gtk_label_new( "" );
 
-  for( i = 0; i < key_menu_count; i++ ) {
+  for( i = 0; i < ARRAY_SIZE( key_menu ); i++ ) {
     
     keyboard_key_name key;
 

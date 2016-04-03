@@ -49,8 +49,10 @@ int ui_widget_level = -1;
 static char last_message[ MESSAGE_MAX_LENGTH ] = "";
 static size_t frames_since_last_message = 0;
 
+#ifndef UI_WIN32
 static int
 print_error_to_stderr( ui_error_level severity, const char *message );
+#endif			/* #ifndef UI_WIN32 */
 
 int
 ui_error( ui_error_level severity, const char *format, ... )
@@ -164,9 +166,9 @@ static int mouse_grab_suspended = 0;
 void
 ui_mouse_button( int button, int down )
 {
-  if( !ui_mouse_grabbed && !mouse_grab_suspended ) button = 2;
-
   int kempston_button = !settings_current.mouse_swap_buttons;
+
+  if( !ui_mouse_grabbed && !mouse_grab_suspended ) button = 2;
 
   /* Possibly we'll end up handling _more_ than one mouse interface... */
   switch( button ) {
@@ -218,6 +220,12 @@ struct menu_item_entries {
 
 static const struct menu_item_entries menu_item_lookup[] = {
 
+  { UI_MENU_ITEM_FILE_SVG_CAPTURE,
+    "/File/Scalable Vector Graphics/Stop capture",
+    "/File/Scalable Vector Graphics/Start capture in dot mode...", 1,
+    "/File/Scalable Vector Graphics/Start capture in line mode...", 1
+  },
+
   { UI_MENU_ITEM_FILE_MOVIE_RECORDING, "/File/Movie/Stop",
     "/File/Movie/Pause", 0,
     "/File/Movie/Continue", 0,
@@ -232,6 +240,8 @@ static const struct menu_item_entries menu_item_lookup[] = {
   { UI_MENU_ITEM_MACHINE_PROFILER, "/Machine/Profiler/Stop",
     "/Machine/Profiler/Start", 1 },
   
+  { UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP, "/Machine/Didaktik SNAP" },
+
   { UI_MENU_ITEM_MEDIA_CARTRIDGE, "/Media/Cartridge" },
 
   { UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK, "/Media/Cartridge/Timex Dock" },
@@ -476,6 +486,42 @@ static const struct menu_item_entries menu_item_lookup[] = {
   { UI_MENU_ITEM_MEDIA_DISK_PLUSD_2_WP_SET,
     "/Media/Disk/+D/Drive 2/Write protect/Enable",
     "/Media/Disk/+D/Drive 2/Write protect/Disable", 1 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK, "/Media/Disk/Didaktik 80" },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A, "/Media/Disk/Didaktik 80/Drive A" },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_EJECT,
+    "/Media/Disk/Didaktik 80/Drive A/Eject",
+    "/Media/Disk/Didaktik 80/Drive A/Save As...", 0,
+    "/Media/Disk/Didaktik 80/Drive A/Save", 0,
+    "/Media/Disk/Didaktik 80/Drive A/Flip disk", 0,
+    "/Media/Disk/Didaktik 80/Drive A/Write protect", 0 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_FLIP_SET,
+    "/Media/Disk/Didaktik 80/Drive A/Flip disk/Turn upside down",
+    "/Media/Disk/Didaktik 80/Drive A/Flip disk/Turn back", 1 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_A_WP_SET,
+    "/Media/Disk/Didaktik 80/Drive A/Write protect/Enable",
+    "/Media/Disk/Didaktik 80/Drive A/Write protect/Disable", 1 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B, "/Media/Disk/Didaktik 80/Drive B" },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_EJECT,
+    "/Media/Disk/Didaktik 80/Drive B/Eject",
+    "/Media/Disk/Didaktik 80/Drive B/Save As...", 0,
+    "/Media/Disk/Didaktik 80/Drive B/Save", 0,
+    "/Media/Disk/Didaktik 80/Drive B/Flip disk", 0,
+    "/Media/Disk/Didaktik 80/Drive B/Write protect", 0 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_FLIP_SET,
+    "/Media/Disk/Didaktik 80/Drive B/Flip disk/Turn upside down",
+    "/Media/Disk/Didaktik 80/Drive B/Flip disk/Turn back", 1 },
+
+  { UI_MENU_ITEM_MEDIA_DISK_DIDAKTIK_B_WP_SET,
+    "/Media/Disk/Didaktik 80/Drive B/Write protect/Enable",
+    "/Media/Disk/Didaktik 80/Drive B/Write protect/Disable", 1 },
 
   { UI_MENU_ITEM_MEDIA_DISK_DISCIPLE, "/Media/Disk/DISCiPLE" },
 

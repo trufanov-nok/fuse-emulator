@@ -64,7 +64,7 @@ typedef struct memory_page {
 /* A memory page will be 1 << (this many) bytes in size
    ie 12 => 4 Kb, 13 => 8 Kb, 14 => 16 Kb
  */
-#define MEMORY_PAGE_SIZE_LOGARITHM 12
+#define MEMORY_PAGE_SIZE_LOGARITHM 11
 
 /* The actual size of a memory page */
 #define MEMORY_PAGE_SIZE ( 1 << MEMORY_PAGE_SIZE_LOGARITHM )
@@ -84,6 +84,9 @@ typedef struct memory_page {
 
 /* The number of memory pages in 4K */
 #define MEMORY_PAGES_IN_4K ( 1 << ( 12 - MEMORY_PAGE_SIZE_LOGARITHM ) )
+
+/* The number of memory pages in 4K */
+#define MEMORY_PAGES_IN_2K ( 1 << ( 11 - MEMORY_PAGE_SIZE_LOGARITHM ) )
 
 /* Each RAM chunk accessible by the Z80 */
 extern memory_page memory_map_read[MEMORY_PAGES_IN_64K];
@@ -135,14 +138,17 @@ void memory_map_8k( libspectrum_word address, memory_page source[],
 /* Map one page of memory */
 void memory_map_page( memory_page *source[], int page_num );
 
-/* Page in from /ROMCS */
-void memory_map_romcs( memory_page source[] );
+/* Page in all 16K from /ROMCS */
+void memory_map_romcs_full( memory_page source[] );
 
 /* Page in 8K from /ROMCS */
 void memory_map_romcs_8k( libspectrum_word address, memory_page source[] );
 
 /* Page in 4K from /ROMCS */
 void memory_map_romcs_4k( libspectrum_word address, memory_page source[] );
+
+/* Page in 2K from /ROMCS */
+void memory_map_romcs_2k( libspectrum_word address, memory_page source[] );
 
 libspectrum_byte readbyte( libspectrum_word address );
 
@@ -171,5 +177,13 @@ void memory_display_dirty_sinclair( libspectrum_word address,
                                     libspectrum_byte b );
 void memory_display_dirty_pentagon_16_col( libspectrum_word address,
                                            libspectrum_byte b );
+
+typedef enum trap_type {
+  CHECK_TAPE_ROM,
+  CHECK_48K_ROM
+} trap_type;
+
+/* Check whether we're actually in the right ROM when a tape or other traps hit */
+extern int trap_check_rom( trap_type type );
 
 #endif				/* #ifndef FUSE_MEMORY_H */

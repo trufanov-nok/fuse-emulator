@@ -1,5 +1,5 @@
 /* speccyboot.c: SpeccyBoot Ethernet emulation
-   See http://speccyboot.sourceforge.net/
+   See http://patrikpersson.github.io/speccyboot/
    
    Copyright (c) 2009-2011 Patrik Persson, Philip Kendall
    
@@ -25,7 +25,7 @@
    
 */
 
-#include "config.h"
+#include <config.h>
 
 #include "compat.h"
 #include "machine.h"
@@ -60,12 +60,28 @@ static nic_enc28j60_t *nic;
 static libspectrum_byte out_register_state;
 static libspectrum_byte in_register_state;
 
+static void
+speccyboot_reset( int hard_reset GCC_UNUSED );
+
+static void
+speccyboot_memory_map( void );
+
 static libspectrum_byte
-speccyboot_register_read( libspectrum_word port GCC_UNUSED, int *attached );
+speccyboot_register_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached );
 
 static void
 speccyboot_register_write( libspectrum_word port GCC_UNUSED,
                            libspectrum_byte val );
+
+static module_info_t speccyboot_module_info = {
+
+  /* .reset = */ speccyboot_reset,
+  /* .romcs = */ speccyboot_memory_map,
+  /* .snapshot_enabled = */ NULL,
+  /* .snapshot_from = */ NULL,
+  /* .snapshot_to = */ NULL,
+
+};
 
 static const periph_port_t speccyboot_ports[] = {
   { 0x00e0, 0x0080, speccyboot_register_read, speccyboot_register_write },
@@ -73,10 +89,10 @@ static const periph_port_t speccyboot_ports[] = {
 };
 
 static const periph_t speccyboot_periph = {
-  &settings_current.speccyboot,
-  speccyboot_ports,
-  1,
-  NULL
+  /* .option = */ &settings_current.speccyboot,
+  /* .ports = */ speccyboot_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL,
 };
 
 /* ---------------------------------------------------------------------------
@@ -128,9 +144,9 @@ speccyboot_reset( int hard_reset GCC_UNUSED )
 }
 
 static libspectrum_byte
-speccyboot_register_read( libspectrum_word port GCC_UNUSED, int *attached )
+speccyboot_register_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
 {
-  *attached = 1;
+  *attached = 0xff; /* TODO: check this */
   return in_register_state;
 }
 
@@ -188,14 +204,6 @@ speccyboot_init( void )
   int i;
 
   nic = nic_enc28j60_alloc();
-
-  static module_info_t speccyboot_module_info = {
-    speccyboot_reset,
-    speccyboot_memory_map,
-    NULL,
-    NULL,
-    NULL
-  };
 
   module_register( &speccyboot_module_info );
 

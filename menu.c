@@ -34,6 +34,7 @@
 #include "machines/specplus3.h"
 #include "peripherals/dck.h"
 #include "peripherals/disk/beta.h"
+#include "peripherals/disk/didaktik.h"
 #include "peripherals/disk/disciple.h"
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
@@ -50,12 +51,19 @@
 #include "screenshot.h"
 #include "settings.h"
 #include "snapshot.h"
+#include "svg.h"
 #include "tape.h"
 #include "ui/scaler/scaler.h"
 #include "ui/ui.h"
 #include "ui/uimedia.h"
 #include "utils.h"
 #include "z80/z80.h"
+
+static int menu_select_machine_roms( libspectrum_machine machine, size_t start,
+				     size_t n );
+
+static int menu_select_peripheral_roms( const char *peripheral_name,
+					size_t start, size_t n );
 
 MENU_CALLBACK( menu_file_open )
 {
@@ -225,37 +233,50 @@ MENU_CALLBACK( menu_file_movie_pause )
   movie_pause();
 }
 
-MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_select )
+MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_machine_select )
 {
   switch( action ) {
 
-  case  1: menu_select_roms( LIBSPECTRUM_MACHINE_16,        0, 1 ); return;
-  case  2: menu_select_roms( LIBSPECTRUM_MACHINE_48,        1, 1 ); return;
-  case  3: menu_select_roms( LIBSPECTRUM_MACHINE_128,       2, 2 ); return;
-  case  4: menu_select_roms( LIBSPECTRUM_MACHINE_PLUS2,     4, 2 ); return;
-  case  5: menu_select_roms( LIBSPECTRUM_MACHINE_PLUS2A,    6, 4 ); return;
-  case  6: menu_select_roms( LIBSPECTRUM_MACHINE_PLUS3,    10, 4 ); return;
-  case  7: menu_select_roms( LIBSPECTRUM_MACHINE_PLUS3E,   14, 4 ); return;
-  case  8: menu_select_roms( LIBSPECTRUM_MACHINE_TC2048,   18, 1 ); return;
-  case  9: menu_select_roms( LIBSPECTRUM_MACHINE_TC2068,   19, 2 ); return;
-  case 10: menu_select_roms( LIBSPECTRUM_MACHINE_TS2068,   21, 2 ); return;
-  case 11: menu_select_roms( LIBSPECTRUM_MACHINE_PENT,     23, 3 ); return;
-  case 12: menu_select_roms( LIBSPECTRUM_MACHINE_PENT512,  26, 4 ); return;
-  case 13: menu_select_roms( LIBSPECTRUM_MACHINE_PENT1024, 30, 4 ); return;
-  case 14: menu_select_roms( LIBSPECTRUM_MACHINE_SCORP,    34, 4 ); return;
-  case 15: menu_select_roms( LIBSPECTRUM_MACHINE_SE,       38, 2 ); return;
-
-  case 16: menu_select_roms_with_title( "Interface 1",     40, 1 ); return;
-  case 17: menu_select_roms_with_title( "Beta 128",        41, 1 ); return;
-  case 18: menu_select_roms_with_title( "+D",              42, 1 ); return;
-  case 19: menu_select_roms_with_title( "DISCiPLE",        43, 1 ); return;
-  case 20: menu_select_roms_with_title( "Opus Discovery",  44, 1 ); return;
-  case 21: menu_select_roms_with_title( "SpeccyBoot",      45, 1 ); return;
+  case  1: menu_select_machine_roms( LIBSPECTRUM_MACHINE_16,        0, 1 ); return;
+  case  2: menu_select_machine_roms( LIBSPECTRUM_MACHINE_48,        1, 1 ); return;
+  case  3: menu_select_machine_roms( LIBSPECTRUM_MACHINE_128,       2, 2 ); return;
+  case  4: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PLUS2,     4, 2 ); return;
+  case  5: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PLUS2A,    6, 4 ); return;
+  case  6: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PLUS3,    10, 4 ); return;
+  case  7: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PLUS3E,   14, 4 ); return;
+  case  8: menu_select_machine_roms( LIBSPECTRUM_MACHINE_TC2048,   18, 1 ); return;
+  case  9: menu_select_machine_roms( LIBSPECTRUM_MACHINE_TC2068,   19, 2 ); return;
+  case 10: menu_select_machine_roms( LIBSPECTRUM_MACHINE_TS2068,   21, 2 ); return;
+  case 11: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PENT,     23, 3 ); return;
+  case 12: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PENT512,  26, 4 ); return;
+  case 13: menu_select_machine_roms( LIBSPECTRUM_MACHINE_PENT1024, 30, 4 ); return;
+  case 14: menu_select_machine_roms( LIBSPECTRUM_MACHINE_SCORP,    34, 4 ); return;
+  case 15: menu_select_machine_roms( LIBSPECTRUM_MACHINE_SE,       38, 2 ); return;
 
   }
 
   ui_error( UI_ERROR_ERROR,
-	    "menu_options_selectroms_select: unknown action %d", action );
+	    "menu_options_selectroms_machine_select: unknown action %d", action );
+  fuse_abort();
+}
+
+MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_peripheral_select )
+{
+  switch( action ) {
+
+  case  1: menu_select_peripheral_roms( "Interface 1",     0, 1 ); return;
+  case  2: menu_select_peripheral_roms( "Beta 128",        1, 1 ); return;
+  case  3: menu_select_peripheral_roms( "+D",              2, 1 ); return;
+  case  4: menu_select_peripheral_roms( "Didaktik 80",     3, 1 ); return;
+  case  5: menu_select_peripheral_roms( "DISCiPLE",        4, 1 ); return;
+  case  6: menu_select_peripheral_roms( "Opus Discovery",  5, 1 ); return;
+  case  7: menu_select_peripheral_roms( "SpeccyBoot",      6, 1 ); return;
+  case  8: menu_select_peripheral_roms( "uSource",         7, 1 ); return;
+
+  }
+
+  ui_error( UI_ERROR_ERROR,
+	    "menu_options_selectroms_peripheral_select: unknown action %d", action );
   fuse_abort();
 }
 
@@ -339,7 +360,7 @@ MENU_CALLBACK( menu_media_tape_play )
 MENU_CALLBACK( menu_media_tape_rewind )
 {
   ui_widget_finish();
-  tape_select_block( 0 );
+  tape_rewind();
 }
 
 MENU_CALLBACK( menu_media_tape_clear )
@@ -727,7 +748,67 @@ MENU_CALLBACK( menu_file_savescreenaspng )
 
   fuse_emulation_unpause();
 }
+
 #endif
+
+#ifdef HAVE_LIB_XML2
+
+MENU_CALLBACK( menu_file_scalablevectorgraphics_startcaptureinlinemode )
+{
+  char *filename;
+
+  ui_widget_finish();
+  if( !svg_capture_active ) {
+
+    fuse_emulation_pause();
+
+    filename = ui_get_save_filename( "Fuse - Capture to SVG File" );
+    if( !filename ) { fuse_emulation_unpause(); return; }
+
+    ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 1 );
+    svg_capture_mode = SVG_CAPTURE_LINES;
+    svg_startcapture( filename );
+
+    fuse_emulation_unpause();
+  }
+}
+
+MENU_CALLBACK( menu_file_scalablevectorgraphics_startcaptureindotmode )
+{
+  char *filename;
+
+  ui_widget_finish();
+  if( !svg_capture_active ) {
+
+    fuse_emulation_pause();
+
+    filename = ui_get_save_filename( "Fuse - Capture to SVG File" );
+    if( !filename ) { fuse_emulation_unpause(); return; }
+    ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 1 );
+
+    svg_capture_mode = SVG_CAPTURE_DOTS;
+    svg_startcapture( filename );
+
+    fuse_emulation_unpause();
+  }
+}
+
+MENU_CALLBACK( menu_file_scalablevectorgraphics_stopcapture )
+{
+  ui_widget_finish();
+  if( svg_capture_active ) {
+
+    fuse_emulation_pause();
+
+    svg_stopcapture();
+    ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 0 );
+
+    fuse_emulation_unpause();
+  }
+}
+
+#endif  /* HAVE_LIB_XML2 */
+
 
 MENU_CALLBACK( menu_file_movie_record )
 {
@@ -923,11 +1004,18 @@ menu_check_media_changed( void )
   return 0;
 }
 
-int
-menu_select_roms( libspectrum_machine machine, size_t start, size_t n )
+static int
+menu_select_machine_roms( libspectrum_machine machine, size_t start, size_t n )
 {
   return menu_select_roms_with_title( libspectrum_machine_name( machine ),
-				      start, n );
+				      start, n, 0 );
+}
+
+static int
+menu_select_peripheral_roms( const char *peripheral_name, size_t start, size_t n )
+{
+  return menu_select_roms_with_title( peripheral_name,
+				      start, n, 1 );
 }
 
 const char*
@@ -969,7 +1057,7 @@ menu_tape_detail( void )
   else return "Stopped";
 }
 
-static const char *disk_detail_str[] = {
+static const char * const disk_detail_str[] = {
   "Inserted",
   "Inserted WP",
   "Inserted UD",
@@ -1069,6 +1157,22 @@ menu_plusd2_detail( void )
 }
 
 const char*
+menu_didaktik_a_detail( void )
+{
+  fdd_t *f = didaktik80_get_fdd( DIDAKTIK80_DRIVE_A );
+
+  return menu_disk_detail( f );
+}
+
+const char*
+menu_didaktik_b_detail( void )
+{
+  fdd_t *f = didaktik80_get_fdd( DIDAKTIK80_DRIVE_B );
+
+  return menu_disk_detail( f );
+}
+
+const char*
 menu_disciple1_detail( void )
 {
   fdd_t *f = disciple_get_fdd( DISCIPLE_DRIVE_1 );
@@ -1082,4 +1186,11 @@ menu_disciple2_detail( void )
   fdd_t *f = disciple_get_fdd( DISCIPLE_DRIVE_2 );
 
   return menu_disk_detail( f );
+}
+
+MENU_CALLBACK( menu_machine_didaktiksnap )
+{
+  ui_widget_finish();
+  didaktik80_snap = 1;
+  event_add( 0, z80_nmi_event );
 }

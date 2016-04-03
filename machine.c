@@ -114,15 +114,9 @@ static int machine_add_machine( int (*init_function)( fuse_machine_info *machine
   machine_count++;
 
   machine_types =
-    libspectrum_realloc( machine_types,
-                         machine_count * sizeof( fuse_machine_info* ) );
+    libspectrum_renew( fuse_machine_info *, machine_types, machine_count );
 
-  machine_types[ machine_count - 1 ] = malloc( sizeof( fuse_machine_info ) );
-  if( !machine_types[ machine_count - 1 ] ) {
-    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
-    return 1;
-  }
-
+  machine_types[ machine_count - 1 ] = libspectrum_new( fuse_machine_info, 1 );
   machine = machine_types[ machine_count - 1 ];
 
   error = init_function( machine ); if( error ) return error;
@@ -315,7 +309,7 @@ machine_load_rom_bank( memory_page* bank_map, int page_num,
 
   retval = machine_load_rom_bank_from_file( bank_map, page_num, filename,
     expected_length, custom );
-  if( retval && fallback )
+  if( retval && fallback && custom )
     retval = machine_load_rom_bank_from_file( bank_map, page_num, fallback,
       expected_length, 0 );
   return retval;

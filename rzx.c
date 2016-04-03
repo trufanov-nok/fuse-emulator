@@ -102,8 +102,8 @@ static const float SPEED_TOLERANCE = 5;
 static const size_t AUTOSAVE_INTERVAL = 5 * 50;
 
 /* Debugger events */
-static const char *event_type_string = "rzx";
-static const char *end_event_detail_string = "end";
+static const char * const event_type_string = "rzx";
+static const char * const end_event_detail_string = "end";
 
 int end_event;
 
@@ -231,7 +231,7 @@ int rzx_stop_recording( void )
   return 0;
 }
 
-libspectrum_snap*
+static libspectrum_snap*
 rzx_get_initial_snapshot( void )
 {
   libspectrum_rzx_iterator it;
@@ -248,12 +248,10 @@ rzx_get_initial_snapshot( void )
       /* If we get this then there can't have been an initial snap to start
          from */
       return NULL;
-      break;
       
     case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
       /* Got initial snap */
       return libspectrum_rzx_iterator_get_snap( it );
-      break;
       
     default:
       continue;
@@ -731,10 +729,7 @@ int rzx_store_byte( libspectrum_byte value )
     libspectrum_byte *ptr; size_t new_allocated;
 
     new_allocated = rzx_in_allocated >= 25 ? 2 * rzx_in_allocated : 50;
-    ptr =
-      (libspectrum_byte*)libspectrum_realloc(
-        rzx_in_bytes, new_allocated * sizeof(libspectrum_byte)
-      );
+    ptr = libspectrum_renew( libspectrum_byte, rzx_in_bytes, new_allocated );
 
     rzx_in_bytes = ptr;
     rzx_in_allocated = new_allocated;

@@ -32,12 +32,12 @@
 
 int tc2068_init( fuse_machine_info *machine );
 void tc2068_tc2048_common_display_setup( void );
-int tc2068_tc2048_common_reset( void );
+void tc2068_tc2048_common_reset( void );
 
 libspectrum_byte tc2068_ay_registerport_read( libspectrum_word port,
-                                              int *attached );
+                                              libspectrum_byte *attached );
 libspectrum_byte tc2068_ay_dataport_read( libspectrum_word port,
-                                          int *attached );
+                                          libspectrum_byte *attached );
 
 int tc2068_memory_map( void );
 

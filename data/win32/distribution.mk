@@ -41,11 +41,13 @@ install-win32: all
 	  do cp "$(top_srcdir)/$$file" "$(DESTDIR)/$$file.txt"; \
 	done
 #	Get manuals
-	if test -n "$(MAN2HTML)"; then \
+	if test -n "$(GROFF)"; then \
+	  sed ':a;N;$$!ba;s/\.PP\n\.TS/\.bp\n&/g' $(top_srcdir)/man/fuse.1 | \
+	  $(GROFF) -t -Thtml -man -P -I -P manual > $(DESTDIR)/fuse.html; \
+	elif test -n "$(MAN2HTML)"; then \
 	  $(MAN2HTML) -r $(top_srcdir)/man/fuse.1 | sed '1d' > $(DESTDIR)/fuse.html; \
-	else \
-	  test -z "$(GROFF)" || $(GROFF) -Thtml -man $(top_srcdir)/man/fuse.1 > $(DESTDIR)/fuse.html; \
 	fi
+	-mv manual*.png $(DESTDIR);
 #	Convert to DOS line endings
 	test -z "$(UNIX2DOS)" || find $(DESTDIR) -type f \( -name "*.txt" -or -name "*.html" -or -name "*.copyright" \) -exec $(UNIX2DOS) {} \;
 
@@ -84,7 +86,7 @@ dist-win32-exe: dist-win32-dir
 	@test `find $(top_win32dir) -type f -name \*.dll -print | wc -l` -ne 0 || \
 	{ echo "ERROR: external libraries not found in $(top_win32dir). Please, manually copy them."; exit 1; }
 #	Locate NSIS in system path, MSYS drive or Cygwin drive
-	@NSISFILE="$(abs_top_builddir)/ui/win32/installer/fuse.nsi"; \
+	@NSISFILE="$(abs_top_builddir)/data/win32/installer.nsi"; \
 	if makensis -VERSION > /dev/null 2>&1; then \
 	  MAKENSIS="makensis"; \
 	elif [ -x "/c/Program Files/NSIS/makensis" ]; then \

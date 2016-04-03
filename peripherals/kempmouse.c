@@ -33,16 +33,16 @@
 #include "settings.h"
 #include "ui/ui.h"
 
-static void kempmouse_from_snapshot( libspectrum_snap *snap );
+static void kempmouse_snapshot_enabled( libspectrum_snap *snap );
 static void kempmouse_to_snapshot( libspectrum_snap *snap );
 
 static module_info_t kempmouse_module_info = {
 
-  NULL,
-  NULL,
-  NULL,
-  kempmouse_from_snapshot,
-  kempmouse_to_snapshot,
+  /* .reset = */ NULL,
+  /* .romcs = */ NULL,
+  /* .snapshot_enabled = */ kempmouse_snapshot_enabled,
+  /* .snapshot_from = */ NULL,
+  /* .snapshot_to = */ kempmouse_to_snapshot,
 
 };
 
@@ -53,9 +53,9 @@ static struct {
 
 #define READ(name,item) \
   static libspectrum_byte \
-  read_##name( libspectrum_word port GCC_UNUSED, int *attached ) \
+  read_##name( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached ) \
   { \
-    *attached = 1; \
+    *attached = 0xff; /* TODO: check this */ \
     return kempmouse.item; \
   }
 
@@ -71,10 +71,10 @@ static const periph_port_t kempmouse_ports[] = {
 };
 
 static const periph_t kempmouse_periph = {
-  &settings_current.kempston_mouse,
-  kempmouse_ports,
-  1,
-  NULL
+  /* .option = */ &settings_current.kempston_mouse,
+  /* .ports = */ kempmouse_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL,
 };
 
 void
@@ -98,10 +98,10 @@ kempmouse_update( int dx, int dy, int btn, int down )
 }
 
 static void
-kempmouse_from_snapshot( libspectrum_snap *snap )
+kempmouse_snapshot_enabled( libspectrum_snap *snap )
 {
-  settings_current.kempston_mouse =
-    libspectrum_snap_kempston_mouse_active( snap );
+  if( libspectrum_snap_kempston_mouse_active( snap ) )
+    settings_current.kempston_mouse = 1;
 }
 
 static void
