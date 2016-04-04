@@ -791,29 +791,37 @@ uidisplay_area( int x, int y, int width, int height )
 int
 uidisplay_end( void )
 {
-  int i;
-
   display_ui_initialised = 0;
 
-  for( i=0; i<2; i++ ) {
-    if( red_cassette.t ) {
-      SDL_DestroyTexture( red_cassette.t ); red_cassette.t = NULL;
-    }
-    if( green_cassette.t ) {
-      SDL_DestroyTexture( green_cassette.t ); green_cassette.t = NULL;
-    }
-    if( red_mdr.t ) {
-      SDL_DestroyTexture( red_mdr.t ); red_mdr.t = NULL;
-    }
-    if( green_mdr.t ) {
-      SDL_DestroyTexture( green_mdr.t ); green_mdr.t = NULL;
-    }
-    if( red_disk.t ) {
-      SDL_DestroyTexture( red_disk.t ); red_disk.t = NULL;
-    }
-    if( green_disk.t ) {
-      SDL_DestroyTexture( green_disk.t ); green_disk.t = NULL;
-    }
+  if( red_cassette.t ) {
+    SDL_DestroyTexture( red_cassette.t ); red_cassette.t = NULL;
+  }
+  if( green_cassette.t ) {
+    SDL_DestroyTexture( green_cassette.t ); green_cassette.t = NULL;
+  }
+  if( red_mdr.t ) {
+    SDL_DestroyTexture( red_mdr.t ); red_mdr.t = NULL;
+  }
+  if( green_mdr.t ) {
+    SDL_DestroyTexture( green_mdr.t ); green_mdr.t = NULL;
+  }
+  if( red_disk.t ) {
+    SDL_DestroyTexture( red_disk.t ); red_disk.t = NULL;
+  }
+  if( green_disk.t ) {
+    SDL_DestroyTexture( green_disk.t ); green_disk.t = NULL;
+  }
+
+  if( sdltxt ) {
+    SDL_DestroyTexture( sdltxt ); sdltxt = NULL;
+  }
+
+  if( sdlren ) {
+    SDL_DestroyRenderer( sdlren ); sdlren = NULL;
+  }
+
+  if( sdlwin ) {
+    SDL_DestroyWindow( sdlwin ); sdlwin = NULL;
   }
 
   return 0;

@@ -5006,3 +5006,4 @@
          (lordhoto).
 20160331 peripherals/disk/didaktik.c: don't enable Didaktik SNAP option if ROM
          file is missing (Sergio).
+20160404 ui/sdl/sdl2display.c: free more resources in SDL2 UI (Sergio).
