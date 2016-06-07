@@ -1,5 +1,7 @@
 /* compat.h: various compatibility bits
    Copyright (c) 2003-2012 Philip Kendall
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2015 Sergio Baldoví
 
    $Id$
 
@@ -95,6 +97,13 @@ int mkstemp( char *templ );
 #else
 #define FUSE_DIR_SEP_CHR '/'
 #define FUSE_DIR_SEP_STR "/"
+#endif
+
+/* End of line for text files */
+#ifdef WIN32
+#define FUSE_EOL "\r\n"
+#else
+#define FUSE_EOL "\n"
 #endif
 
 #ifndef PATH_MAX

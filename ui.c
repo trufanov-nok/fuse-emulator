@@ -1,5 +1,6 @@
 /* ui.c: User interface routines, but those which are independent of any UI
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2015 Philip Kendall
+   Copyright (c) 2016 Sergio Baldoví
 
    $Id$
 
@@ -82,6 +83,7 @@ ui_verror( ui_error_level severity, const char *format, va_list ap )
 
   /* And store the 'last message' */
   strncpy( last_message, message, MESSAGE_MAX_LENGTH );
+  last_message[ MESSAGE_MAX_LENGTH - 1 ] = '\0';
 
 #ifndef UI_WIN32
   print_error_to_stderr( severity, message );

@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001-2004 Philip Kendall
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -45,4 +46,5 @@ ui_sdl_files = \
 ui_sdl_built = ui/sdl/keysyms.c
 
 ui/sdl/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
+	@$(MKDIR_P) ui/sdl
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl sdl $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@

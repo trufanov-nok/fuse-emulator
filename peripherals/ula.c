@@ -1,5 +1,7 @@
 /* ula.c: ULA routines
    Copyright (c) 1999-2011 Philip Kendall, Darren Salt
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2016 Fredrick Meunier
 
    $Id$
 
@@ -121,7 +123,8 @@ ula_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
   last_byte = b;
 
   display_set_lores_border( b & 0x07 );
-  sound_beeper( (!!(b & 0x10) << 1) + ( (!(b & 0x8)) | tape_microphone ) );
+  sound_beeper( tstates,
+                (!!(b & 0x10) << 1) + ( (!(b & 0x8)) | tape_microphone ) );
 
   /* FIXME: shouldn't really be using the memory capabilities here */
 

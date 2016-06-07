@@ -1,5 +1,5 @@
 ## This file does not need automake. Include in the final Makefile.
-## Copyright (c) 2013 Sergio Baldoví
+## Copyright (c) 2013-2016 Sergio Baldoví
 
 ## $Id$
 
@@ -21,18 +21,20 @@
 ##
 ## E-mail: serbalgi@gmail.com
 
-package_win32=$(PACKAGE)-$(PACKAGE_VERSION)-win32
+package_win32=$(PACKAGE)-$(PACKAGE_VERSION)-$(UI)
 top_win32dir=$(top_builddir)/$(package_win32)
 
 install-win32: all
 	test -n "$(DESTDIR)" || { echo "ERROR: set DESTDIR path"; exit 1; }
 	$(MKDIR_P) $(DESTDIR)/roms/ || exit 1
 	$(MKDIR_P) $(DESTDIR)/lib/ || exit 1
+	test "$(UI)" != "sdl" || $(MKDIR_P) $(DESTDIR)/ui/widget/ || exit 1
 	cp $(top_srcdir)/roms/*.rom $(DESTDIR)/roms
 	cp $(top_srcdir)/roms/README.copyright $(DESTDIR)/roms
 	cp $(top_srcdir)/lib/*.bmp $(DESTDIR)/lib
 	cp $(top_srcdir)/lib/*.scr $(DESTDIR)/lib
 	cp $(top_builddir)/lib/*.szx $(DESTDIR)/lib
+	test "$(UI)" != "sdl" || cp $(top_builddir)/ui/widget/fuse.font $(DESTDIR)/ui/widget
 #	Copy fuse executable (we should manually copy the required libraries)
 	cp $(top_builddir)/.libs/fuse$(EXEEXT) $(DESTDIR) || \
 	cp $(top_builddir)/fuse$(EXEEXT) $(DESTDIR)

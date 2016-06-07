@@ -1,5 +1,7 @@
 /* debugger.c: The debugger widget
-   Copyright (c) 2002-2004 Philip Kendall, Darren Salt
+   Copyright (c) 2002-2014 Philip Kendall, Darren Salt
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2016 BogDan Vatra
 
    $Id$
 
@@ -102,6 +104,12 @@ int ui_debugger_disassemble( libspectrum_word addr )
 {
   debugger_memaddr = addr;
   return 0;
+}
+
+/* Debugger update function. The dialog box is created every time it is
+   displayed, so no need to do anything here */
+void ui_breakpoints_updated( void )
+{
 }
 
 int widget_debugger_draw( void *data )

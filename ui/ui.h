@@ -1,5 +1,6 @@
 /* ui.h: General UI event handling routines
-   Copyright (c) 2000-2004 Philip Kendall
+   Copyright (c) 2000-2015 Philip Kendall
+   Copyright (c) 2016 BogDan Vatra
 
    $Id$
 
@@ -74,6 +75,7 @@ int ui_debugger_activate( void );
 int ui_debugger_deactivate( int interruptable );
 int ui_debugger_update( void );
 int ui_debugger_disassemble( libspectrum_word address );
+void ui_breakpoints_updated();
 
 /* Reset anything in the UI which needs to be reset on machine selection */
 int ui_widgets_reset( void );
@@ -119,12 +121,6 @@ int ui_mouse_release( int suspend ); /* UI: ungrab, return 0 if done */
 /* Write the current tape out */
 int ui_tape_write( void );
 
-/* Write a +3, Beta or +D disk out */
-int ui_plus3_disk_write( specplus3_drive_number which, int saveas );
-int ui_beta_disk_write( beta_drive_number which, int saveas );
-int ui_opus_disk_write( opus_drive_number which, int saveas );
-int ui_plusd_disk_write( plusd_drive_number which, int saveas );
-int ui_disciple_disk_write( disciple_drive_number which, int saveas );
 int ui_mdr_write( int which, int saveas );
 
 /* Get a rollback point from the given list */

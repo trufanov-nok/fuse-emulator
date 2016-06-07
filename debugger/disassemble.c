@@ -1,5 +1,6 @@
 /* disassemble.c: Fuse's disassembler
-   Copyright (c) 2002-2003 Darren Salt, Philip Kendall
+   Copyright (c) 2002-2015 Darren Salt, Philip Kendall
+   Copyright (c) 2016 BogDan Vatra
 
    $Id$
 
@@ -343,7 +344,7 @@ disassemble_11xxx001( libspectrum_byte b, char *buffer, size_t buflen,
   case 0x03: snprintf( buffer, buflen, "EXX" ); *length = 1; break;
 
   case 0x05: 
-    snprintf( buffer, buflen, "JP %s", hl_ix_iy( use_hl ) ); *length = 1;
+    snprintf( buffer, buflen, "JP (%s)", hl_ix_iy( use_hl ) ); *length = 1;
     break;
 
   case 0x06: snprintf( buffer, buflen, "POP AF" ); *length = 1; break;

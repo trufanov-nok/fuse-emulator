@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001-2009 Philip Kendall, Bjoern Giesler
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -47,4 +48,5 @@ ui_wii_files = \
 ui_wii_built = ui/wii/keysyms.c
 
 ui/wii/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
+	@$(MKDIR_P) ui/wii
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl wii $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@

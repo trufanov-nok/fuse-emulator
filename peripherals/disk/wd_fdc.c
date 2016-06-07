@@ -1,6 +1,7 @@
 /* wd_fdc.c: Western Digital floppy disk controller emulation
-   Copyright (c) 2002-2007 Stuart Brady, Fredrick Meunier, Philip Kendall,
-   Dmitry Sanarin, Gergely Szasz
+   Copyright (c) 2002-2016 Stuart Brady, Fredrick Meunier, Philip Kendall,
+                           Dmitry Sanarin, Gergely Szasz
+   Copyright (c) 2016 Sergio Baldoví
 
    $Id$
 
@@ -36,7 +37,6 @@
 #include "ui/ui.h"
 #include "wd_fdc.h"
 
-static void statusbar_update( int busy );
 static void crc_preset( wd_fdc *f );
 static void crc_add( wd_fdc *f, fdd_t *d );
 static int read_id( wd_fdc *f );
@@ -127,14 +127,6 @@ wd_fdc_alloc_fdc( wd_type_t type, int hlt_time, unsigned int flags )
   return fdc;
 }
 
-static void
-statusbar_update( int busy )
-{
-  ui_statusbar_update( UI_STATUSBAR_ITEM_DISK,
-		       busy ? UI_STATUSBAR_STATE_ACTIVE :
-			      UI_STATUSBAR_STATE_INACTIVE );
-}
-
 void
 wd_fdc_set_intrq( wd_fdc *f )
 {
@@ -207,6 +199,9 @@ crc_add( wd_fdc *f, fdd_t *d )
 static int
 disk_ready( wd_fdc *f )
 {
+  if( f->flags & WD_FLAG_BETA128 )	/* Beta 128, READY = HLD */
+    return f->head_load;
+
   if( f->flags & WD_FLAG_RDY )
     return f->extra_signal;		/* MB-02+ set ready, if any of fdd selected */
 
@@ -392,8 +387,7 @@ wd_fdc_sr_read( wd_fdc *f )
     else
       f->status_register &= ~WD_FDC_SR_MOTORON; */
 
-    if( ( ( f->flags & WD_FLAG_BETA128 ) && f->head_load ) ||
-        ( !( f->flags & WD_FLAG_BETA128 ) && disk_ready( f ) ) )
+    if( disk_ready( f ) )
       f->status_register &= ~WD_FDC_SR_MOTORON;
     else
       f->status_register |= WD_FDC_SR_MOTORON;
@@ -529,7 +523,6 @@ type_i_verify:
       event_add_with_data( tstates + 15 * 				/* 15ms */
 		    machine_current->timings.processor_speed / 1000,
 			fdc_event, f );
-      statusbar_update( 1 );
     }
 
     f->state = WD_FDC_STATE_VERIFY;
@@ -538,7 +531,6 @@ type_i_verify:
 	!( f->status_register & WD_FDC_SR_MOTORON ) ) {
       f->status_register |= WD_FDC_SR_MOTORON;
       fdd_motoron( f->current_drive, 1 );
-      statusbar_update( 1 );
       event_remove_type( fdc_event );
       event_add_with_data( tstates + 12 * 		/* 6 revolution 6 * 200 / 1000 */
 		    machine_current->timings.processor_speed / 10,
@@ -797,7 +789,6 @@ wd_fdc_event( libspectrum_dword last_tstates GCC_UNUSED, int event,
       else
         fdd_head_load( d, 0 );
     }
-    statusbar_update( 0 );
     return;
   }
 
@@ -885,7 +876,6 @@ wd_fdc_spinup( wd_fdc *f, libspectrum_byte b )
     if( !( f->status_register & WD_FDC_SR_MOTORON ) ) {
       f->status_register |= WD_FDC_SR_MOTORON;
       fdd_motoron( d, 1 );
-      statusbar_update( 1 );
       if( !( b & 0x08 ) )
         delay += 6 * 200;
     }
@@ -898,7 +888,6 @@ wd_fdc_spinup( wd_fdc *f, libspectrum_byte b )
           fdd_motoron( d, 1 );
         else
 	  fdd_head_load( d, 1 );
-	statusbar_update( 1 );
       } else if( !( b & 0x04 ) ) {	/* HLD reset only if V flag == 0 too */
 	f->head_load = 0;
         if( !( f->flags & WD_FLAG_NOHLT ) && f->hlt_time > 0 ) f->hlt = 0;		/* reset the trigger */
@@ -906,7 +895,6 @@ wd_fdc_spinup( wd_fdc *f, libspectrum_byte b )
           fdd_motoron( d, 0 );
         else
 	  fdd_head_load( d, 0 );
-	statusbar_update( 0 );
       }
       return 0;
     } else {
@@ -915,7 +903,6 @@ wd_fdc_spinup( wd_fdc *f, libspectrum_byte b )
         fdd_motoron( d, 1 );
       else
         fdd_head_load( d, 1 );
-      statusbar_update( 1 );
       if( f->hlt_time > 0 )
         delay += f->hlt_time;
     }
@@ -989,8 +976,7 @@ wd_fdc_cr_write( wd_fdc *f, libspectrum_byte b )
     wd_fdc_type_i( f );
   } else if( !( b & 0x40 ) ) {                  /* Type II */
     if( f->type == WD1773 || f->type == FD1793 ) {
-      if( ( ( f->flags & WD_FLAG_BETA128 ) && !f->head_load ) ||
-        ( !( f->flags & WD_FLAG_BETA128 ) && !disk_ready( f ) ) ) {
+      if( !disk_ready( f ) ) {
         f->status_register &= ~WD_FDC_SR_BUSY;
         f->state = WD_FDC_STATE_NONE;
         wd_fdc_set_intrq( f );
@@ -1022,8 +1008,7 @@ wd_fdc_cr_write( wd_fdc *f, libspectrum_byte b )
     wd_fdc_type_ii( f );
   } else if( ( b & 0x30 ) != 0x10 ) {           /* Type III */
     if( f->type == WD1773 || f->type == FD1793 || f->type == WD2797 ) {
-      if( ( ( f->flags & WD_FLAG_BETA128 ) && !f->head_load ) ||
-           ( !( f->flags & WD_FLAG_BETA128 ) && !disk_ready( f ) ) ) {
+      if( !disk_ready( f ) ) {
         f->status_register &= ~WD_FDC_SR_BUSY;
         f->state = WD_FDC_STATE_NONE;
         wd_fdc_set_intrq( f );

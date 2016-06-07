@@ -1,5 +1,8 @@
 /* debugger.c: the Win32 debugger
    Copyright (c) 2004-2012 Philip Kendall, Marek Januszewski
+   Copyright (c) 2013-2015 Sergio Baldoví
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2016 BogDan Vatra
 
    $Id$
 
@@ -160,6 +163,12 @@ ui_debugger_activate( void )
   if( !debugger_active ) activate_debugger();
 
   return 0;
+}
+
+void
+ui_breakpoints_updated( void )
+{
+  /* TODO: Refresh debugger list here */
 }
 
 static int

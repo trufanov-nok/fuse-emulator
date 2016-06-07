@@ -1,5 +1,7 @@
 /* win32ui.c: Win32 routines for dealing with the user interface
-   Copyright (c) 2003-2007 Marek Januszewski, Philip Kendall, Stuart Brady
+   Copyright (c) 2003-2015 Marek Januszewski, Philip Kendall, Stuart Brady
+   Copyright (c) 2015 Kirben
+   Copyright (c) 2016 lordhoto
 
    $Id$
 
@@ -302,8 +304,15 @@ WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
   fuse_hPrevInstance = hPrevInstance;
 
 /* HACK: __argc, __argv are broken and return zero when using mingwrt 4.0+
-   on MinGW */
-#if defined( __GNUC__ ) && defined( __MINGW32__ ) && !defined( __MINGW64__ )
+   on MinGW.
+   HACK: MinGW-w64 based toolchains neither feature _argc nor _argv. The 32 bit
+   incarnation only defines __MINGW32__. This leads to build breakage due to
+   missing declarations. Luckily MinGW-w64 based toolchains define
+   __MINGW64_VERSION_foo macros inside _mingw.h, which is included from all
+   system headers. Thus we abuse that to detect them.
+*/
+#if defined( __GNUC__ ) && defined( __MINGW32__ ) \
+                        && !defined( __MINGW64_VERSION_MAJOR )
   return fuse_main( _argc, _argv );
 #else
   return fuse_main( __argc, __argv );

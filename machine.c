@@ -1,5 +1,5 @@
 /* machine.c: Routines for handling the various machine types
-   Copyright (c) 1999-2011 Philip Kendall
+   Copyright (c) 1999-2015 Philip Kendall
 
    $Id$
 
@@ -307,7 +307,7 @@ machine_load_rom_bank( memory_page* bank_map, int page_num,
   int custom = 0;
   int retval;
 
-  if( fallback ) custom = strcmp( filename, fallback );
+  if( fallback ) custom = !!strcmp( filename, fallback );
 
   retval = machine_load_rom_bank_from_file( bank_map, page_num, filename,
     expected_length, custom );
@@ -330,6 +330,9 @@ machine_reset( int hard_reset )
 {
   size_t i;
   int error;
+
+  /* Clear poke list (undoes effects of active pokes on Spectrum memory) */
+  pokemem_clear();
 
   sound_ay_reset();
 
@@ -361,9 +364,6 @@ machine_reset( int hard_reset )
 
   /* clear out old display image ready for new one */
   display_refresh_all();
-
-  /* Clear poke list */
-  pokemem_clear();
 
   return 0;
 }

@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001-2004 Philip Kendall
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -44,4 +45,5 @@ ui_svga_files = \
 ui_svga_built = ui/svga/keysyms.c
 
 ui/svga/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
+	@$(MKDIR_P) ui/svga
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl svga $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@

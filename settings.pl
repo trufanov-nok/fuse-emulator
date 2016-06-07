@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 
 # settings.pl: generate settings.c from settings.dat
-# Copyright (c) 2002-2005 Philip Kendall
+# Copyright (c) 2002-2015 Philip Kendall
+# Copyright (c) 2016 BogDan Vatra
 
 # $Id$
 
@@ -167,7 +168,6 @@ static int
 read_config_file( settings_info *settings )
 {
   const char *home; char path[ PATH_MAX ];
-  struct stat stat_info;
 
   xmlDocPtr doc;
 
@@ -176,14 +176,8 @@ read_config_file( settings_info *settings )
   snprintf( path, PATH_MAX, "%s/%s", home, CONFIG_FILE_NAME );
 
   /* See if the file exists; if doesn't, it's not a problem */
-  if( stat( path, &stat_info ) ) {
-    if( errno == ENOENT ) {
+  if( !compat_file_exists( path ) ) {
       return 0;
-    } else {
-      ui_error( UI_ERROR_ERROR, "couldn't stat '%s': %s", path,
-		strerror( errno ) );
-      return 1;
-    }
   }
 
   doc = xmlParseFile( path );
@@ -482,7 +476,7 @@ settings_string_write( compat_fd doc, const char* name, const char* config )
       ( settings_file_write( doc, name, strlen( name ) ) ||
         settings_file_write( doc, "=", 1 ) ||
         settings_file_write( doc, config, strlen( config ) ) ||
-        settings_file_write( doc, "\n", 1 ) ) )
+        settings_file_write( doc, FUSE_EOL, strlen( FUSE_EOL ) ) ) )
     return 1;
   return 0;
 }

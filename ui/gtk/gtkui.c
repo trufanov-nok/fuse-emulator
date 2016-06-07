@@ -1,5 +1,5 @@
 /* gtkui.c: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2005 Philip Kendall, Russell Marks
+   Copyright (c) 2000-2015 Philip Kendall, Russell Marks, Sergio Baldoví
 
    $Id$
 
@@ -62,6 +62,8 @@ GtkWidget *gtkui_window;
 
 /* The area into which the screen will be drawn */
 GtkWidget *gtkui_drawing_area;
+
+static GtkWidget *menu_bar;
 
 /* The UIManager used to create the menu bar */
 GtkUIManager *ui_manager_menu = NULL;
@@ -149,7 +151,7 @@ static void gtkui_drag_data_received( GtkWidget *widget GCC_UNUSED,
 int
 ui_init( int *argc, char ***argv )
 {
-  GtkWidget *box, *menu_bar;
+  GtkWidget *box;
   GtkAccelGroup *accel_group;
   GtkSettings *settings;
 
@@ -658,10 +660,12 @@ menu_help_keyboard( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 void
 menu_help_about( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
+  /* TODO: show Fuse icon */
   gtk_show_about_dialog( GTK_WINDOW( gtkui_window ),
-                         "name", "Fuse",
+                         "program-name", "Fuse",
                          "comments", "The Free Unix Spectrum Emulator",
                          "copyright", FUSE_COPYRIGHT,
+                         "logo-icon-name", NULL,
                          "version", VERSION,
                          "website", PACKAGE_URL,
                          NULL );
@@ -973,4 +977,14 @@ gtkui_scroll_connect( GtkTreeView *list, GtkAdjustment *adj )
                     G_CALLBACK( key_press ), adj );
   g_signal_connect( list, "scroll-event",
                     G_CALLBACK( wheel_scroll_event ), adj );
+}
+
+int
+gtkui_menubar_get_height( void )
+{
+  GtkAllocation alloc;
+
+  gtk_widget_get_allocation( menu_bar, &alloc );
+
+  return alloc.height;
 }

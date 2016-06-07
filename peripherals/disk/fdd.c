@@ -1,5 +1,7 @@
 /* fdd.c: Routines for emulating floppy disk drives
-   Copyright (c) 2007-2013 Gergely Szasz
+   Copyright (c) 2007-2016 Gergely Szasz
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2016 BogDan Vatra
 
    $Id$
 
@@ -34,6 +36,7 @@
 #include "machine.h"
 #include "spectrum.h"
 #include "settings.h"
+#include "ui/ui.h"
 #include "upd_fdc.h"
 #include "wd_fdc.h"
 
@@ -71,6 +74,8 @@ fdd_event( libspectrum_dword last_tstates, int event, void *user_data );
 static int motor_event;
 static int index_event;
 
+static int fdd_motor = 0; /* to manage 'disk' icon */
+
 void
 fdd_init_events( void )
 {
@@ -85,7 +90,7 @@ const char *
 fdd_strerror( int error )
 {
   if( error >= FDD_LAST_ERROR )
-    error = FDD_LAST_ERROR;
+    error = FDD_LAST_ERROR - 1;
   return fdd_error[ error ];
 }
 
@@ -185,6 +190,10 @@ fdd_motoron( fdd_t *d, int on )
   if( d->motoron == on )
     return;
   d->motoron = on;
+  fdd_motor += on ? 1 : -1;
+  ui_statusbar_update( UI_STATUSBAR_ITEM_DISK,
+                       fdd_motor > 0 ? UI_STATUSBAR_STATE_ACTIVE :
+                       UI_STATUSBAR_STATE_INACTIVE );
   /*
   TEAC FD55 Spec:
   (13) READY output signal

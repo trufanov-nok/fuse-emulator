@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 1999-2004 Philip Kendall
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -81,6 +82,7 @@ lib_uncompressed_snaps = \
 lib_tests = \
             lib/tests/fatware-success.hdf.bz2 \
             lib/tests/idedos-success.hdf.bz2 \
+            lib/tests/success.d80.bz2 \
             lib/tests/success.mdr \
             lib/tests/success.mgt.bz2 \
             lib/tests/success.opd \

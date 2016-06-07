@@ -1,5 +1,8 @@
 /* z80_ops.c: Process the next opcode
    Copyright (c) 1999-2005 Philip Kendall, Witold Filipczyk
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2015 Gergely Szasz
+   Copyright (c) 2015 Sergio Baldoví
 
    $Id$
 
@@ -158,7 +161,7 @@ z80_do_opcodes( void )
     /* Check if the debugger should become active at this point */
     CHECK( debugger, debugger_mode != DEBUGGER_MODE_INACTIVE )
 
-    if( !z80.halted && debugger_check( DEBUGGER_BREAKPOINT_TYPE_EXECUTE, PC ) )
+    if( debugger_check( DEBUGGER_BREAKPOINT_TYPE_EXECUTE, PC ) )
       debugger_trap();
 
     END_CHECK
@@ -296,14 +299,6 @@ z80_do_opcodes( void )
 
     if( PC == 0x007c )
       spectranet_unpage();
-
-    END_CHECK
-
-    CHECK( z80_halted, z80.halted )
-
-    /* Opcode read from memory is ignored and PC is left unchanged */
-    R++;
-    continue;
 
     END_CHECK
 

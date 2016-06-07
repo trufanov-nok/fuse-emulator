@@ -1,6 +1,7 @@
 /* filesel.c: File selection dialog box
-   Copyright (c) 2001-2005 Matan Ziv-Av, Philip Kendall, Russell Marks,
+   Copyright (c) 2001-2015 Matan Ziv-Av, Philip Kendall, Russell Marks,
 			   Marek Januszewski
+   Copyright (c) 2015 Sergio Baldoví
 
    $Id$
 
@@ -436,7 +437,17 @@ static void widget_scan( char *dir )
 static int
 widget_select_file( const char *name )
 {
-  return( name && strcmp( name, "." ) );
+  if( !name ) return 0;
+
+  /* Skip current directory */
+  if( !strcmp( name, "." ) ) return 0;
+
+#ifndef WIN32
+  /* Skip hidden files/directories */
+  if( strlen( name ) > 1 && name[0] == '.' && name[1] != '.' ) return 0;
+#endif				/* #ifdef WIN32 */
+
+  return 1;
 }
 
 static int widget_scan_compare( const struct widget_dirent **a,

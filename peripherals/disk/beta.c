@@ -1,5 +1,5 @@
 /* beta.c: Routines for handling the Beta disk interface
-   Copyright (c) 2004-2011 Stuart Brady, Philip Kendall
+   Copyright (c) 2004-2016 Stuart Brady, Philip Kendall, Gergely Szasz
 
    $Id$
 
@@ -94,6 +94,9 @@ static void beta_memory_map( void );
 static void beta_enabled_snapshot( libspectrum_snap *snap );
 static void beta_from_snapshot( libspectrum_snap *snap );
 static void beta_to_snapshot( libspectrum_snap *snap );
+
+/* 16KB ROM */
+#define ROM_SIZE 0x4000
 
 static module_info_t beta_module_info = {
 
@@ -199,7 +202,7 @@ beta_reset( int hard_reset GCC_UNUSED )
   if( !beta_builtin ) {
     if( machine_load_rom_bank( beta_memory_map_romcs, 0,
 			       settings_current.rom_beta128,
-			       settings_default.rom_beta128, 0x4000 ) ) {
+			       settings_default.rom_beta128, ROM_SIZE ) ) {
       beta_active = 0;
       beta_available = 0;
       periph_activate_type( PERIPH_TYPE_BETA128, 0 );
@@ -232,7 +235,6 @@ beta_reset( int hard_reset GCC_UNUSED )
   beta_select_drive( 0 );
   machine_current->memory_map();
 
-  ui_statusbar_update( UI_STATUSBAR_ITEM_DISK, UI_STATUSBAR_STATE_INACTIVE );
 }
 
 void
@@ -379,7 +381,9 @@ beta_get_fdd( beta_drive_number which )
 static void
 beta_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_beta_active( snap ) )
+  if( libspectrum_snap_beta_active( snap ) &&
+      !( machine_current->capabilities &
+         LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK ) )
     settings_current.beta128 = 1;
 }
 
@@ -406,7 +410,7 @@ beta_from_snapshot( libspectrum_snap *snap )
       machine_load_rom_bank_from_buffer(
                              beta_memory_map_romcs, 0,
                              libspectrum_snap_beta_rom( snap, 0 ),
-                             0x4000, 1 ) )
+                             ROM_SIZE, 1 ) )
     return;
 
   /* ignore drive count for now, there will be an issue with loading snaps where
@@ -429,23 +433,22 @@ beta_to_snapshot( libspectrum_snap *snap )
   wd_fdc *f = beta_fdc;
   libspectrum_byte *buffer;
   int drive_count = 0;
+  int i;
 
   if( !periph_is_active( PERIPH_TYPE_BETA128 ) ) return;
 
   libspectrum_snap_set_beta_active( snap, 1 );
 
-  if( beta_memory_map_romcs[0].save_to_snapshot ) {
-    size_t rom_length = MEMORY_PAGE_SIZE * 2;
+  buffer = libspectrum_new( libspectrum_byte, ROM_SIZE );
 
-    buffer = libspectrum_new( libspectrum_byte, rom_length );
+  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
+    memcpy( buffer + i * MEMORY_PAGE_SIZE,
+            beta_memory_map_romcs[ i ].page, MEMORY_PAGE_SIZE );
 
-    memcpy( buffer, beta_memory_map_romcs[0].page, MEMORY_PAGE_SIZE );
-    memcpy( buffer + MEMORY_PAGE_SIZE, beta_memory_map_romcs[1].page,
-	    MEMORY_PAGE_SIZE );
+  libspectrum_snap_set_beta_rom( snap, 0, buffer );
 
-    libspectrum_snap_set_beta_rom( snap, 0, buffer );
+  if( beta_memory_map_romcs[0].save_to_snapshot )
     libspectrum_snap_set_beta_custom_rom( snap, 1 );
-  }
 
   drive_count++; /* Drive A is not removable */
   if( option_enumerate_diskoptions_drive_beta128b_type() > 0 ) drive_count++;

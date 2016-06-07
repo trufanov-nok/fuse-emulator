@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001-2004 Philip Kendall
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -54,7 +55,9 @@ EXTRA_DIST += \
               ui/xlib/xstatusbar.pl
 
 ui/xlib/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
+	@$(MKDIR_P) ui/xlib
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl x $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@
 
 ui/xlib/xpixmaps.c: ui/xlib/xstatusbar.pl $(srcdir)/ui/gtk/pixmaps.c
+	@$(MKDIR_P) ui/xlib
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/ui/xlib/xstatusbar.pl $(srcdir)/ui/gtk/pixmaps.c > $@.tmp && mv $@.tmp $@

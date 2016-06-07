@@ -3,7 +3,7 @@
 # z80.pl: generate C code for Z80 opcodes
 # $Id$
 
-# Copyright (c) 1999-2013 Philip Kendall
+# Copyright (c) 1999-2015 Philip Kendall
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -627,12 +627,7 @@ sub opcode_EXX (@) {
 EXX
 }
 
-sub opcode_HALT (@) {
-    print << "HALT";
-      z80.halted=1;
-      event_add( tstates, z80_halt_event );
-HALT
-}
+sub opcode_HALT (@) { print "      z80.halted=1;\n      PC--;\n"; }
 
 sub opcode_IM (@) {
 

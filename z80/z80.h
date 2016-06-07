@@ -1,5 +1,5 @@
 /* z80.h: z80 emulation core
-   Copyright (c) 1999-2013 Philip Kendall
+   Copyright (c) 1999-2015 Philip Kendall
 
    $Id$
 
@@ -75,7 +75,8 @@ extern libspectrum_byte sz53_table[];
 extern libspectrum_byte sz53p_table[];
 extern libspectrum_byte parity_table[];
 
-extern int z80_interrupt_event, z80_nmi_event;
-extern int z80_halt_event, z80_nmos_iff2_event;
+extern int z80_interrupt_event;
+extern int z80_nmi_event;
+extern int z80_nmos_iff2_event;
 
 #endif			/* #ifndef FUSE_Z80_H */

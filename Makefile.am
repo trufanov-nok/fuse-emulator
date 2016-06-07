@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 1999-2009 Philip Kendall
+## Copyright (c) 1999-2015 Philip Kendall
 
 ## $Id$
 
@@ -58,6 +58,7 @@ fuse_SOURCES = display.c \
 	utils.c
 
 fuse_LDADD = \
+             $(PTHREAD_LIBS) \
              $(LIBSPEC_LIBS) \
              $(GTK_LIBS) \
              $(GLIB_LIBS) \
@@ -89,6 +90,8 @@ AM_CPPFLAGS = \
               -DFUSEDATADIR="\"${pkgdatadir}\"" \
               $(SDL_CFLAGS) \
               $(PNG_CFLAGS)
+
+AM_CFLAGS = $(WARN_CFLAGS) $(PTHREAD_CFLAGS)
 
 noinst_HEADERS = bitmap.h \
 	compat.h \
@@ -128,6 +131,7 @@ EXTRA_DIST = AUTHORS \
 	     THANKS \
 	     keysyms.dat \
 	     keysyms.pl \
+	     m4/ax_create_stdint_h.m4 \
 	     m4/ax_pthread.m4 \
 	     m4/glib-2.0.m4 \
 	     m4/gtk-2.0.m4 \

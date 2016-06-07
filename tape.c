@@ -1,5 +1,7 @@
 /* tape.c: tape handling routines
-   Copyright (c) 1999-2011 Philip Kendall, Darren Salt, Witold Filipczyk
+   Copyright (c) 1999-2015 Philip Kendall, Darren Salt, Witold Filipczyk
+   Copyright (c) 2015 UB880D
+   Copyright (c) 2016 Fredrick Meunier
 
    $Id$
 
@@ -75,6 +77,7 @@ static int play_event, stop_event = -1;
 /* Spectrum events */
 int tape_edge_event;
 static int record_event;
+static int tape_mic_off_event;
 
 /* Function prototypes */
 
@@ -85,6 +88,8 @@ static void make_name( unsigned char *name, const unsigned char *data );
 static void
 tape_event_record_sample( libspectrum_dword last_tstates, int type,
 			  void *user_data );
+static void tape_stop_mic_off( libspectrum_dword last_tstates, int type,
+                               void *user_data );
 
 /* Function definitions */
 
@@ -99,6 +104,7 @@ tape_init( void )
 					stop_event_detail_string );
 
   tape_edge_event = event_register( tape_next_edge, "Tape edge" );
+  tape_mic_off_event = event_register( tape_stop_mic_off, "Tape stop MIC off" );
   record_event = event_register( tape_event_record_sample,
 				 "Tape sample record" );
 
@@ -315,7 +321,6 @@ int tape_write( const char* filename )
   libspectrum_free( buffer );
 
   return 0;
-
 }
 
 int tape_can_autoload( void )
@@ -354,12 +359,6 @@ int tape_load_trap( void )
      instruction it was that caused the trap to hit */
   if( libspectrum_tape_block_type( block ) != LIBSPECTRUM_TAPE_BLOCK_ROM ||
       libspectrum_tape_state( tape ) != LIBSPECTRUM_TAPE_STATE_PILOT ) {
-    tape_play( 1 );
-    return -1;
-  }
-
-  /* Verify? For now don't run the traps in that situation */
-  if( !(F_ & FLAG_C) ) {
     tape_play( 1 );
     return -1;
   }
@@ -407,7 +406,7 @@ static int
 trap_load_block( libspectrum_tape_block *block )
 {
   libspectrum_byte parity, *data;
-  int i = 0, length, read;
+  int i = 0, length, read, verify;
 
   /* On exit:
    *  A = calculated parity byte if parity checked, else 0 (CHECKME)
@@ -441,6 +440,7 @@ trap_load_block( libspectrum_tape_block *block )
     return 0;
   }
 
+  verify =  !(F_ & FLAG_C);
   i = A_; /* i = A' (flag byte) */
   AF_ = 0x0145;
   A = 0;
@@ -456,12 +456,7 @@ trap_load_block( libspectrum_tape_block *block )
   L = data[read - 1];
 
   /* Loading or verifying determined by the carry flag of F' */
-  if( F_ & FLAG_C ) {
-    for( i = 0; i < read; i++ ) {
-      parity ^= data[i];
-      writebyte_internal( IX+i, data[i] );
-    }
-  } else {		/* verifying */
+  if( verify ) {		/* verifying */
     for( i = 0; i < read; i++ ) {
       parity ^= data[i];
       if( data[i] != readbyte_internal(IX+i) ) {
@@ -469,6 +464,11 @@ trap_load_block( libspectrum_tape_block *block )
         L = data[i];
 	goto error_ret;
       }
+    }
+  } else {
+    for( i = 0; i < read; i++ ) {
+      parity ^= data[i];
+      writebyte_internal( IX+i, data[i] );
     }
   }
 
@@ -605,7 +605,6 @@ int tape_stop( void )
   if( tape_playing ) {
 
     tape_playing = 0;
-    tape_microphone = 0;
     ui_statusbar_update( UI_STATUSBAR_ITEM_TAPE, UI_STATUSBAR_STATE_INACTIVE );
     loader_tape_stop();
 
@@ -617,6 +616,12 @@ int tape_stop( void )
     }
 
     event_remove_type( tape_edge_event );
+
+    /* Turn off any lingering MIC level in a second (some loaders like Alkatraz
+       seem to check the MIC level soon after loading is finished, presumably as
+       a copy protection check */
+    event_add( tstates + machine_current->timings.tstates_per_frame,
+               tape_mic_off_event );
   }
 
   if( stop_event != -1 ) debugger_event( stop_event );
@@ -792,6 +797,8 @@ tape_next_edge( libspectrum_dword last_tstates, int type, void *user_data )
     }
   }
 
+  sound_beeper( last_tstates, tape_microphone );
+
   /* If we've been requested to stop the tape, do so and then
      return without stacking another edge */
   if( ( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) ||
@@ -834,6 +841,12 @@ tape_next_edge( libspectrum_dword last_tstates, int type, void *user_data )
   loader_set_acceleration_flags( flags );
 }
 
+static void
+tape_stop_mic_off( libspectrum_dword last_tstates, int type, void *user_data )
+{
+  tape_microphone = 0;
+}
+
 /* Call a user-supplied function for every block in the current tape */
 int
 tape_foreach( void (*function)( libspectrum_tape_block *block,
@@ -858,12 +871,15 @@ tape_block_details( char *buffer, size_t length,
   libspectrum_byte *data;
   const char *type; unsigned char name[11];
   int offset;
+  size_t i;
+  unsigned long total_pulses;
 
   buffer[0] = '\0';
 
   switch( libspectrum_tape_block_type( block ) ) {
 
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
+  case LIBSPECTRUM_TAPE_BLOCK_DATA_BLOCK:
     /* See if this looks like a standard Spectrum header and if so
        display some extra data */
     if( libspectrum_tape_block_data_length( block ) != 19 ) goto normal;
@@ -895,7 +911,6 @@ tape_block_details( char *buffer, size_t length,
   case LIBSPECTRUM_TAPE_BLOCK_TURBO:
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-  case LIBSPECTRUM_TAPE_BLOCK_DATA_BLOCK:
     snprintf( buffer, length, "%lu bytes",
 	      (unsigned long)libspectrum_tape_block_data_length( block ) );
     break;
@@ -906,9 +921,15 @@ tape_block_details( char *buffer, size_t length,
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-  case LIBSPECTRUM_TAPE_BLOCK_PULSE_SEQUENCE:
     snprintf( buffer, length, "%lu pulses",
 	      (unsigned long)libspectrum_tape_block_count( block ) );
+    break;
+
+  case LIBSPECTRUM_TAPE_BLOCK_PULSE_SEQUENCE:
+    total_pulses = 0;
+    for( i=0; i < libspectrum_tape_block_count( block ); i++ )
+      total_pulses += libspectrum_tape_block_pulse_repeats( block, i );
+    snprintf( buffer, length, "%lu pulses", total_pulses );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:

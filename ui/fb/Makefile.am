@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001-2004 Philip Kendall
+## Copyright (c) 2015 Sergio Baldoví
 
 ## $Id$
 
@@ -46,4 +47,5 @@ ui_fb_files = \
 ui_fb_built = ui/fb/keysyms.c
 
 ui/fb/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
+	@$(MKDIR_P) ui/fb
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl fb $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@

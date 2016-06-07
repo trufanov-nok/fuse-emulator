@@ -1,5 +1,5 @@
 /* pokemem.c: help with handling pokes
-   Copyright (c) 2011 Philip Kendall, Sergio Baldoví
+   Copyright (c) 2011-2015 Philip Kendall, Sergio Baldoví
 
    $Id$
 
@@ -84,6 +84,8 @@ pokemem_trainer_free( gpointer data, gpointer user_data GCC_UNUSED )
   trainer_t *trainer = data;
 
   if( !trainer ) return;
+
+  pokemem_trainer_deactivate( trainer );
 
   if( trainer->poke_list ) {
     g_slist_foreach( trainer->poke_list, pokemem_poke_free, NULL );

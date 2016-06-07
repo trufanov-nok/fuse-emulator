@@ -1,5 +1,8 @@
 /* didaktik.c: Routines for handling the Didaktik 40/80 disk interface
-   Copyright (c) 2015 Gergely Szasz
+   Copyright (c) 2015-2016 Gergely Szasz
+   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2016 Sergio Baldoví
+   Copyright (c) 2016 Fredrick Meunier
 
    $Id$
 
@@ -47,11 +50,13 @@
 #define DATARQ_ENABLED 0x40
 /* 2KB RAM */
 #define RAM_SIZE 0x0800
+/* 14KB ROM */
+#define ROM_SIZE 0x3800
 
 static int didaktik_rom_memory_source, didaktik_ram_memory_source;
 
 /* Two memory chunks accessible by the Z80 when /ROMCS is low */
-static memory_page didaktik_memory_map_romcs_rom[ MEMORY_PAGES_IN_16K ];
+static memory_page didaktik_memory_map_romcs_rom[ MEMORY_PAGES_IN_14K ];
 static memory_page didaktik_memory_map_romcs_ram[ MEMORY_PAGES_IN_2K ];
 
 int didaktik80_available = 0;
@@ -69,6 +74,9 @@ static libspectrum_byte aux_register;
 
 static void didaktik_reset( int hard_reset );
 static void didaktik_memory_map( void );
+static void didaktik_enabled_snapshot( libspectrum_snap *snap );
+static void didaktik_from_snapshot( libspectrum_snap *snap );
+static void didaktik_to_snapshot( libspectrum_snap *snap );
 static libspectrum_byte didaktik_sr_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached );
 static void didaktik_cr_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b );
 static libspectrum_byte didaktik_tr_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached );
@@ -85,9 +93,9 @@ static module_info_t didaktik_module_info = {
 
   /* .reset = */ didaktik_reset,
   /* .romcs = */ didaktik_memory_map,
-  /* .snapshot_enabled = */ NULL,
-  /* .snapshot_from = */ NULL,
-  /* .snapshot_to = */ NULL,
+  /* .snapshot_enabled = */ didaktik_enabled_snapshot,
+  /* .snapshot_from = */ didaktik_from_snapshot,
+  /* .snapshot_to = */ didaktik_to_snapshot,
 
 };
 
@@ -138,7 +146,11 @@ didaktik_memory_map( void )
 {
   if( !didaktik80_active ) return;
 
-  memory_map_romcs_full( didaktik_memory_map_romcs_rom );
+  memory_map_romcs_8k( 0x0000, didaktik_memory_map_romcs_rom );
+  memory_map_romcs_4k( 0x2000,
+                       didaktik_memory_map_romcs_rom + MEMORY_PAGES_IN_8K );
+  memory_map_romcs_2k( 0x3000,
+                       didaktik_memory_map_romcs_rom + MEMORY_PAGES_IN_12K );
   memory_map_romcs_2k( 0x3800, didaktik_memory_map_romcs_ram );
 }
 
@@ -166,7 +178,7 @@ didaktik80_init( void )
 
   for( i = 0; i < DIDAKTIK80_NUM_DRIVES; i++ ) {
     d = &didaktik_drives[ i ];
-    fdd_init( d, FDD_SHUGART, NULL, 0 );	/* drive geometry 'autodetect' */
+    fdd_init( d, FDD_SHUGART, NULL, 0 );       /* drive geometry 'autodetect' */
     d->disk.flag = DISK_FLAG_NONE;
   }
 
@@ -183,7 +195,7 @@ didaktik80_init( void )
 
   didaktik_rom_memory_source = memory_source_register( "Didaktik 80 ROM" );
   didaktik_ram_memory_source = memory_source_register( "Didaktik 80 RAM" );
-  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
+  for( i = 0; i < MEMORY_PAGES_IN_14K; i++ )
     didaktik_memory_map_romcs_rom[i].source = didaktik_rom_memory_source;
 
   for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
@@ -208,15 +220,16 @@ didaktik_reset( int hard_reset )
   if( !periph_is_active( PERIPH_TYPE_DIDAKTIK80 ) ) {
     return;
   }
-  ui_menu_activate( UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP, 1 );
 
   if( machine_load_rom_bank( didaktik_memory_map_romcs_rom, 0,
                              settings_current.rom_didaktik80,
-                             settings_default.rom_didaktik80, 0x4000 ) ) {
+                             settings_default.rom_didaktik80, ROM_SIZE ) ) {
     settings_current.didaktik80 = 0;
     periph_activate_type( PERIPH_TYPE_DIDAKTIK80, 0 );
     return;
   }
+
+  ui_menu_activate( UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP, 1 );
 
   for( i = 0; i < MEMORY_PAGES_IN_2K; i++ ) {
     struct memory_page *page =
@@ -247,7 +260,6 @@ didaktik_reset( int hard_reset )
   fdd_select( &didaktik_drives[ 1 ], 0 );
   machine_current->memory_map();
 
-  ui_statusbar_update( UI_STATUSBAR_ITEM_DISK, UI_STATUSBAR_STATE_INACTIVE );
 }
 
 void
@@ -403,3 +415,98 @@ static ui_media_drive_info_t didaktik_ui_drives[ DIDAKTIK80_NUM_DRIVES ] = {
     /* .get_params = */ &ui_drive_get_params_b,
   },
 };
+
+static void
+didaktik_enabled_snapshot( libspectrum_snap *snap )
+{
+  if( libspectrum_snap_didaktik80_active( snap ) )
+    settings_current.didaktik80 = 1;
+}
+
+static void
+didaktik_from_snapshot( libspectrum_snap *snap )
+{
+  int i;
+
+  if( !libspectrum_snap_didaktik80_active( snap ) ) return;
+
+  if( libspectrum_snap_didaktik80_custom_rom( snap ) &&
+      libspectrum_snap_didaktik80_rom( snap, 0 ) &&
+      machine_load_rom_bank_from_buffer(
+                             didaktik_memory_map_romcs_rom, 0,
+                             libspectrum_snap_didaktik80_rom( snap, 0 ),
+                             ROM_SIZE, 1 ) )
+    return;
+
+  if( libspectrum_snap_didaktik80_ram( snap, 0 ) ) {
+    for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
+      memcpy( didaktik_memory_map_romcs_ram[ i ].page,
+              libspectrum_snap_didaktik80_ram( snap, 0 ) + i * MEMORY_PAGE_SIZE,
+              MEMORY_PAGE_SIZE );
+  }
+
+  /* ignore drive count for now, there will be an issue with loading snaps where
+     drives have been disabled
+  libspectrum_snap_didaktik80_drive_count( snap )
+   */
+
+  didaktik_fdc->direction = libspectrum_snap_plusd_direction( snap );
+
+  didaktik_cr_write ( 0x0081, libspectrum_snap_didaktik80_status ( snap ) );
+  didaktik_tr_write ( 0x0083, libspectrum_snap_didaktik80_track  ( snap ) );
+  didaktik_sec_write( 0x0085, libspectrum_snap_didaktik80_sector ( snap ) );
+  didaktik_dr_write ( 0x0087, libspectrum_snap_didaktik80_data   ( snap ) );
+  didaktik_aux_write( 0x0089, libspectrum_snap_didaktik80_aux    ( snap ) );
+
+  if( libspectrum_snap_didaktik80_paged( snap ) ) {
+    didaktik80_page();
+  } else {
+    didaktik80_unpage();
+  }
+}
+
+static void
+didaktik_to_snapshot( libspectrum_snap *snap )
+{
+  libspectrum_byte *buffer;
+  int drive_count = 0;
+  int i;
+  size_t memory_length;
+
+  if( !periph_is_active( PERIPH_TYPE_DIDAKTIK80 ) ) return;
+
+  libspectrum_snap_set_didaktik80_active( snap, 1 );
+
+  memory_length = ROM_SIZE;
+
+  libspectrum_snap_set_didaktik80_custom_rom( snap, 1 );
+  libspectrum_snap_set_didaktik80_rom_length( snap, 0, memory_length );
+
+  buffer = libspectrum_new( libspectrum_byte, memory_length );
+
+  for( i = 0; i < MEMORY_PAGES_IN_14K; i++ )
+    memcpy( buffer + i * MEMORY_PAGE_SIZE,
+            didaktik_memory_map_romcs_rom[ i ].page, MEMORY_PAGE_SIZE );
+
+  libspectrum_snap_set_didaktik80_rom( snap, 0, buffer );
+
+  memory_length = RAM_SIZE;
+  buffer = libspectrum_new( libspectrum_byte, memory_length );
+
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
+    memcpy( buffer + i * MEMORY_PAGE_SIZE,
+            didaktik_memory_map_romcs_ram[ i ].page, MEMORY_PAGE_SIZE );
+  libspectrum_snap_set_didaktik80_ram( snap, 0, buffer );
+
+  drive_count++; /* Drive 1 is not removable */
+  if( option_enumerate_diskoptions_drive_didaktik80b_type() > 0 ) drive_count++;
+  libspectrum_snap_set_didaktik80_drive_count( snap, drive_count );
+
+  libspectrum_snap_set_didaktik80_paged ( snap, didaktik80_active );
+  libspectrum_snap_set_didaktik80_direction( snap, didaktik_fdc->direction );
+  libspectrum_snap_set_didaktik80_status( snap, didaktik_fdc->status_register );
+  libspectrum_snap_set_didaktik80_track ( snap, didaktik_fdc->track_register );
+  libspectrum_snap_set_didaktik80_sector( snap, didaktik_fdc->sector_register );
+  libspectrum_snap_set_didaktik80_data  ( snap, didaktik_fdc->data_register );
+  libspectrum_snap_set_didaktik80_aux   ( snap, aux_register );
+}

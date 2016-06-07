@@ -1,5 +1,5 @@
 /* disk.h: Routines for handling disk images
-   Copyright (c) 2007-2010 Gergely Szasz
+   Copyright (c) 2007-2015 Gergely Szasz
 
    $Id$
 
@@ -52,8 +52,6 @@ typedef enum disk_type_t {
   DISK_UDI,		/* raw track disk image (our format :-) */
   DISK_FDI,		/* Full Disk Image ALT */
   DISK_TD0,
-
-  DISK_SDF,		/* SAM Disk Format (deprecated) */
 
   /* DISCiPLE / +D / SAM Coupe */
   DISK_MGT,		/* ALT */
