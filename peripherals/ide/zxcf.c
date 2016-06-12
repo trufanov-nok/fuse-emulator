@@ -32,6 +32,7 @@
 #include <libspectrum.h>
 
 #include "debugger/debugger.h"
+#include "fuse.h"
 #include "ide.h"
 #include "machine.h"
 #include "memory.h"
@@ -117,7 +118,8 @@ zxcf_init( void )
 
   last_memctl = 0x00;
                                 
-  zxcf_idechn = libspectrum_ide_alloc( LIBSPECTRUM_IDE_DATA16 );
+  zxcf_idechn = libspectrum_ide_alloc( libspectrum_context,
+                                       LIBSPECTRUM_IDE_DATA16 );
 
   ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_ZXCF_EJECT, 0 );
 

@@ -96,7 +96,7 @@ static void tape_stop_mic_off( libspectrum_dword last_tstates, int type,
 void
 tape_init( void )
 {
-  tape = libspectrum_tape_alloc();
+  tape = libspectrum_tape_alloc( libspectrum_context );
 
   play_event = debugger_event_register( event_type_string,
 					play_event_detail_string );
@@ -300,8 +300,8 @@ int tape_write( const char* filename )
 
   /* Work out what sort of file we want from the filename; default to
      .tzx if we couldn't guess */
-  error = libspectrum_identify_file_with_class( &type, &class, filename, NULL,
-						0 );
+  error = libspectrum_identify_file_with_class( libspectrum_context, &type,
+                                                &class, filename, NULL, 0 );
   if( error ) return error;
 
   if( class != LIBSPECTRUM_CLASS_TAPE || type == LIBSPECTRUM_ID_UNKNOWN )
@@ -514,7 +514,8 @@ int tape_save_trap( void )
   /* Check we're in the right ROM */
   if( !trap_check_rom( CHECK_TAPE_ROM ) ) return 3;
 
-  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
+  block = libspectrum_tape_block_alloc( libspectrum_context,
+                                        LIBSPECTRUM_TAPE_BLOCK_ROM );
   
   /* The +2 here is for the flag and parity bytes */
   length = DE + 2;
@@ -740,7 +741,8 @@ tape_record_stop( void )
      pop into the current tape */
   event_remove_type( record_event );
 
-  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE );
+  block = libspectrum_tape_block_alloc( libspectrum_context,
+                                        LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE );
 
   libspectrum_tape_block_set_scale( block, rec_state.tstates_per_sample );
   libspectrum_tape_block_set_data_length( block, rec_state.tape_buffer_used );

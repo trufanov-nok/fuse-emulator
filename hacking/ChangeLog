@@ -5228,3 +5228,8 @@
 20160609 compat/{Makefile.am,mkstemp.c},configure.ac,utils.[ch]: remove
          utils_make_temp_file() and mkstemp() as they are no longer used (thanks
          Phil) (Fred).
+20160612 configure.ac,fuse.[ch],menu.c,peripherals/dck.c,
+         peripherals/disk/disk.c,peripherals/ide/{divide.c,simpleide.c,
+         zxatasp.c,zxcf.c},peripherals/if1.c,rzx.c,snapshot.c,tape.c,ui/ui.h,
+         ui.c,utils.c: use thread-safe libspectrum (from patch #356) (BogDan
+         Vatra).

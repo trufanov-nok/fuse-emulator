@@ -32,6 +32,8 @@
 
 #include "compat.h"
 
+extern libspectrum_context_t *libspectrum_context;
+
 extern const char *fuse_progname;	/* argv[0] */
 
 extern int fuse_exiting;		/* Shall we exit now? */
