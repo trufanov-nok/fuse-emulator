@@ -5233,3 +5233,4 @@
          zxatasp.c,zxcf.c},peripherals/if1.c,rzx.c,snapshot.c,tape.c,ui/ui.h,
          ui.c,utils.c: use thread-safe libspectrum (from patch #356) (BogDan
          Vatra).
+20160612 fuse.c: update minimum libspectrum version (Fred).

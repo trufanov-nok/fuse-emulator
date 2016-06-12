@@ -119,7 +119,7 @@ int fuse_emulation_paused;
 libspectrum_creator *fuse_creator;
 
 /* The earliest version of libspectrum we need */
-static const char * const LIBSPECTRUM_MIN_VERSION = "0.5.0";
+static const char * const LIBSPECTRUM_MIN_VERSION = "2.0.0";
 
 libspectrum_context_t *libspectrum_context;
 
