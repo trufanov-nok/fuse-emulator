@@ -31,6 +31,7 @@ fuse_SOURCES += \
                 debugger/disassemble.c \
                 debugger/event.c \
                 debugger/expression.c \
+                debugger/listener.c \
                 debugger/system_variable.c \
                 debugger/variable.c
 

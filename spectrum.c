@@ -74,7 +74,7 @@ spectrum_frame_event_fn( libspectrum_dword last_tstates, int type,
   z80_interrupt();
   ui_joystick_poll();
   timer_estimate_speed();
-  debugger_add_time_events();
+  debugger_frame();
   ui_event();
   ui_error_frame();
 }

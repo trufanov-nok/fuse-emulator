@@ -65,6 +65,8 @@ debugger_init( void *context )
   debugger_event_init();
   debugger_system_variable_init();
   debugger_variable_init();
+  debugger_listener_init();
+
   debugger_reset();
 
   return 0;
@@ -81,6 +83,8 @@ static void
 debugger_end( void )
 {
   debugger_breakpoint_remove_all();
+
+  debugger_listener_end();
   debugger_variable_end();
   debugger_system_variable_end();
   debugger_event_end();
@@ -193,4 +197,12 @@ debugger_exit_emulator( void )
   event_add( 0, event_type_null );
 
   debugger_run();
+}
+
+/* Debugger housekeeping tasks */
+void
+debugger_frame( void )
+{
+  debugger_add_time_events();
+  debugger_listener_check();
 }
