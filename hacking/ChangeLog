@@ -5380,3 +5380,6 @@
          file (from patch #375) (Alberto Garcia).
 20160731 debugger/{Makefile.am,debugger.[ch],debugger_internals.h,listener.c},
          spectrum.c: initial code for a remote debugger interface (Phil).
+20160801 debugger/debugger.c,fuse.c,infrastructure/startup_manager.h,
+         peripherals/{nic/w5100.c,spectranet.c}: ensure network initialisation
+         code is run before anything that needs it (Phil).

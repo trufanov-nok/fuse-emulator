@@ -281,6 +281,31 @@ setuid_register_startup()
 }
 
 static int
+networking_init( void *context )
+{
+  compat_socket_networking_init();
+  return 0;
+}
+
+static void
+networking_end( void )
+{
+  compat_socket_networking_end();
+}
+
+static void
+networking_register_startup()
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DISPLAY,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_NETWORK, dependencies,
+                            ARRAY_SIZE( dependencies ), networking_init,
+                            networking_end, NULL );
+}
+
+static int
 run_startup_manager( int *argc, char ***argv )
 {
   startup_manager_init();
@@ -310,6 +335,7 @@ run_startup_manager( int *argc, char ***argv )
   melodik_register_startup();
   memory_register_startup();
   mempool_register_startup();
+  networking_register_startup();
   opus_register_startup();
   plusd_register_startup();
   printer_register_startup();

@@ -148,8 +148,6 @@ nic_w5100_alloc( void )
   int i;
   nic_w5100_t *self;
   
-  compat_socket_networking_init();
-
   self = libspectrum_new( nic_w5100_t, 1 );
 
   self->selfpipe = compat_socket_selfpipe_alloc();
