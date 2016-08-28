@@ -314,7 +314,7 @@ int tape_write( const char* filename )
 {
   libspectrum_id_t type;
   libspectrum_class_t class;
-  libspectrum_byte *buffer; size_t length;
+  libspectrum_buffer *buffer;
 
   int error;
 
@@ -327,18 +327,22 @@ int tape_write( const char* filename )
   if( class != LIBSPECTRUM_CLASS_TAPE || type == LIBSPECTRUM_ID_UNKNOWN )
     type = LIBSPECTRUM_ID_TAPE_TZX;
 
-  length = 0;
+  buffer = libspectrum_buffer_alloc();
 
-  error = libspectrum_tape_write( &buffer, &length, tape, type );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  error = libspectrum_tape_write( buffer, tape, type );
+  if( error != LIBSPECTRUM_ERROR_NONE ) {
+    libspectrum_buffer_free( buffer );
+    return error;
+  }
 
-  error = utils_write_file( filename, buffer, length );
-  if( error ) { libspectrum_free( buffer ); return error; }
+  error = utils_write_file( filename, libspectrum_buffer_get_data( buffer ),
+                            libspectrum_buffer_get_data_size( buffer ) );
+  if( error ) { libspectrum_buffer_free( buffer ); return error; }
 
   tape_modified = 0;
   ui_tape_browser_update( UI_TAPE_BROWSER_MODIFIED, NULL );
 
-  libspectrum_free( buffer );
+  libspectrum_buffer_free( buffer );
 
   return 0;
 }
