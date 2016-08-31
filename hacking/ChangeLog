@@ -5422,3 +5422,5 @@
 20160828 peripherals/disk/disk.c: mark position_context_save() and
          position_context_restore() as static (Fred).
 20160828 tape.c: switch to using libspectrum_buffer in tape APIs (Fred).
+20160831 fuse.c,menu.c,rzx.c,snapshot.[ch]: switch to using libspectrum_buffer
+         in snapshot write APIs (Fred).

@@ -413,7 +413,7 @@ creator_init( void *context )
   char *custom, osname[ 256 ];
   static const size_t CUSTOM_SIZE = 256;
   
-  libspectrum_error error; int sys_error;
+  int sys_error;
 
   const char *gcrypt_version;
 
@@ -427,16 +427,13 @@ creator_init( void *context )
 
   fuse_creator = libspectrum_creator_alloc();
 
-  error = libspectrum_creator_set_program( fuse_creator, "Fuse" );
-  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+  libspectrum_creator_set_program( fuse_creator, "Fuse" );
 
-  error = libspectrum_creator_set_major( fuse_creator,
-					 version[0] * 0x100 + version[1] );
-  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+  libspectrum_creator_set_major( fuse_creator,
+                                 version[0] * 0x100 + version[1] );
 
-  error = libspectrum_creator_set_minor( fuse_creator,
-					 version[2] * 0x100 + version[3] );
-  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+  libspectrum_creator_set_minor( fuse_creator,
+                                 version[2] * 0x100 + version[3] );
 
   custom = libspectrum_new( char, CUSTOM_SIZE );
 
@@ -447,13 +444,9 @@ creator_init( void *context )
 	    "gcrypt: %s\nlibspectrum: %s\nuname: %s", gcrypt_version,
 	    libspectrum_version(), osname );
 
-  error = libspectrum_creator_set_custom(
+  libspectrum_creator_set_custom(
     fuse_creator, (libspectrum_byte*)custom, strlen( custom )
   );
-  if( error ) {
-    libspectrum_free( custom ); libspectrum_creator_free( fuse_creator );
-    return error;
-  }
 
   return 0;
 }

@@ -57,7 +57,7 @@ int snapshot_read( const char *filename )
   error = snapshot_copy_from( snap );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
-  error = libspectrum_snap_free( snap ); if( error ) return error;
+  libspectrum_snap_free( snap );
 
   return 0;
 }
@@ -75,7 +75,7 @@ snapshot_read_buffer( const unsigned char *buffer, size_t length,
   error = snapshot_copy_from( snap );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
-  error = libspectrum_snap_free( snap ); if( error ) return error;
+  libspectrum_snap_free( snap );
 
   return 0;
 }
@@ -117,7 +117,7 @@ int snapshot_write( const char *filename )
   libspectrum_id_t type;
   libspectrum_class_t class;
   libspectrum_snap *snap;
-  unsigned char *buffer; size_t length;
+  libspectrum_buffer *buffer;
   int flags;
 
   int error;
@@ -133,14 +133,11 @@ int snapshot_write( const char *filename )
 
   snap = libspectrum_snap_alloc();
 
-  error = snapshot_copy_to( snap );
-  if( error ) { libspectrum_snap_free( snap ); return error; }
+  snapshot_copy_to( snap );
 
   flags = 0;
-  length = 0;
-  buffer = NULL;
-  error = libspectrum_snap_write( &buffer, &length, &flags, snap, type,
-				  fuse_creator, 0 );
+  buffer = libspectrum_buffer_alloc();
+  error = libspectrum_snap_write( buffer, &flags, snap, type, fuse_creator, 0 );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS ) {
@@ -155,25 +152,22 @@ int snapshot_write( const char *filename )
     );
   }
 
-  error = libspectrum_snap_free( snap );
-  if( error ) { libspectrum_free( buffer ); return 1; }
+  libspectrum_snap_free( snap );
 
-  error = utils_write_file( filename, buffer, length );
-  if( error ) { libspectrum_free( buffer ); return error; }
+  error = utils_write_file( filename, libspectrum_buffer_get_data( buffer ),
+                            libspectrum_buffer_get_data_size( buffer ) );
+  if( error ) { libspectrum_buffer_free( buffer ); return error; }
 
-  libspectrum_free( buffer );
+  libspectrum_buffer_free( buffer );
 
   return 0;
-
 }
 
-int
+void
 snapshot_copy_to( libspectrum_snap *snap )
 {
   libspectrum_snap_set_machine( snap, machine_current->machine );
   libspectrum_snap_set_late_timings( snap, settings_current.late_timings );
 
   module_snapshot_to( snap );
-
-  return 0;
 }

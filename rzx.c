@@ -141,11 +141,7 @@ rzx_add_snap( libspectrum_rzx *to_rzx, int automatic )
   int error;
   libspectrum_snap *snap = libspectrum_snap_alloc();
 
-  error = snapshot_copy_to( snap );
-  if( error ) {
-    libspectrum_snap_free( snap );
-    return error;
-  }
+  snapshot_copy_to( snap );
 
   error = libspectrum_rzx_add_snap( to_rzx, snap, automatic );
   if( error ) {
