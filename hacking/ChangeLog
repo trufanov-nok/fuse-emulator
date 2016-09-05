@@ -5424,3 +5424,5 @@
 20160828 tape.c: switch to using libspectrum_buffer in tape APIs (Fred).
 20160831 fuse.c,menu.c,rzx.c,snapshot.[ch]: switch to using libspectrum_buffer
          in snapshot write APIs (Fred).
+20160905 fuse.c,rzx.[ch],utils.c: switch to using libspectrum_buffer in RZX
+         write API (Fred).

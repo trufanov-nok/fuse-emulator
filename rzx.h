@@ -70,7 +70,7 @@ int rzx_start_playback( const char *filename, int check_snapshot );
 int
 rzx_start_playback_from_buffer( const unsigned char *buffer, size_t length );
 
-int rzx_stop_playback( int add_interrupt );
+void rzx_stop_playback( int add_interrupt );
 
 int rzx_frame( void );
 

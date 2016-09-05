@@ -907,9 +907,8 @@ do_start_files( start_files_t *start_files )
   }
 
   if( start_files->recording ) {
-    error = rzx_start_recording( start_files->recording,
-				 settings_current.embed_snapshot );
-    if( error ) return error;
+    rzx_start_recording( start_files->recording,
+                         settings_current.embed_snapshot );
   }
 
   return 0;

@@ -75,7 +75,7 @@ utils_open_file( const char *filename, int autoload,
 
   error = 0;
   if( rzx_recording ) error = rzx_stop_recording();
-  if( rzx_playback  ) error = rzx_stop_playback( 1 );
+  if( rzx_playback  ) rzx_stop_playback( 1 );
   if( error ) return error;
 
   /* Read the file into a buffer */
