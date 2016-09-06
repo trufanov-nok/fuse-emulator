@@ -66,7 +66,6 @@ enum {
 */
  
 typedef struct microdrive_t {
-  utils_file file;
   char *filename;		/* old filename */
   int inserted;
   int modified;
@@ -1113,6 +1112,7 @@ if1_mdr_insert( int which, const char *filename )
 {
   microdrive_t *mdr;
   int m, i;
+  utils_file file;
 
   if( which == -1 ) {	/* find an empty one */
     for( m = 0; m < 8; m++ ) {
@@ -1149,19 +1149,19 @@ if1_mdr_insert( int which, const char *filename )
     return 0;
   }
 
-  if( utils_read_file( filename, &mdr->file ) ) {
+  if( utils_read_file( filename, &file ) ) {
     ui_error( UI_ERROR_ERROR, "Failed to open cartridge image" );
     return 1;
   }
 
-  if( libspectrum_microdrive_mdr_read( mdr->cartridge, mdr->file.buffer,
-				       mdr->file.length ) ) {
-    utils_close_file( &mdr->file );
+  if( libspectrum_microdrive_mdr_read( mdr->cartridge, file.buffer,
+				       file.length ) ) {
+    utils_close_file( &file );
     ui_error( UI_ERROR_ERROR, "Failed to open cartridge image" );
     return 1;
   }
 
-  utils_close_file( &mdr->file );
+  utils_close_file( &file );
 
   mdr->inserted = 1;
   mdr->modified = 0;
@@ -1242,14 +1242,19 @@ int
 if1_mdr_write( int which, const char *filename )
 {
   microdrive_t *mdr = &microdrive[which];  
+  libspectrum_buffer *file = libspectrum_buffer_alloc();
   
-  libspectrum_microdrive_mdr_write( mdr->cartridge, &mdr->file.buffer,
-			            &mdr->file.length );
+  libspectrum_microdrive_mdr_write( mdr->cartridge, file );
 
   if( filename == NULL ) filename = mdr->filename;	/* Write over the original file */
 
-  if( utils_write_file( filename, mdr->file.buffer, mdr->file.length ) )
+  if( utils_write_file( filename, libspectrum_buffer_get_data( file ),
+                        libspectrum_buffer_get_data_size( file ) ) ) {
+    libspectrum_buffer_free( file );
     return 1;
+  }
+
+  libspectrum_buffer_free( file );
 
   if( mdr->filename && strcmp( filename, mdr->filename ) ) {
     libspectrum_free( mdr->filename );

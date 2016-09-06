@@ -5426,3 +5426,5 @@
          in snapshot write APIs (Fred).
 20160905 fuse.c,rzx.[ch],utils.c: switch to using libspectrum_buffer in RZX
          write API (Fred).
+20160906 peripherals/if1.c: switch to using libspectrum_buffer in MDR write API
+         (Fred).
