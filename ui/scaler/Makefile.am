@@ -20,7 +20,8 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-fuse_SOURCES += ui/scaler/scaler.c
+fuse_SOURCES += ui/scaler/scaler.c \
+                ui/scaler/snes_ntsc.c
 
 fuse_LDADD += \
               ui/scaler/scalers16.o \
@@ -47,4 +48,5 @@ EXTRA_DIST += \
 
 CLEANFILES += \
               ui/scaler/scalers16.o \
-              ui/scaler/scalers32.o
+              ui/scaler/scalers32.o \
+              ui/scaler/snes_ntsc.o

@@ -27,6 +27,7 @@
 #include <config.h>
 
 #include <string.h>
+#include <math.h>
 
 #include <libspectrum.h>
 
@@ -35,6 +36,7 @@
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
+#include "snes_ntsc.h"
 
 #ifndef MIN
 #define MIN(a,b)    (((a) < (b)) ? (a) : (b))
@@ -1876,5 +1878,164 @@ FUNCTION( scaler_HQ3x ) ( const libspectrum_byte *srcPtr,
     }
     p0 += nextlineSrc;
     q0 += ( nextlineDst << 1 ) + nextlineDst;
+  }
+}
+
+void 
+FUNCTION( scaler_blargg_NTSC_2x )( const libspectrum_byte *srcPtr,
+           libspectrum_dword srcPitch,
+           libspectrum_byte *dstPtr,
+           libspectrum_dword dstPitch,
+           int width, int height )
+{
+  static snes_ntsc_t ntsc[2];
+  static int snes_init = 0;
+  static int burst_phase = 0;
+  static snes_ntsc_setup_t last_setup;
+  snes_ntsc_setup_t setup_0, setup_1;
+  static uint8_t buffer[4096];
+  uint8_t *out;
+  uint32_t isx;
+  uint32_t x;
+  uint32_t n;
+  double fsx;
+  double dsx;
+  static const double dsxd = (7.0/6.0);
+
+  memset(&setup_0, 0, sizeof(setup_0));
+
+  setup_0.hue            = (double)settings_current.filter_blargg_hue        / 100.0;
+  setup_0.saturation     = (double)settings_current.filter_blargg_saturation / 100.0;
+  setup_0.contrast       = (double)settings_current.filter_blargg_contrast   / 100.0;
+  setup_0.brightness     = (double)settings_current.filter_blargg_brightness / 100.0;
+  setup_0.sharpness      = (double)settings_current.filter_blargg_sharpness  / 100.0;
+  setup_0.gamma          = (double)settings_current.filter_blargg_gamma      / 100.0;
+  setup_0.resolution     = (double)settings_current.filter_blargg_resolution / 100.0;
+  setup_0.artifacts      = (double)settings_current.filter_blargg_artifacts  / 100.0;
+  setup_0.fringing       = (double)settings_current.filter_blargg_fringing   / 100.0;
+  setup_0.bleed          = (double)settings_current.filter_blargg_bleed      / 100.0;
+  setup_0.merge_fields   = 1;
+  setup_0.decoder_matrix = 0;
+  setup_0.bsnes_colortbl = 0;
+
+  if (!snes_init || memcmp(&last_setup, &setup_0, sizeof(last_setup)) != 0) {
+    setup_1 = setup_0;
+    memcpy(&last_setup, &setup_0, sizeof(last_setup));
+
+    setup_1.brightness = (((setup_0.brightness + 1) * 0.75) - 1);
+
+    snes_ntsc_init(&ntsc[0], &setup_0);
+    snes_ntsc_init(&ntsc[1], &setup_1);
+
+    snes_init = 1;
+  }
+
+  memset(&buffer, 0, sizeof(buffer));
+
+  burst_phase = (burst_phase + 1) % 3;
+
+  while (height--) {
+    uint32_t row = height;
+
+    for (n = 0; n < 2; n++) {
+      out = (scaler_data_type*)(dstPtr + dstPitch * n);
+      snes_ntsc_blit(&ntsc[n], (SNES_NTSC_IN_T const*)srcPtr, width,
+        (burst_phase + row) % 3, width, 1, buffer, 2048);
+      dsx = 0;
+      for (x = 0; x < width*2; x++) {
+        isx = (int)floor(dsx);
+        fsx = dsx - floor(dsx);
+        out[0] = ((1-fsx)*buffer[isx*4+0]) + (fsx*buffer[isx*4+4]);
+        out[1] = ((1-fsx)*buffer[isx*4+1]) + (fsx*buffer[isx*4+5]);
+        out[2] = ((1-fsx)*buffer[isx*4+2]) + (fsx*buffer[isx*4+6]);
+        out[3] = 0;
+        out += 4;
+        dsx += dsxd;
+      }
+    }
+
+    srcPtr += srcPitch;
+    dstPtr += (dstPitch * 2);
+  }
+}
+
+void 
+FUNCTION( scaler_blargg_NTSC_3x )( const libspectrum_byte *srcPtr,
+           libspectrum_dword srcPitch,
+           libspectrum_byte *dstPtr,
+           libspectrum_dword dstPitch,
+           int width, int height )
+{
+  static snes_ntsc_t ntsc[3];
+  static int snes_init = 0;
+  static int burst_phase = 0;
+  static snes_ntsc_setup_t last_setup;
+  snes_ntsc_setup_t setup_0, setup_1, setup_2;
+  static uint8_t buffer[8192];
+  uint8_t *out;
+  uint32_t isx;
+  uint32_t x;
+  uint32_t n;
+  double fsx;
+  double dsx;
+  static const double dsxd = (7.0/9.0)*1.005;
+
+  memset(&setup_0, 0, sizeof(setup_0));
+
+  setup_0.hue            = (double)settings_current.filter_blargg_hue        / 100.0;
+  setup_0.saturation     = (double)settings_current.filter_blargg_saturation / 100.0;
+  setup_0.contrast       = (double)settings_current.filter_blargg_contrast   / 100.0;
+  setup_0.brightness     = (double)settings_current.filter_blargg_brightness / 100.0;
+  setup_0.sharpness      = (double)settings_current.filter_blargg_sharpness  / 100.0;
+  setup_0.gamma          = (double)settings_current.filter_blargg_gamma      / 100.0;
+  setup_0.resolution     = (double)settings_current.filter_blargg_resolution / 100.0;
+  setup_0.artifacts      = (double)settings_current.filter_blargg_artifacts  / 100.0;
+  setup_0.fringing       = (double)settings_current.filter_blargg_fringing   / 100.0;
+  setup_0.bleed          = (double)settings_current.filter_blargg_bleed      / 100.0;
+  setup_0.merge_fields   = 1;
+  setup_0.decoder_matrix = 0;
+  setup_0.bsnes_colortbl = 0;
+
+  if (!snes_init || memcmp(&last_setup, &setup_0, sizeof(last_setup)) != 0) {
+    setup_1 = setup_0;
+    setup_2 = setup_0;
+    memcpy(&last_setup, &setup_0, sizeof(last_setup));
+
+    setup_0.brightness = (((setup_1.brightness + 1) * 0.8) - 1);
+    setup_2.brightness = (((setup_1.brightness + 1) * 0.5) - 1);
+
+    snes_ntsc_init(&ntsc[0], &setup_0);
+    snes_ntsc_init(&ntsc[1], &setup_1);
+    snes_ntsc_init(&ntsc[2], &setup_2);
+
+    snes_init = 1;
+  }
+
+  memset(&buffer, 0, sizeof(buffer));
+
+  burst_phase = (burst_phase + 1) % 3;
+
+  while (height--) {
+    uint32_t row = height;
+
+    for (n = 0; n < 3; n++) {
+      out = (scaler_data_type*)(dstPtr + dstPitch * n);
+      snes_ntsc_blit(&ntsc[n], (SNES_NTSC_IN_T const*)srcPtr, width,
+        (burst_phase + row) % 3, width, 1, buffer, 2048);
+      dsx = 0;
+      for (x = 0; x < width*3; x++) {
+        isx = (int)floor(dsx);
+        fsx = dsx - floor(dsx);
+        out[0] = ((1-fsx)*buffer[isx*4+0]) + (fsx*buffer[isx*4+4]);
+        out[1] = ((1-fsx)*buffer[isx*4+1]) + (fsx*buffer[isx*4+5]);
+        out[2] = ((1-fsx)*buffer[isx*4+2]) + (fsx*buffer[isx*4+6]);
+        out[3] = 0;
+        out += 4;
+        dsx += dsxd;
+      }
+    }
+
+    srcPtr += srcPitch;
+    dstPtr += (dstPitch * 3);
   }
 }

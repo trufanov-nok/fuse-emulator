@@ -892,6 +892,12 @@ update_ui_screen( void )
   size_t i;
   struct rectangle *ptr;
 
+  /* blargg NTSC filters update every frame */
+  if( ( current_scaler == SCALER_BLARGG_NTSC_2X ) ||
+      ( current_scaler == SCALER_BLARGG_NTSC_3X )    ) {
+    display_redraw_all = 1;
+  }
+
   if( settings_current.frame_rate <= ++frame_count ) {
     frame_count = 0;
     if( movie_recording ) {

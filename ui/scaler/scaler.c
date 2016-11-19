@@ -114,6 +114,10 @@ static const struct scaler_info available_scalers[] = {
     scaler_HQ2x_16,       scaler_HQ2x_32,       expand_1            },
   { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,       3.0,
     scaler_HQ3x_16,       scaler_HQ3x_32,       expand_1            },
+  { "blargg NTSC 2x",  "blarggntsc2x", SCALER_FLAGS_NONE,  2.0,
+    scaler_blargg_NTSC_2x_16, scaler_blargg_NTSC_2x_32, NULL        },
+  { "blargg NTSC 3x",  "blarggntsc3x", SCALER_FLAGS_NONE,  3.0,
+    scaler_blargg_NTSC_3x_16, scaler_blargg_NTSC_3x_32, NULL        },
 };
 
 scaler_type current_scaler = SCALER_NUM;

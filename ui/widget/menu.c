@@ -422,6 +422,12 @@ menu_get_scaler( scaler_available_fn selector )
 }
 
 void
+menu_options_filter_blargg( int action )
+{
+  widget_do_filter_blargg();
+}
+
+void
 menu_file_exit( int action )
 {
   static int menu_exit_open = 0;

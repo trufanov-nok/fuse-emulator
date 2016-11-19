@@ -39,6 +39,7 @@ ui_gtk_files = \
                ui/gtk/confirm.c \
                ui/gtk/debugger.c \
                ui/gtk/fileselector.c \
+               ui/gtk/filter_options.c \
                ui/gtk/gtkcompat.h \
                ui/gtk/gtkdisplay.c \
                ui/gtk/gtkinternals.h \

@@ -193,6 +193,17 @@ doublescan_mode, numeric, 1, 'D', doublescan-mode
 
 start_scaler_mode, string, "normal", 'g', graphics-filter
 
+filter_blargg_hue, numeric, 0
+filter_blargg_saturation, numeric, -27
+filter_blargg_contrast, numeric, 21
+filter_blargg_brightness, numeric, 10
+filter_blargg_sharpness, numeric, -10
+filter_blargg_gamma, numeric, 0
+filter_blargg_resolution, numeric, -16
+filter_blargg_artifacts, numeric, -59
+filter_blargg_fringing, numeric, 14
+filter_blargg_bleed, numeric, -71
+
 speccyboot_tap, string, "tap0",
 
 rom_16, string, "48.rom",
