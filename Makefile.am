@@ -91,8 +91,7 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = $(WARN_CFLAGS) $(PTHREAD_CFLAGS)
 
-noinst_HEADERS = bitmap.h \
-	compat.h \
+noinst_HEADERS = compat.h \
 	display.h \
 	event.h \
 	fuse.h \

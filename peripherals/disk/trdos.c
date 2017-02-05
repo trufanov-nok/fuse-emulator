@@ -91,48 +91,36 @@ trdos_write_dirent( libspectrum_byte *dest, const trdos_dirent_t *entry )
 }
 
 int
-trdos_read_fat( trdos_boot_info_t *info, const libspectrum_byte *sectors,
-                unsigned int seclen )
+trdos_read_fat( trdos_boot_info_t *info, const libspectrum_byte *data )
 {
-  int i, j, error;
+  int i, error;
   trdos_dirent_t entry;
-  const libspectrum_byte *sector;
 
   info->have_boot_file = 0;
   info->basic_files_count = 0;
 
   /* FAT sectors */
-  for( i = 0; i < 8; i++ ) {
-    sector = sectors + i * seclen * 2;    /* interleaved */
-
-    /* Note: some TR-DOS versions like 5.04T have a turbo format with 
-       sequential sectors: 1, 2, 3, ..., 8, 9, 10, ...
-       The SCL/TRD image formats can't specify a format mode and Fuse
-       load the sectors as interleaved: 1, 9, 2, 10, 3, ...
-    */
-
     /* FAT entries */
-    for( j = 0; j < 16; j++ ) {
-      error = trdos_read_dirent( &entry, sector + j * 16 );
-      if( error ) return 0;
+  for( i = 0; i < 8 * 16; i++ ) {
+    error = trdos_read_dirent( &entry, data + i * 16 );
+    if( error ) return 0;
 
-      /* Basic files */
-      if( entry.filename[0] > 0x01 &&
-          entry.file_extension == 'B' ) {
+    /* Basic files */
+    if( entry.filename[0] > 0x01 &&
+        entry.file_extension == 'B' ) {
 
-        /* Boot file */
-        if( !info->have_boot_file &&
-            !strncmp( (const char *)entry.filename, "boot    ", 8 ) ) {
-          info->have_boot_file = 1;
-        }
-
-        /* First basic program */
-        if( info->basic_files_count == 0 ) {
-          memcpy( info->first_basic_file, entry.filename, 8 );
-        }
-
-        info->basic_files_count++;
+      /* Boot file */
+      if( !info->have_boot_file &&
+          !strncmp( (const char *)entry.filename, "boot    ", 8 ) ) {
+        info->have_boot_file = 1;
       }
+
+      /* First basic program */
+      if( info->basic_files_count == 0 ) {
+        memcpy( info->first_basic_file, entry.filename, 8 );
+      }
+
+      info->basic_files_count++;
     }
   }
 

@@ -27,7 +27,7 @@
 
 struct fdd_t;
 struct fdd_params_t;
-struct disk_t;
+struct libspectrum_disk_t;
 struct ui_media_drive_info_t;
 
 typedef int (*ui_media_drive_is_available_fn)( void );

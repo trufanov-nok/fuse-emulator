@@ -170,7 +170,7 @@ plusd_init( void *context )
   for( i = 0; i < PLUSD_NUM_DRIVES; i++ ) {
     d = &plusd_drives[ i ];
     fdd_init( d, FDD_SHUGART, NULL, 0 );
-    d->disk.flag = DISK_FLAG_NONE;
+    d->disk.flag = LIBSPECTRUM_DISK_FLAG_NONE;
   }
 
   plusd_fdc->current_drive = &plusd_drives[ 0 ];

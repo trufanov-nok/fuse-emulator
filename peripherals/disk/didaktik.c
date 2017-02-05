@@ -185,7 +185,7 @@ didaktik80_init( void *context )
   for( i = 0; i < DIDAKTIK80_NUM_DRIVES; i++ ) {
     d = &didaktik_drives[ i ];
     fdd_init( d, FDD_SHUGART, NULL, 0 );       /* drive geometry 'autodetect' */
-    d->disk.flag = DISK_FLAG_NONE;
+    d->disk.flag = LIBSPECTRUM_DISK_FLAG_NONE;
   }
 
   didaktik_fdc->current_drive = &didaktik_drives[ 0 ];

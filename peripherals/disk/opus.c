@@ -142,7 +142,7 @@ opus_init( void *context )
   for( i = 0; i < OPUS_NUM_DRIVES; i++ ) {
     d = &opus_drives[ i ];
     fdd_init( d, FDD_SHUGART, NULL, 0 );	/* drive geometry 'autodetect' */
-    d->disk.flag = DISK_FLAG_NONE;
+    d->disk.flag = LIBSPECTRUM_DISK_FLAG_NONE;
   }
 
   opus_fdc->current_drive = &opus_drives[ 0 ];

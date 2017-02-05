@@ -186,7 +186,7 @@ drive_disk_write( const ui_media_drive_info_t *drive, const char *filename )
 {
   int error;
 
-  drive->fdd->disk.type = DISK_TYPE_NONE;
+  drive->fdd->disk.type = LIBSPECTRUM_DISK_TYPE_NONE;
   if( filename == NULL )
     filename = drive->fdd->disk.filename; /* write over original file */
   else if( compat_file_exists( filename ) ) {
@@ -212,9 +212,9 @@ drive_disk_write( const ui_media_drive_info_t *drive, const char *filename )
 
   error = disk_write( &drive->fdd->disk, filename );
 
-  if( error != DISK_OK ) {
+  if( error != LIBSPECTRUM_DISK_OK ) {
     ui_error( UI_ERROR_ERROR, "couldn't write '%s' file: %s", filename,
-              disk_strerror( error ) );
+              libspectrum_disk_strerror( error ) );
     return 1;
   }
 
@@ -349,18 +349,19 @@ ui_media_drive_insert( const ui_media_drive_info_t *drive,
   if( filename ) {
     error = disk_open( &drive->fdd->disk, filename, 0,
                        DISK_TRY_MERGE( drive->fdd->fdd_heads ) );
-    if( error != DISK_OK ) {
+    if( error != LIBSPECTRUM_DISK_OK ) {
       ui_error( UI_ERROR_ERROR, "Failed to open disk image: %s",
-                disk_strerror( error ) );
+                libspectrum_disk_strerror( error ) );
       return 1;
     }
   } else {
     dt = drive->get_params();
-    error = disk_new( &drive->fdd->disk, dt->heads, dt->cylinders, DISK_DENS_AUTO,
-                      DISK_UDI );
-    if( error != DISK_OK ) {
+    error = libspectrum_disk_new( &drive->fdd->disk, dt->heads, dt->cylinders,
+                                  LIBSPECTRUM_DISK_DENS_AUTO,
+                                  LIBSPECTRUM_DISK_UDI );
+    if( error != LIBSPECTRUM_DISK_OK ) {
       ui_error( UI_ERROR_ERROR, "Failed to create disk image: %s",
-                disk_strerror( error ) );
+                libspectrum_disk_strerror( error ) );
       return 1;
     }
   }

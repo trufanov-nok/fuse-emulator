@@ -27,7 +27,6 @@
 
 #include <libspectrum.h>
 
-#include "bitmap.h"
 #include "compat.h"
 #include "event.h"
 #include "fdd.h"
@@ -132,7 +131,7 @@ fdd_set_data( fdd_t *d, int fact )
     return;
   }
 
-  DISK_SET_TRACK( &d->disk, head, d->c_cylinder );
+  libspectrum_disk_set_track( &d->disk, head, d->c_cylinder );
   d->c_bpt = d->disk.track[-3] + 256 * d->disk.track[-2];
   if( fact > 0 ) {
     /* this generate a bpt/fact +-10% triangular distribution skip in bytes 
@@ -297,7 +296,7 @@ fdd_load( fdd_t *d, int upsidedown )
   d->do_read_weak = d->disk.have_weak;
   fdd_set_data( d, FDD_LOAD_FACT );
   d->ready = ( d->motoron && d->loaded );
-  if( d->disk.density == DISK_HD ) d->hdout = 1;
+  if( d->disk.density == LIBSPECTRUM_DISK_HD ) d->hdout = 1;
 
   return d->status = FDD_OK;
 }
@@ -375,31 +374,31 @@ fdd_read_write_data( fdd_t *d, fdd_write_t write )
     }
     d->disk.track[ d->disk.i ] = d->data & 0x00ff;
     if( d->data & 0xff00 )
-      bitmap_set( d->disk.clocks, d->disk.i );
+      libspectrum_bitmap_set( d->disk.clocks, d->disk.i );
     else
-      bitmap_reset( d->disk.clocks, d->disk.i );
+      libspectrum_bitmap_reset( d->disk.clocks, d->disk.i );
 
     if( d->marks & 0x01 )
-      bitmap_set( d->disk.fm, d->disk.i );
+      libspectrum_bitmap_set( d->disk.fm, d->disk.i );
     else
-      bitmap_reset( d->disk.fm, d->disk.i );
+      libspectrum_bitmap_reset( d->disk.fm, d->disk.i );
 #if 0		/* hmm... we cannot write weak data with 'standard' hardware */
     if( d->marks & 0x02 )
-      bitmap_set( d->disk.weak, d->disk.i );
+      libspectrum_bitmap_set( d->disk.weak, d->disk.i );
     else
-      bitmap_reset( d->disk.weak, d->disk.i );
+      libspectrum_bitmap_reset( d->disk.weak, d->disk.i );
 #else
-    bitmap_reset( d->disk.weak, d->disk.i );
+    libspectrum_bitmap_reset( d->disk.weak, d->disk.i );
 #endif
     d->disk.dirty = 1;
   } else {	/* read */
     d->data = d->disk.track[ d->disk.i ];
-    if( bitmap_test( d->disk.clocks, d->disk.i ) )
+    if( libspectrum_bitmap_test( d->disk.clocks, d->disk.i ) )
       d->data |= 0xff00;
     d->marks = 0;
-    if( bitmap_test( d->disk.fm, d->disk.i ) )
+    if( libspectrum_bitmap_test( d->disk.fm, d->disk.i ) )
       d->marks |= 0x01;
-    if( bitmap_test( d->disk.weak, d->disk.i ) ) {
+    if( libspectrum_bitmap_test( d->disk.weak, d->disk.i ) ) {
       d->marks |= 0x02;
       /* mess up data byte */
       d->data &= rand() % 0xff, d->data |= rand() % 0xff;

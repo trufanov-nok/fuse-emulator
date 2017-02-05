@@ -152,7 +152,7 @@ specplus3_765_init( void )
   specplus3_fdc->drive[3] = &specplus3_drives[ 1 ];
 
   for( i = 0; i < SPECPLUS3_NUM_DRIVES; i++ ) {
-    specplus3_drives[ i ].disk.flag = DISK_FLAG_PLUS3_CPC;
+    specplus3_drives[ i ].disk.flag = LIBSPECTRUM_DISK_FLAG_PLUS3_CPC;
   }
 					/* builtin drive 1 head 42 track */
   fdd_init( &specplus3_drives[ 0 ], FDD_SHUGART, &fdd_params[ 1 ], 0 );
