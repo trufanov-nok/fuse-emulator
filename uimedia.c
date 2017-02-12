@@ -299,7 +299,7 @@ drive_eject( const ui_media_drive_info_t *drive )
   }
 
   fdd_unload( drive->fdd );
-  disk_close( &drive->fdd->disk );
+  libspectrum_disk_close( &drive->fdd->disk );
   ui_media_drive_update_menus( drive, UI_MEDIA_DRIVE_UPDATE_EJECT );
   return 0;
 }

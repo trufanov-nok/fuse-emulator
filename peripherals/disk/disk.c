@@ -168,7 +168,7 @@ disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
     return d->status = d1.status;
 
   if( disk_merge_sides( d, &d1, &d2, 0x00 ) ) {
-    disk_close( &d2 );
+    libspectrum_disk_close( &d2 );
     *d = d1;
   }
 /*  fprintf( stderr, "`%s' and `%s' merged\n", filename, filename2 ); */

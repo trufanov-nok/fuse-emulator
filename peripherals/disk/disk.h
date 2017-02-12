@@ -53,10 +53,4 @@ int disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
 */
 int disk_write( libspectrum_disk_t *d, const char *filename );
 
-/* format disk to plus3 accept for formatting */
-int disk_preformat( libspectrum_disk_t *d );
-
-/* close a disk and free buffers */
-void disk_close( libspectrum_disk_t *d );
-
 #endif /* FUSE_DISK_H */

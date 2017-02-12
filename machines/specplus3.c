@@ -429,10 +429,10 @@ ui_drive_get_params_b( void )
 static int
 ui_drive_inserted( const ui_media_drive_info_t *drive, int new )
 {
-  /* Did real +3 hardware also have problems formatting disks unformatted
-     disks? */
+  /* Did real +3 hardware also have problems formatting unformatted disks?
+     (response: no) */
   if( new )
-    disk_preformat( &drive->fdd->disk );	/* pre-format disk for +3 ??? */
+    libspectrum_disk_preformat( &drive->fdd->disk );
   return 0;
 }
 
