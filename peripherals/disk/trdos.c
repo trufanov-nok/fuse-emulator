@@ -191,7 +191,7 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
   n_copied = 0;
   s = spec->first_free_sector;
   t = spec->first_free_track;
-  libspectrum_disk_set_track( d, 0, t );
+  libspectrum_disk_set_track( d, t % d->sides, t / d->sides );
 
   for( i = 0; i < n_sec; i++ ) {
     memset( head, 0, 256 );
@@ -213,7 +213,7 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
       }
     }
 
-    if( !libspectrum_disk_id_seek( d, s, &slen ) || slen != 0x01 )
+    if( !libspectrum_disk_id_seek( d, s + 1, &slen ) || slen != 0x01 )
       return LIBSPECTRUM_DISK_UNSUP;
     /* Write buffer to disk */
     libspectrum_disk_data_add( d, head, 256, 0, -1, 0, NULL );
@@ -224,8 +224,8 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
     /* Next track */
     if( s == 0 ) {
       t = t + 1;
-      if( t >= d->cylinders ) return LIBSPECTRUM_DISK_UNSUP;
-      libspectrum_disk_set_track( d, 0, t );
+      if( t >= d->sides * d->cylinders ) return LIBSPECTRUM_DISK_UNSUP;
+      libspectrum_disk_set_track( d, t % d->sides, t / d->sides );
     }
   }
 
@@ -242,9 +242,9 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
   fat_sector = spec->file_count / 16;
   snum = 1;
   del = 0;
-  if( !libspectrum_disk_read_sectors( d, 0, 0, fat_sector, &snum, &del,
-                                 &buffer, &length, NULL, NULL ) ||
-      snum != 1 || slen != 256 ) {
+  if( libspectrum_disk_read_sectors( d, 0, 0, fat_sector + 1, &snum, &del,
+                                     &buffer, &length, NULL, NULL ) ||
+      snum != 1 || length != 256 ) {
     if( buffer != NULL )
       libspectrum_free( buffer );
     return LIBSPECTRUM_DISK_UNSUP;
@@ -253,7 +253,7 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
   fat_entry  = spec->file_count % 16;
   trdos_write_dirent( buffer + fat_entry * 16, &entry );
 
-  if( !libspectrum_disk_id_seek( d, fat_sector, &slen ) || slen != 0x01 )
+  if( !libspectrum_disk_id_seek( d, fat_sector + 1, &slen ) || slen != 0x01 )
     return LIBSPECTRUM_DISK_UNSUP;
   /* Write buffer to disk */
   libspectrum_disk_data_add( d, buffer, 256, 0, -1, 0, NULL );
@@ -285,8 +285,8 @@ trdos_insert_boot_loader( libspectrum_disk_t *d )
   size_t length;
 
   /* TR-DOS specification sector */
-  if( !libspectrum_disk_seek( d, 0, 0, 9, &slen, &del, NULL ) &&
-      !del && slen != 2 )
+  if( libspectrum_disk_seek( d, 0, 0, 9, &slen, &del, NULL ) ||
+      del || slen != 0x01 )
     return;
 
   if( trdos_read_spec( &spec, d->track + d->i ) )
