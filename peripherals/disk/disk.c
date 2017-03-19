@@ -57,7 +57,7 @@ position_context_restore( libspectrum_disk_t *d,
   d->i      = c->i;
 }
 
-static int
+static libspectrum_disk_error_t
 disk_open2( libspectrum_disk_t *d, const char *filename, int preindex )
 {
   utils_file file;
@@ -95,14 +95,14 @@ disk_open2( libspectrum_disk_t *d, const char *filename, int preindex )
 /*--------------------- other fuctions -----------------------*/
 
 /* create a two sided disk (d) from two one sided (d1 and d2) */
-int
+libspectrum_disk_error_t
 disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
                   libspectrum_disk_t *d2, int autofill )
 {
   return libspectrum_disk_merge_sides( d, d1, d2, autofill );
 }
 
-int
+libspectrum_disk_error_t
 disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
            int merge_disks )
 {
@@ -178,7 +178,7 @@ disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
 
 /*--------------------- start of write section ----------------*/
 
-int
+libspectrum_disk_error_t
 disk_write( libspectrum_disk_t *d, const char *filename )
 {
   libspectrum_byte *buffer = NULL;

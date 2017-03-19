@@ -184,7 +184,7 @@ ui_media_drive_writeprotect( int controller, int which, int wrprot )
 static int
 drive_disk_write( const ui_media_drive_info_t *drive, const char *filename )
 {
-  int error;
+  libspectrum_disk_error_t error;
 
   drive->fdd->disk.type = LIBSPECTRUM_DISK_TYPE_NONE;
   if( filename == NULL )
@@ -336,7 +336,7 @@ int
 ui_media_drive_insert( const ui_media_drive_info_t *drive,
                        const char *filename, int autoload )
 {
-  int error;
+  libspectrum_disk_error_t error;
   const fdd_params_t *dt;
 
   /* Eject any disk already in the drive */

@@ -37,20 +37,23 @@ typedef struct disk_position_context_t {
    this time only .mgt(.dsk)/.img/.udi and CPC/extended CPC file format
    supported
 */
-int disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
-               int disk_merge );
+libspectrum_disk_error_t
+disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
+           int disk_merge );
 
 /* merge two one sided disk (d1, d2) to a two sided one (d),
    after merge closes d1 and d2
 */
-int disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
-                      libspectrum_disk_t *d2, int autofill );
+libspectrum_disk_error_t
+disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
+                  libspectrum_disk_t *d2, int autofill );
 
 /* write a disk image file (from the disk buffer). the d->type
    gives the format of file. if it DISK_TYPE_AUTO, disk_write
    try to guess from the file name (extension). if fail save as
    UDI.
 */
-int disk_write( libspectrum_disk_t *d, const char *filename );
+libspectrum_disk_error_t
+disk_write( libspectrum_disk_t *d, const char *filename );
 
 #endif /* FUSE_DISK_H */
