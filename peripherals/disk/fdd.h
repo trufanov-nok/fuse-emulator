@@ -80,7 +80,7 @@ typedef struct fdd_t {
   int data;		/* read/write to data byte 0x00nn or 0xffnn */
   int marks;		/* read/write other marks 0x01 -> FM 0x02 -> WEAK */
 
-  libspectrum_disk_t disk;		/* disk */
+  libspectrum_disk disk;		/* disk */
   int loaded;		/* disk loaded */
   int upsidedown;	/* flipped disk */
   int selected;		/* Drive Select line active */

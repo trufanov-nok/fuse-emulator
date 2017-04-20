@@ -32,28 +32,25 @@ typedef struct disk_position_context_t {
   int i;                     /* index for track and clocks */
 } disk_position_context_t;
 
-/* open a disk image file. if preindex = 1 and the image file not UDI then
-   pre-index gap generated with index mark (0xfc)
-   this time only .mgt(.dsk)/.img/.udi and CPC/extended CPC file format
-   supported
+/* open a disk image file. if preindex = 1 and the image file is not UDI,
+   then a pre-index gap is generated with index mark (0xfc)
 */
 libspectrum_disk_error_t
-disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
+disk_open( libspectrum_disk *d, const char *filename, int preindex,
            int disk_merge );
 
 /* merge two one sided disk (d1, d2) to a two sided one (d),
    after merge closes d1 and d2
 */
 libspectrum_disk_error_t
-disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
-                  libspectrum_disk_t *d2, int autofill );
+disk_merge_sides( libspectrum_disk *d, libspectrum_disk *d1,
+                  libspectrum_disk *d2, int autofill );
 
-/* write a disk image file (from the disk buffer). the d->type
-   gives the format of file. if it DISK_TYPE_AUTO, disk_write
-   try to guess from the file name (extension). if fail save as
-   UDI.
+/* write a disk image file (from the disk buffer). d->type determines the
+   format. In the case of LIBSPECTRUM_DISK_TYPE_NONE, the format is guessed
+   from the filename extension. The fallback format is UDI.
 */
 libspectrum_disk_error_t
-disk_write( libspectrum_disk_t *d, const char *filename );
+disk_write( libspectrum_disk *d, const char *filename );
 
 #endif /* FUSE_DISK_H */

@@ -37,7 +37,7 @@
 #include "utils.h"
 
 static void
-position_context_save( const libspectrum_disk_t *d, disk_position_context_t *c )
+position_context_save( const libspectrum_disk *d, disk_position_context_t *c )
 {
   c->track  = d->track;
   c->clocks = d->clocks;
@@ -47,7 +47,7 @@ position_context_save( const libspectrum_disk_t *d, disk_position_context_t *c )
 }
 
 static void
-position_context_restore( libspectrum_disk_t *d,
+position_context_restore( libspectrum_disk *d,
                           const disk_position_context_t *c )
 {
   d->track  = c->track;
@@ -58,7 +58,7 @@ position_context_restore( libspectrum_disk_t *d,
 }
 
 static libspectrum_disk_error_t
-disk_open2( libspectrum_disk_t *d, const char *filename, int preindex )
+disk_open2( libspectrum_disk *d, const char *filename, int preindex )
 {
   utils_file file;
   int error;
@@ -96,20 +96,20 @@ disk_open2( libspectrum_disk_t *d, const char *filename, int preindex )
 
 /* create a two sided disk (d) from two one sided (d1 and d2) */
 libspectrum_disk_error_t
-disk_merge_sides( libspectrum_disk_t *d, libspectrum_disk_t *d1,
-                  libspectrum_disk_t *d2, int autofill )
+disk_merge_sides( libspectrum_disk *d, libspectrum_disk *d1,
+                  libspectrum_disk *d2, int autofill )
 {
   return libspectrum_disk_merge_sides( d, d1, d2, autofill );
 }
 
 libspectrum_disk_error_t
-disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
+disk_open( libspectrum_disk *d, const char *filename, int preindex,
            int merge_disks )
 {
   char *filename2;
   char c = ' ';
   int l, g = 0, pos = 0;
-  libspectrum_disk_t d1, d2;
+  libspectrum_disk d1, d2;
 
   d->filename = NULL;
   if( filename == NULL || *filename == '\0' )
@@ -176,15 +176,13 @@ disk_open( libspectrum_disk_t *d, const char *filename, int preindex,
   return d->status;
 }
 
-/*--------------------- start of write section ----------------*/
-
 libspectrum_disk_error_t
-disk_write( libspectrum_disk_t *d, const char *filename )
+disk_write( libspectrum_disk *d, const char *filename )
 {
   libspectrum_byte *buffer = NULL;
   size_t length;
   FILE *file;
-  libspectrum_disk_t dw;
+  libspectrum_disk dw;
 
   if( ( file = fopen( filename, "wb" ) ) == NULL )
     return d->status = LIBSPECTRUM_DISK_WRFILE;

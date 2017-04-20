@@ -27,6 +27,6 @@
 #include <libspectrum.h>
 
 void
-trdos_insert_boot_loader( libspectrum_disk_t *d );
+trdos_insert_boot_loader( libspectrum_disk *d );
 
 #endif                  /* #ifndef FUSE_TRDOS_H */

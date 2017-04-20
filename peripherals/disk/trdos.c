@@ -167,7 +167,7 @@ static libspectrum_byte beta128_boot_loader[] = {
 };
 
 static int
-trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
+trdos_insert_basic_file( libspectrum_disk *d, trdos_spec_t *spec,
                          const libspectrum_byte *data, unsigned int size )
 {
   unsigned int fat_sector, fat_entry, n_sec, n_bytes, n_copied;
@@ -275,7 +275,7 @@ trdos_insert_basic_file( libspectrum_disk_t *d, trdos_spec_t *spec,
 }
 
 void
-trdos_insert_boot_loader( libspectrum_disk_t *d )
+trdos_insert_boot_loader( libspectrum_disk *d )
 {
   trdos_spec_t spec;
   trdos_boot_info_t info;
