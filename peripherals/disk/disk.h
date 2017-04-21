@@ -39,13 +39,6 @@ libspectrum_disk_error_t
 disk_open( libspectrum_disk *d, const char *filename, int preindex,
            int disk_merge );
 
-/* merge two one sided disk (d1, d2) to a two sided one (d),
-   after merge closes d1 and d2
-*/
-libspectrum_disk_error_t
-disk_merge_sides( libspectrum_disk *d, libspectrum_disk *d1,
-                  libspectrum_disk *d2, int autofill );
-
 /* write a disk image file (from the disk buffer). d->type determines the
    format. In the case of LIBSPECTRUM_DISK_TYPE_NONE, the format is guessed
    from the filename extension. The fallback format is UDI.

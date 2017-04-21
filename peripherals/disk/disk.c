@@ -92,16 +92,6 @@ disk_open2( libspectrum_disk *d, const char *filename, int preindex )
   return d->status = error;
 }
 
-/*--------------------- other fuctions -----------------------*/
-
-/* create a two sided disk (d) from two one sided (d1 and d2) */
-libspectrum_disk_error_t
-disk_merge_sides( libspectrum_disk *d, libspectrum_disk *d1,
-                  libspectrum_disk *d2, int autofill )
-{
-  return libspectrum_disk_merge_sides( d, d1, d2, autofill );
-}
-
 libspectrum_disk_error_t
 disk_open( libspectrum_disk *d, const char *filename, int preindex,
            int merge_disks )
@@ -167,7 +157,7 @@ disk_open( libspectrum_disk *d, const char *filename, int preindex,
   if( disk_open2( &d1, filename, preindex ) )
     return d->status = d1.status;
 
-  if( disk_merge_sides( d, &d1, &d2, 0x00 ) ) {
+  if( libspectrum_disk_merge_sides( d, &d1, &d2, 0x00 ) ) {
     libspectrum_disk_close( &d2 );
     *d = d1;
   }
