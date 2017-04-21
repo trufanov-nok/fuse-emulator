@@ -23,6 +23,7 @@
 
 #include <config.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -194,7 +195,7 @@ disk_write( libspectrum_disk *d, const char *filename )
 
   libspectrum_free( buffer );
 
-  if( fclose( file ) == -1 )
+  if( fclose( file ) != 0 )
     return d->status = LIBSPECTRUM_DISK_WRFILE;
 
   return d->status = LIBSPECTRUM_DISK_OK;
