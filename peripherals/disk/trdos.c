@@ -128,8 +128,7 @@ trdos_read_fat( trdos_boot_info_t *info, const libspectrum_byte *data )
   int i, error;
   trdos_dirent_t entry;
 
-  info->have_boot_file = 0;
-  info->basic_files_count = 0;
+  memset( info, 0, sizeof( trdos_boot_info_t ) );
 
   /* FAT sectors */
     /* FAT entries */
