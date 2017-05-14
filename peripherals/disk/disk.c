@@ -156,14 +156,15 @@ disk_write( libspectrum_disk *d, const char *filename )
   if( ( file = fopen( filename, "wb" ) ) == NULL )
     return d->status = LIBSPECTRUM_DISK_WRFILE;
 
-  dw = *d;
+  dw = *d;    /* don't modify current position */
   libspectrum_disk_write( &dw, &buffer, &length, filename );
-  if( d->status != LIBSPECTRUM_DISK_OK ) {
+  if( dw.status != LIBSPECTRUM_DISK_OK ) {
     if( buffer != NULL )
       libspectrum_free( buffer );
     fclose( file );
-    return d->status;
+    return d->status = dw.status;
   }
+
   if( fwrite( buffer, length, 1, file ) != 1 ) {
     if( buffer != NULL )
       libspectrum_free( buffer );
