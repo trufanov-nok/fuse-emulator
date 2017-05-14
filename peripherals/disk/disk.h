@@ -24,14 +24,6 @@
 #ifndef FUSE_DISK_H
 #define FUSE_DISK_H
 
-typedef struct disk_position_context_t {
-  libspectrum_byte *track;   /* current track data bytes */
-  libspectrum_byte *clocks;  /* clock marks bits */
-  libspectrum_byte *fm;      /* FM/MFM marks bits */
-  libspectrum_byte *weak;    /* weak marks bits/weak data */
-  int i;                     /* index for track and clocks */
-} disk_position_context_t;
-
 /* open a disk image file. if preindex = 1 and the image file is not UDI,
    then a pre-index gap is generated with index mark (0xfc)
 */

@@ -37,32 +37,12 @@
 #include "ui/ui.h"
 #include "utils.h"
 
-static void
-position_context_save( const libspectrum_disk *d, disk_position_context_t *c )
-{
-  c->track  = d->track;
-  c->clocks = d->clocks;
-  c->fm     = d->fm;
-  c->weak   = d->weak;
-  c->i      = d->i;
-}
-
-static void
-position_context_restore( libspectrum_disk *d,
-                          const disk_position_context_t *c )
-{
-  d->track  = c->track;
-  d->clocks = c->clocks;
-  d->fm     = c->fm;
-  d->weak   = c->weak;
-  d->i      = c->i;
-}
-
 static libspectrum_disk_error_t
 disk_open2( libspectrum_disk *d, const char *filename, int preindex )
 {
   utils_file file;
   int error;
+  libspectrum_disk dw;
 
 #ifdef GEKKO		/* Wii doesn't have access() */
   d->wrprot = 0;
@@ -81,12 +61,10 @@ disk_open2( libspectrum_disk *d, const char *filename, int preindex )
 
   if( !error && ( d->type == LIBSPECTRUM_DISK_TRD ||
                   d->type == LIBSPECTRUM_DISK_SCL ) ) {
-    disk_position_context_t context;
 
     if( settings_current.auto_load ) {
-      position_context_save( d, &context );
-      trdos_insert_boot_loader( d );
-      position_context_restore( d, &context );
+      dw = *d;    /* don't modify current position */
+      trdos_insert_boot_loader( &dw );
     }
   }
 
