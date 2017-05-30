@@ -1,8 +1,6 @@
 /* didaktik.h: Routines for handling the Didaktik 40/80 disk interface
    Copyright (c) 2015 Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -26,8 +24,6 @@
 #ifndef FUSE_DIDAKTIK80_H
 #define FUSE_DIDAKTIK80_H
 
-#include <config.h>
-
 #include <libspectrum.h>
 
 #include "fdd.h"
@@ -42,8 +38,7 @@ extern int didaktik80_available;  /* Is the D80/40 available for use? */
 extern int didaktik80_active;     /* D80/D40 enabled? */
 extern int didaktik80_snap;       /* SNAPshot pressed */
 
-void didaktik80_init( void );
-void didaktik80_end( void );
+void didaktik80_register_startup( void );
 
 void didaktik80_page( void );
 void didaktik80_unpage( void );

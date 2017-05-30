@@ -2,8 +2,6 @@
 ## Copyright (c) 2001-2003 Philip Kendall
 ## Copyright (c) 2015-2016 Sergio Baldoví
 
-## $Id$
-
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -24,6 +22,7 @@
 
 fuse_SOURCES += \
                 z80/z80.c \
+                z80/z80_debugger_variables.c \
                 z80/z80_ops.c
 
 BUILT_SOURCES += \
@@ -56,6 +55,7 @@ z80/z80_ed.c: $(srcdir)/z80/z80.pl $(srcdir)/z80/opcodes_ed.dat
 noinst_HEADERS += \
                   z80/z80.h \
                   z80/z80_checks.h \
+                  z80/z80_internals.h \
                   z80/z80_macros.h
 
 EXTRA_DIST += \

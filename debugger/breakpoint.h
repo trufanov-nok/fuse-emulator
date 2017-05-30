@@ -2,8 +2,6 @@
    Copyright (c) 2002-2011 Philip Kendall
    Copyright (c) 2013 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -27,7 +25,7 @@
 #ifndef FUSE_DEBUGGER_BREAKPOINT_H
 #define FUSE_DEBUGGER_BREAKPOINT_H
 
-#include "memory.h"
+#include "memory_pages.h"
 
 /* Types of breakpoint */
 typedef enum debugger_breakpoint_type {
@@ -136,7 +134,7 @@ debugger_breakpoint_add_port(
 
 int
 debugger_breakpoint_add_time(
-  debugger_breakpoint_type type, libspectrum_dword tstates,
+  debugger_breakpoint_type type, libspectrum_dword breakpoint_tstates,
   size_t ignore, debugger_breakpoint_life life, debugger_expression *condition
 );
 

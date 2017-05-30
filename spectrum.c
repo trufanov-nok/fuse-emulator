@@ -1,7 +1,5 @@
 /* spectrum.c: Generic Spectrum routines
-   Copyright (c) 1999-2013 Philip Kendall, Darren Salt
-
-   $Id$
+   Copyright (c) 1999-2016 Philip Kendall, Darren Salt
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,9 +30,10 @@
 #include "display.h"
 #include "event.h"
 #include "keyboard.h"
+#include "infrastructure/startup_manager.h"
 #include "loader.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "peripherals/printer.h"
 #include "psg.h"
 #include "profile.h"
@@ -54,9 +53,6 @@ libspectrum_byte RAM[ SPECTRUM_RAM_PAGES ][0x4000];
 /* How many tstates have elapsed since the last interrupt? (or more
    precisely, since the ULA last pulled the /INT line to the Z80 low) */
 libspectrum_dword tstates;
-
-/* The last byte written to the ULA */
-libspectrum_byte spectrum_last_ula;
 
 /* Contention patterns */
 static int contention_pattern_65432100[] = { 5, 4, 3, 2, 1, 0, 0, 6 };
@@ -81,11 +77,25 @@ spectrum_frame_event_fn( libspectrum_dword last_tstates, int type,
   ui_error_frame();
 }
 
-void
-spectrum_init( void )
+static int
+spectrum_init( void *context )
 {
   spectrum_frame_event = event_register( spectrum_frame_event_fn,
 					 "End of frame" );
+
+  return 0;
+}
+
+void
+spectrum_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_EVENT,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_SPECTRUM, dependencies,
+                            ARRAY_SIZE( dependencies ), spectrum_init, NULL, 
+                            NULL );
 }
 
 int

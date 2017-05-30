@@ -1,8 +1,6 @@
 /* coretest.c: Test program for Fuse's Z80 core
    Copyright (c) 2003-2015 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -47,6 +45,7 @@
 #include "tape.h"
 
 #include "event.h"
+#include "infrastructure/startup_manager.h"
 #include "module.h"
 #include "spectrum.h"
 #include "ui/ui.h"
@@ -93,7 +92,7 @@ main( int argc, char **argv )
   if( init_dummies() ) return 1;
 
   /* Initialise the tables used by the Z80 core */
-  z80_init();
+  z80_init( NULL );
 
   f = fopen( testsfile, "r" );
   if( !f ) {
@@ -250,7 +249,7 @@ run_test( FILE *f )
 static int
 read_test( FILE *f, libspectrum_dword *end_tstates )
 {
-  unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc;
+  unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc, memptr;
   unsigned i, r, iff1, iff2, im;
   unsigned end_tstates2;
   unsigned address;
@@ -270,8 +269,9 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
   } while( test_name[0] == '\n' );
 
   /* FIXME: how should we read/write our data types? */
-  if( fscanf( f, "%x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
-	      &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc ) != 12 ) {
+  if( fscanf( f, "%x %x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
+	      &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc,
+	      &memptr ) != 13 ) {
     fprintf( stderr, "%s: first registers line in `%s' corrupt\n", progname,
 	     testsfile );
     return 1;
@@ -280,6 +280,7 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
   AF  = af;  BC  = bc;  DE  = de;  HL  = hl;
   AF_ = af_; BC_ = bc_; DE_ = de_; HL_ = hl_;
   IX  = ix;  IY  = iy;  SP  = sp;  PC  = pc;
+  z80.memptr.w = memptr;
 
   if( fscanf( f, "%x %x %u %u %u %d %d", &i, &r, &iff1, &iff2, &im,
 	      &z80.halted, &end_tstates2 ) != 7 ) {
@@ -325,8 +326,8 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
 static void
 dump_z80_state( void )
 {
-  printf( "%04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
-	  AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC );
+  printf( "%04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+	  AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC, z80.memptr.w );
   printf( "%02x %02x %d %d %d %d %d\n", I, ( R7 & 0x80 ) | ( R & 0x7f ),
 	  IFF1, IFF2, IM, z80.halted, tstates );
 }
@@ -422,6 +423,13 @@ int
 debugger_check( debugger_breakpoint_type type GCC_UNUSED, libspectrum_dword value GCC_UNUSED )
 {
   abort();
+}
+
+void debugger_system_variable_register(
+  const char *type, const char *detail,
+  debugger_get_system_variable_fn_t get,
+  debugger_set_system_variable_fn_t set )
+{
 }
 
 int
@@ -567,6 +575,14 @@ spectranet_nmi_flipflop( void )
   return 0;
 }
 
+void
+startup_manager_register( startup_manager_module module,
+  startup_manager_module *dependencies, size_t dependency_count,
+  startup_manager_init_fn init_fn, void *init_context,
+  startup_manager_end_fn end_fn )
+{
+}
+
 int svg_capture_active = 0;     /* SVG capture enabled? */
 
 void
@@ -598,6 +614,11 @@ int
 module_register( module_info_t *module GCC_UNUSED )
 {
   return 0;
+}
+
+void
+z80_debugger_variables_init( void )
+{
 }
 
 fuse_machine_info *machine_current;

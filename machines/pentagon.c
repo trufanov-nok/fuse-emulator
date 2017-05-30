@@ -4,8 +4,6 @@
    Copyright (c) 1999-2012 Philip Kendall and Fredrick Meunier
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -34,7 +32,7 @@
 #include "machine.h"
 #include "machines.h"
 #include "machines_periph.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "pentagon.h"
 #include "periph.h"
@@ -150,6 +148,8 @@ pentagon_reset(void)
 
   /* Earlier style Betadisk 128 interface */
   periph_set_present( PERIPH_TYPE_BETA128_PENTAGON, PERIPH_PRESENT_ALWAYS );
+
+  periph_set_present( PERIPH_TYPE_COVOX_FB, PERIPH_PRESENT_OPTIONAL );
 
   periph_update();
 

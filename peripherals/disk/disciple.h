@@ -1,8 +1,6 @@
 /* disciple.h: Routines for handling the DISCiPLE interface
    Copyright (c) 2005-2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -28,8 +26,6 @@
 #ifndef FUSE_DISCIPLE_H
 #define FUSE_DISCIPLE_H
 
-#include <config.h>
-
 typedef enum disciple_drive_number {
   DISCIPLE_DRIVE_1 = 0,
   DISCIPLE_DRIVE_2,
@@ -43,8 +39,7 @@ typedef enum disciple_drive_number {
 extern int disciple_available;  /* Is the DISCiPLE available for use? */
 extern int disciple_active;     /* DISCiPLE enabled? */
 
-void disciple_init( void );
-void disciple_end( void );
+void disciple_register_startup( void );
 
 void disciple_page( void );
 void disciple_unpage( void );

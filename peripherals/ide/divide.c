@@ -1,8 +1,6 @@
 /* divide.c: DivIDE interface routines
-   Copyright (c) 2005-2015 Matthew Westcott, Philip Kendall
+   Copyright (c) 2005-2017 Matthew Westcott, Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,6 +30,7 @@
 
 #include "debugger/debugger.h"
 #include "ide.h"
+#include "infrastructure/startup_manager.h"
 #include "machine.h"
 #include "module.h"
 #include "periph.h"
@@ -113,30 +112,20 @@ static int page_event, unpage_event;
 
 /* Housekeeping functions */
 
-int
-divide_init( void )
+static int
+divide_init( void *context )
 {
   int error, i, j;
 
   divide_idechn0 = libspectrum_ide_alloc( LIBSPECTRUM_IDE_DATA16 );
   divide_idechn1 = libspectrum_ide_alloc( LIBSPECTRUM_IDE_DATA16 );
   
-  ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT, 0 );
-  ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT, 0 );
-
-  if( settings_current.divide_master_file ) {
-    error = libspectrum_ide_insert( divide_idechn0, LIBSPECTRUM_IDE_MASTER,
-				    settings_current.divide_master_file );
-    if( error ) return error;
-    ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT, 1 );
-  }
-
-  if( settings_current.divide_slave_file ) {
-    error = libspectrum_ide_insert( divide_idechn0, LIBSPECTRUM_IDE_SLAVE,
-				    settings_current.divide_slave_file );
-    if( error ) return error;
-    ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT, 1 );
-  }
+  error = ide_init( divide_idechn0,
+		    settings_current.divide_master_file,
+		    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT,
+		    settings_current.divide_slave_file,
+		    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT );
+  if( error ) return error;
 
   module_register( &divide_module_info );
 
@@ -164,15 +153,25 @@ divide_init( void )
   return 0;
 }
 
-int
+static void
 divide_end( void )
 {
-  int error;
-  
-  error = libspectrum_ide_free( divide_idechn0 );
-  error = libspectrum_ide_free( divide_idechn1 ) || error;
+  libspectrum_ide_free( divide_idechn0 );
+  libspectrum_ide_free( divide_idechn1 );
+}
 
-  return error;
+void
+divide_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DEBUGGER,
+    STARTUP_MANAGER_MODULE_DISPLAY,
+    STARTUP_MANAGER_MODULE_MEMORY,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_DIVIDE, dependencies,
+                            ARRAY_SIZE( dependencies ), divide_init, NULL,
+                            divide_end );
 }
 
 /* DivIDE does not page in immediately on a reset condition (we do that by
@@ -200,25 +199,12 @@ divide_reset( int hard_reset )
 int
 divide_insert( const char *filename, libspectrum_ide_unit unit )
 {
-  char **setting;
-  ui_menu_item item;
-
-  switch( unit ) {
-  case LIBSPECTRUM_IDE_MASTER:
-    setting = &settings_current.divide_master_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT;
-    break;
-    
-  case LIBSPECTRUM_IDE_SLAVE:
-    setting = &settings_current.divide_slave_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT;
-    break;
-    
-  default: return 1;
-  }
-
-  return ide_insert( filename, divide_idechn0, unit, divide_commit, setting,
-		     item );
+  return ide_master_slave_insert(
+    divide_idechn0, unit, filename,
+    &settings_current.divide_master_file,
+    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT,
+    &settings_current.divide_slave_file,
+    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT );
 }
 
 int
@@ -234,24 +220,12 @@ divide_commit( libspectrum_ide_unit unit )
 int
 divide_eject( libspectrum_ide_unit unit )
 {
-  char **setting;
-  ui_menu_item item;
-
-  switch( unit ) {
-  case LIBSPECTRUM_IDE_MASTER:
-    setting = &settings_current.divide_master_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT;
-    break;
-
-  case LIBSPECTRUM_IDE_SLAVE:
-    setting = &settings_current.divide_slave_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT;
-    break;
-    
-  default: return 1;
-  }
-
-  return ide_eject( divide_idechn0, unit, divide_commit, setting, item );
+  return ide_master_slave_eject(
+    divide_idechn0, unit,
+    &settings_current.divide_master_file,
+    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT,
+    &settings_current.divide_slave_file,
+    UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT );
 }
 
 /* Port read/writes */

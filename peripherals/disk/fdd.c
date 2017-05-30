@@ -1,9 +1,7 @@
 /* fdd.c: Routines for emulating floppy disk drives
-   Copyright (c) 2007-2016 Gergely Szasz
+   Copyright (c) 2007-2016 Gergely Szasz, Philip Kendall
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 BogDan Vatra
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +31,7 @@
 #include "compat.h"
 #include "event.h"
 #include "fdd.h"
+#include "infrastructure/startup_manager.h"
 #include "machine.h"
 #include "spectrum.h"
 #include "settings.h"
@@ -76,14 +75,28 @@ static int index_event;
 
 static int fdd_motor = 0; /* to manage 'disk' icon */
 
-void
-fdd_init_events( void )
+static int
+fdd_init_events( void *context )
 {
   motor_event = event_register( fdd_event, "FDD motor on" );
   index_event = event_register( fdd_event, "FDD index" );
 
   upd_fdc_init_events();
   wd_fdc_init_events();
+
+  return 0;
+}
+
+void
+fdd_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_EVENT,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_FDD, dependencies,
+                            ARRAY_SIZE( dependencies ), fdd_init_events, NULL,
+                            NULL );
 }
 
 const char *
@@ -264,10 +277,16 @@ fdd_load( fdd_t *d, int upsidedown )
     d->fdd_heads = d->disk.sides;		/* 1 or 2 */
   if( d->auto_geom )
     d->fdd_cylinders = d->disk.cylinders > settings_current.drive_40_max_track ?
-				settings_current.drive_80_max_track : settings_current.drive_40_max_track;
+				settings_current.drive_80_max_track :
+                                settings_current.drive_40_max_track;
 
-  if( d->disk.cylinders > d->fdd_cylinders + FDD_TRACK_TRESHOLD )
+  if( d->disk.cylinders > d->fdd_cylinders + FDD_TRACK_TRESHOLD ) {
     d->unreadable = 1;
+    ui_error( UI_ERROR_WARNING,
+              "This %d track disk image is incompatible with the configured "
+              "%d track drive. Use disk options to select a compatible drive.",
+              d->disk.cylinders, d->fdd_cylinders );
+  }
 
   d->upsidedown = upsidedown > 0 ? 1 : 0;
   d->wrprot = d->disk.wrprot;		/* write protect */

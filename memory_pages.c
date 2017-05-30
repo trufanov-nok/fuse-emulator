@@ -1,9 +1,7 @@
-/* memory.c: Routines for accessing memory
-   Copyright (c) 1999-2015 Philip Kendall
+/* memory_pages.c: Routines for accessing memory
+   Copyright (c) 1999-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 Fredrick Meunier
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,9 +32,10 @@
 #include "debugger/debugger.h"
 #include "display.h"
 #include "fuse.h"
+#include "infrastructure/startup_manager.h"
 #include "machines/pentagon.h"
 #include "machines/spec128.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "peripherals/disk/opus.h"
 #include "peripherals/spectranet.h"
@@ -98,8 +97,8 @@ static module_info_t memory_module_info = {
 /* Set up the information about the normal page mappings.
    Memory contention and usable pages vary from machine to machine and must
    be set in the appropriate _reset function */
-void
-memory_init( void )
+static int
+memory_init( void *context )
 {
   size_t i, j;
 
@@ -134,6 +133,8 @@ memory_init( void )
     }
 
   module_register( &memory_module_info );
+
+  return 0;
 }
 
 static void
@@ -145,7 +146,7 @@ memory_pool_free_entry( gpointer data, gpointer user_data GCC_UNUSED )
 }
 
 /* Tidy-up function called at end of emulation */
-void
+static void
 memory_end( void )
 {
   int i;
@@ -168,6 +169,15 @@ memory_end( void )
     g_array_free( memory_sources, TRUE );
     memory_sources = NULL;
   }
+}
+
+void
+memory_register_startup( void )
+{
+  startup_manager_module dependencies[] = { STARTUP_MANAGER_MODULE_SETUID };
+  startup_manager_register( STARTUP_MANAGER_MODULE_MEMORY, dependencies,
+                            ARRAY_SIZE( dependencies ), memory_init, NULL,
+                            memory_end );
 }
 
 int
@@ -263,25 +273,59 @@ memory_ram_set_16k_contention( int page_num, int contended )
 void
 memory_map_16k( libspectrum_word address, memory_page source[], int page_num )
 {
-  int i;
+  memory_map_16k_read_write( address, source, page_num, 1, 1 );
+}
 
-  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ ) {
-    int page = ( address >> MEMORY_PAGE_SIZE_LOGARITHM ) + i;
-    memory_map_read[ page ] = memory_map_write[ page ] =
-      source[ page_num * MEMORY_PAGES_IN_16K + i ];
-  }
+/* Map 16K of memory for either reading, writing or both */
+void
+memory_map_16k_read_write( libspectrum_word address, memory_page source[],
+		           int page_num, int map_read, int map_write )
+{
+  memory_map_8k_read_write( address, source, page_num * 2, map_read,
+		            map_write );
+  memory_map_8k_read_write( address + 0x2000, source, page_num * 2 + 1,
+		            map_read, map_write );
 }
 
 /* Map 8K of memory */
 void
 memory_map_8k( libspectrum_word address, memory_page source[], int page_num )
 {
+  memory_map_8k_read_write( address, source, page_num, 1, 1 );
+}
+
+/* Map 8K of memory for either reading, writing or both */
+void
+memory_map_8k_read_write( libspectrum_word address, memory_page source[],
+		          int page_num, int map_read, int map_write )
+{
+  memory_map_4k_read_write( address, source, page_num * 2, map_read, map_write );
+  memory_map_4k_read_write( address + 0x1000, source, page_num * 2 + 1,
+		  	    map_read, map_write );
+}
+
+/* Map 4K of memory for either reading, writing or both */
+void
+memory_map_4k_read_write( libspectrum_word address, memory_page source[],
+		          int page_num, int map_read, int map_write )
+{
+  memory_map_2k_read_write( address, source, page_num * 2, map_read, map_write );
+  memory_map_2k_read_write( address + 0x0800, source, page_num * 2 + 1,
+		  	    map_read, map_write );
+}
+
+/* Map 2K of memory for either reading, writing or both */
+void
+memory_map_2k_read_write( libspectrum_word address, memory_page source[],
+		          int page_num, int map_read, int map_write )
+{
   int i;
 
-  for( i = 0; i < MEMORY_PAGES_IN_8K; i++ ) {
-    int page = ( address >> MEMORY_PAGE_SIZE_LOGARITHM ) + i;
-    memory_map_read[ page ] = memory_map_write[ page ] =
-      source[ page_num * MEMORY_PAGES_IN_8K + i ];
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ ) {
+    int page_offset = ( address >> MEMORY_PAGE_SIZE_LOGARITHM ) + i;
+    memory_page *page = &source[ page_num * MEMORY_PAGES_IN_2K + i ];
+    if( map_read ) memory_map_read[ page_offset ] = *page;
+    if( map_write ) memory_map_write[ page_offset ] = *page;
   }
 }
 
@@ -297,43 +341,28 @@ memory_map_page( memory_page *source[], int page_num )
 void
 memory_map_romcs_full( memory_page source[] )
 {
-  int i;
-
-  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
-    memory_map_read[i] = memory_map_write[i] = source[i];
+  memory_map_16k( 0x0000, source, 0 );
 }
 
 /* Page in 8K from /ROMCS */
 void
 memory_map_romcs_8k( libspectrum_word address, memory_page source[] )
 {
-  int i, start;
-
-  start = address >> MEMORY_PAGE_SIZE_LOGARITHM;
-  for( i = 0; i < MEMORY_PAGES_IN_8K; i++ )
-    memory_map_read[ start + i ] = memory_map_write[ start + i ] = source[ i ];
+  memory_map_8k( address, source, 0 );
 }
 
 /* Page in 4K from /ROMCS */
 void
 memory_map_romcs_4k( libspectrum_word address, memory_page source[] )
 {
-  int i, start;
-
-  start = address >> MEMORY_PAGE_SIZE_LOGARITHM;
-  for( i = 0; i < MEMORY_PAGES_IN_4K; i++ )
-    memory_map_read[ start + i ] = memory_map_write[ start + i ] = source[ i ];
+  memory_map_4k_read_write( address, source, 0, 1, 1 );
 }
 
 /* Page in 2K from /ROMCS */
 void
 memory_map_romcs_2k( libspectrum_word address, memory_page source[] )
 {
-  int i, start;
-
-  start = address >> MEMORY_PAGE_SIZE_LOGARITHM;
-  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
-    memory_map_read[ start + i ] = memory_map_write[ start + i ] = source[ i ];
+  memory_map_2k_read_write( address, source, 0, 1, 1 );
 }
 
 libspectrum_byte

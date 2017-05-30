@@ -2,8 +2,6 @@
    Copyright (c) 2008 Philip Kendall
    Copyright (c) 2015 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -88,7 +86,10 @@ void
 debugger_event( int event_code )
 {
   debugger_event_t event;
-  GSList *ptr;
+  debugger_breakpoint *bp;
+  GSList *ptr, *ptr_next;
+
+  int signal_breakpoints_updated = 0;
 
   if( event_code >= registered_events->len ) {
     ui_error( UI_ERROR_ERROR, "internal error: invalid debugger event %d",
@@ -98,16 +99,28 @@ debugger_event( int event_code )
 
   event = g_array_index( registered_events, debugger_event_t, event_code );
 
-  for( ptr = debugger_breakpoints; ptr; ptr = ptr->next ) {
-    debugger_breakpoint *bp = ptr->data;
+  for( ptr = debugger_breakpoints; ptr; ptr = ptr_next ) {
+
+    bp = ptr->data;
+    ptr_next = ptr->next;
+
     if( bp->type != DEBUGGER_BREAKPOINT_TYPE_EVENT ) continue;
 
     if( event_matches( &bp->value.event, event.type, event.detail ) &&
         debugger_breakpoint_trigger( bp ) ) {
       debugger_mode = DEBUGGER_MODE_HALTED;
       debugger_command_evaluate( bp->commands );
+
+      if( bp->life == DEBUGGER_BREAKPOINT_LIFE_ONESHOT ) {
+        debugger_breakpoints = g_slist_remove( debugger_breakpoints, bp );
+        libspectrum_free( bp );
+        signal_breakpoints_updated = 1;
+      }
     }
   }
+
+  if( signal_breakpoints_updated )
+      ui_breakpoints_updated();
 }
 
 /* Tidy-up function called at end of emulation */

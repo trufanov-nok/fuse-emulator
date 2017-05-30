@@ -2,8 +2,6 @@
    Copyright (c) 2002-2004 Fredrick Meunier, Witold Filipczyk
    Copyright (c) 2015 Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -28,7 +26,7 @@
 #define FUSE_SCLD_H
 
 #ifndef FUSE_MEMORY_H
-#include "memory.h"
+#include "memory_pages.h"
 #endif				/* #ifndef FUSE_MEMORY_H */
 
 #ifdef WORDS_BIGENDIAN
@@ -95,7 +93,7 @@ extern memory_page * timex_home[MEMORY_PAGES_IN_64K];
 extern memory_page timex_exrom[MEMORY_PAGES_IN_64K];
 extern memory_page timex_dock[MEMORY_PAGES_IN_64K];
 
-void scld_init( void );
+void scld_register_startup( void );
 
 void scld_dec_write( libspectrum_word port, libspectrum_byte b );
 void scld_hsr_write( libspectrum_word port, libspectrum_byte b );

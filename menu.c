@@ -3,10 +3,8 @@
    Copyright (c) 2013 Alex Badea
    Copyright (c) 2014-2015 Sergio Baldoví
    Copyright (c) 2015 Stuart Brady
-   Copyright (c) 2015 Gergely Szasz
+   Copyright (c) 2015-2017 Gergely Szasz
    Copyright (c) 2015 Stefano Bodrato
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1070,6 +1068,11 @@ static const char * const disk_detail_str[] = {
   "Inserted WP",
   "Inserted UD",
   "Inserted WP,UD",
+
+  "*Inserted",
+  "*Inserted WP",
+  "*Inserted UD",
+  "*Inserted WP,UD",
   "Not inserted",
 };
 
@@ -1078,9 +1081,10 @@ menu_disk_detail( fdd_t *f )
 {
   int i = 0;
 
-  if( !f->loaded ) return disk_detail_str[4];
+  if( !f->loaded ) return disk_detail_str[8];
   if( f->wrprot ) i = 1;
   if( f->upsidedown ) i += 2;
+  if( f->disk.dirty ) i += 4;
   return disk_detail_str[i];
 }
 

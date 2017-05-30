@@ -6,8 +6,6 @@
    Copyright (c) 2016 BogDan Vatra
    Copyright (c) 2016 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -42,7 +40,7 @@
 
 #include "fuse.h"
 #include "machines/specplus3.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "peripherals/dck.h"
 #include "peripherals/ide/divide.h"
 #include "peripherals/ide/simpleide.h"
@@ -391,52 +389,6 @@ int utils_write_file( const char *filename, const unsigned char *buffer,
   return 0;
 }
 
-/* Make a copy of a file in a temporary file */
-int
-utils_make_temp_file( int *fd, char *tempfilename, const char *filename,
-		      const char *template )
-{
-  int error;
-  utils_file file;
-  ssize_t bytes_written;
-
-#if defined AMIGA || defined __MORPHOS__
-  snprintf( tempfilename, PATH_MAX, "%s%s", compat_get_temp_path(), template );
-#else
-  snprintf( tempfilename, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s",
-            compat_get_temp_path(), template );
-#endif
-
-  *fd = mkstemp( tempfilename );
-  if( *fd == -1 ) {
-    ui_error( UI_ERROR_ERROR, "couldn't create temporary file: %s",
-	      strerror( errno ) );
-    return 1;
-  }
-
-  error = utils_read_file( filename, &file );
-  if( error ) { close( *fd ); unlink( tempfilename ); return error; }
-
-  bytes_written = write( *fd, file.buffer, file.length );
-  if( bytes_written != file.length ) {
-    if( bytes_written == -1 ) {
-      ui_error( UI_ERROR_ERROR, "error writing to temporary file '%s': %s",
-		tempfilename, strerror( errno ) );
-    } else {
-      ui_error( UI_ERROR_ERROR,
-		"could write only %lu of %lu bytes to temporary file '%s'",
-		(unsigned long)bytes_written, (unsigned long)file.length,
-		tempfilename );
-    }
-    utils_close_file( &file ); close( *fd ); unlink( tempfilename );
-    return 1;
-  }
-
-  utils_close_file( &file );
-
-  return 0;
-}
-
 int
 utils_read_auxiliary_file( const char *filename, utils_file *file,
                            utils_aux_type type )
@@ -451,7 +403,6 @@ utils_read_auxiliary_file( const char *filename, utils_file *file,
   if( error ) return error;
 
   return 0;
-
 }
 
 int

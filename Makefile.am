@@ -1,8 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 1999-2015 Philip Kendall
 
-## $Id$
-
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -34,7 +32,7 @@ fuse_SOURCES = display.c \
 	keyboard.c \
 	loader.c \
 	machine.c \
-	memory.c \
+	memory_pages.c \
 	mempool.c \
 	menu.c \
 	movie.c \
@@ -102,7 +100,7 @@ noinst_HEADERS = bitmap.h \
 	keyboard.h \
 	loader.h \
 	machine.h \
-	memory.h \
+	memory_pages.h \
 	mempool.h \
 	menu.h \
 	movie.h \
@@ -133,9 +131,7 @@ EXTRA_DIST = AUTHORS \
 	     keysyms.pl \
 	     m4/ax_create_stdint_h.m4 \
 	     m4/ax_pthread.m4 \
-	     m4/glib-2.0.m4 \
 	     m4/gtk-2.0.m4 \
-	     m4/libxml.m4 \
 	     m4/pkg.m4 \
 	     m4/sdl.m4 \
 	     menu_data.dat \
@@ -170,6 +166,7 @@ include compat/Makefile.am
 include data/Makefile.am
 include debugger/Makefile.am
 include hacking/Makefile.am
+include infrastructure/Makefile.am
 include lib/Makefile.am
 include machines/Makefile.am
 include man/Makefile.am

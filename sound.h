@@ -2,8 +2,6 @@
    Copyright (c) 2000-2004 Russell Marks, Matan Ziv-Av, Philip Kendall
    Copyright (c) 2016 Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -29,6 +27,8 @@
 
 #include <libspectrum.h>
 
+void sound_register_startup( void );
+
 void sound_init( const char *device );
 void sound_pause( void );
 void sound_unpause( void );
@@ -36,6 +36,7 @@ void sound_end( void );
 void sound_ay_write( int reg, int val, libspectrum_dword now );
 void sound_ay_reset( void );
 void sound_specdrum_write( libspectrum_word port, libspectrum_byte val );
+void sound_covox_write( libspectrum_word port, libspectrum_byte val );
 void sound_frame( void );
 void sound_beeper( libspectrum_dword at_tstates, int on );
 libspectrum_dword sound_get_effective_processor_speed( void );

@@ -1,8 +1,6 @@
 /* opus.h: Routines for handling the Opus Discovery interface
    Copyright (c) 2005-2013 Stuart Brady, Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -28,8 +26,6 @@
 #ifndef FUSE_OPUS_H
 #define FUSE_OPUS_H
 
-#include <config.h>
-
 #include <libspectrum.h>
 
 #include "fdd.h"
@@ -43,8 +39,7 @@ typedef enum opus_drive_number {
 extern int opus_available;  /* Is the Opus available for use? */
 extern int opus_active;     /* Opus enabled? */
 
-void opus_init( void );
-void opus_end( void );
+void opus_register_startup( void );
 
 void opus_page( void );
 void opus_unpage( void );

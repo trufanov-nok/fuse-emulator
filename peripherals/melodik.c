@@ -1,8 +1,6 @@
 /* melodik.c: Routines for handling the Melodik interface
-   Copyright (c) 2009-2011 Fredrick Meunier, Philip Kendall
+   Copyright (c) 2009-2016 Fredrick Meunier, Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,6 +28,7 @@
 
 #include "ay.h"
 #include "compat.h"
+#include "infrastructure/startup_manager.h"
 #include "melodik.h"
 #include "module.h"
 #include "periph.h"
@@ -83,9 +82,20 @@ melodik_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_melodik_active( snap, active );
 }
 
-void
-melodik_init( void )
+static int
+melodik_init( void *context )
 {
   module_register( &melodik_module_info );
   periph_register( PERIPH_TYPE_MELODIK, &melodik_periph );
+
+  return 0;
+}
+
+void
+melodik_register_startup( void )
+{
+  startup_manager_module dependencies[] = { STARTUP_MANAGER_MODULE_SETUID };
+  startup_manager_register( STARTUP_MANAGER_MODULE_MELODIK, dependencies,
+                            ARRAY_SIZE( dependencies ), melodik_init, NULL,
+                            NULL );
 }

@@ -1,8 +1,6 @@
 /* spectranet.c: Spectranet emulation
-   Copyright (c) 2011-2015 Philip Kendall
+   Copyright (c) 2011-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
-   
-   $Id$
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,8 +29,9 @@
 #include "compat.h"
 #include "debugger/debugger.h"
 #include "flash/am29f010.h"
+#include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "nic/w5100.h"
 #include "periph.h"
@@ -441,8 +440,8 @@ static const periph_t spectranet_periph = {
   /* .activate = */ spectranet_activate,
 };
 
-void
-spectranet_init( void )
+static int
+spectranet_init( void *context )
 {
   module_register( &spectranet_module_info );
   spectranet_source = memory_source_register( "Spectranet" );
@@ -452,13 +451,28 @@ spectranet_init( void )
 
   w5100 = nic_w5100_alloc();
   flash_rom = flash_am29f010_alloc();
+
+  return 0;
 }
 
-void
+static void
 spectranet_end( void )
 {
   nic_w5100_free( w5100 );
   flash_am29f010_free( flash_rom );
+}
+
+void
+spectranet_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DEBUGGER,
+    STARTUP_MANAGER_MODULE_MEMORY,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_SPECTRANET, dependencies,
+                            ARRAY_SIZE( dependencies ), spectranet_init, NULL,
+                            spectranet_end );
 }
 
 static libspectrum_word
@@ -502,12 +516,7 @@ spectranet_flash_rom_write( libspectrum_word address, libspectrum_byte b )
 /* No spectranet support */
 
 void
-spectranet_init( void )
-{
-}
-
-void
-spectranet_end( void )
+spectranet_register_startup( void )
 {
 }
 

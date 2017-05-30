@@ -1,8 +1,6 @@
 /* timer.h: Speed routines for Fuse
    Copyright (c) 1999-2008 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -31,8 +29,7 @@
 int timer_estimate_reset( void );
 int timer_estimate_speed( void );
 
-int timer_init(void);
-void timer_end( void );
+void timer_register_startup( void );
 
 extern float current_speed;
 extern int timer_event;

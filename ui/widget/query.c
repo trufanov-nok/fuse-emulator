@@ -2,8 +2,6 @@
    Copyright (c) 2004-2008 Darren Salt, Fredrick Meunier
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -322,6 +320,8 @@ widget_query_finish( widget_finish_state finished )
     free( message_lines[i] );
   }
   free( message_lines );
+  message_lines = NULL;
+  num_message_lines = 0;
 
   return 0;
 }

@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" fuse.1: Fuse man page
-.\" Copyright (c) 2001-2016 Russell Marks, Philip Kendall, Darren Salt,
+.\" Copyright (c) 2001-2017 Russell Marks, Philip Kendall, Darren Salt,
 .\"                         Fredrick Meunier, Stuart Brady
 .\"
 .\" This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH fuse 1 "6th June, 2016" "Version 1.2.0" "Emulators"
+.TH fuse 1 "28th April, 2017" "Version 1.3.5" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -68,9 +68,10 @@ format.
 See the
 .B "COMPRESSED FILES"
 section for details on reading files compressed with
-.IR bzip2 "(3)"
+.IR bzip2 "(3),"
+.IR gzip "(3)"
 or
-.IR gzip "(3)."
+.IR zip "(3)."
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -121,7 +122,8 @@ option.
 Specify whether tape and disk files should be automatically loaded
 when they are opened using the
 .I "File, Open..."
-menu option. (Enabled by default, but you can use
+menu option. In the case of TRD/SCL disk images, inserts also a boot
+loader file when none is available. (Enabled by default, but you can use
 .RB ` \-\-no\-auto\-load '
 to disable). Same as the Media Options dialog's
 .I "Auto-load media"
@@ -204,6 +206,14 @@ occurring. (Enabled by default, but you can use
 .RB ` \-\-no\-confirm\-actions '
 to disable). This option is the same as the General Options dialog's
 .I "Confirm actions"
+option.
+.RE
+.PP
+.B \-\-covox
+.RS
+Emulate a Covox sound interface for Pentagon/Scorpion. Same as the
+General Peripherals Options dialog's
+.I "Covox"
 option.
 .RE
 .PP
@@ -738,6 +748,17 @@ Emulate a Kempston mouse. Same as the General Peripherals Options dialog's
 option.
 .RE
 .PP
+.B \-\-keyboard\-arrows\-shifted
+.RS
+Treat the keyboard arrow keys as shifted like the ZX Spectrum+ keyboard's
+arrow keys or as unshifted like a cursor joystick that maps to the 5, 6, 7
+and 8 keys. (Enabled by default, but you can use
+.RB ` \-\-no\-keyboard\-arrows\-shifted '
+to disable). Same as the General Peripherals Options dialog's
+.I "Use shift with arrow keys"
+option.
+.RE
+.PP
 .B \-\-late\-timings
 .RS
 It has been observed that some real Spectrums run such that the screen
@@ -870,7 +891,8 @@ section.
 .PP
 .B \-\-opus
 .RS
-Emulate a Opus Discovery interface. Same as the Disk Peripherals Options dialog's
+Emulate an Opus Discovery interface. Same as the Disk Peripherals Options
+dialog's
 .I "Opus Discovery interface"
 option.
 .RE
@@ -957,6 +979,15 @@ option.
 .I file
 .RS
 Specify an RZX file to begin recording to.
+.RE
+.PP
+.B \-\-recreated\-spectrum
+.RS
+Enable the use of a Recreated ZX Spectrum in `Layer A' (game) mode. This is a
+Bluetooth keyboard that can be paired to the device where Fuse is running. The
+same as the General Options dialog's
+.I "Recreated ZX Spectrum"
+option.
 .RE
 .PP
 .B \-\-rom\-16
@@ -1093,6 +1124,8 @@ the four ROMs for the +2A
 .RI ( plus3\-0.rom ", " plus3\-1.rom ", " plus3\-2.rom " and " plus3\-3.rom ),
 the four ROMs for the +3
 .RI ( plus3\-0.rom ", " plus3\-1.rom ", " plus3\-2.rom " and " plus3\-3.rom ),
+the four enhanced ROMs for the +3e
+.RI ( plus3e\-0.rom ", " plus3e\-1.rom ", " plus3e\-2.rom " and " plus3e\-3.rom ),
 the TC2048 ROM
 .RI ( tc2048.rom ),
 the two ROMs for the TC2068
@@ -1681,6 +1714,16 @@ to disable). Same as the Media Options dialog's
 option.
 .RE
 .PP
+.B \-\-unittests
+.RS
+This option runs a testing framework that automatically checks portions
+of code, comparing actual results with expected ones. It is meant to detect
+broken code before a release. There is not graphical mode, the program
+just ends with exit code 0 if all tests are good or prints error
+messages to stdout and ends with exit code greater than 0 if there are
+failed tests.
+.RE
+.PP
 .B \-\-usource
 .RS
 Emulate a \(mcSource interface. Same as the General Peripherals Options dialog's
@@ -1710,6 +1753,15 @@ option.
 Sets the relative volume of the beeper from a range of 0\(en100%.
 Same as the Sound Options dialog's
 .I "Beeper volume"
+option.
+.RE
+.PP
+.B \-\-volume\-covox
+.I volume
+.RS
+Sets the relative volume of the Covox from a range of 0\(en100%.
+Same as the Sound Options dialog's
+.I "Covox volume"
 option.
 .RE
 .PP
@@ -2087,7 +2139,7 @@ Set how fast Fuse will attempt to emulate the Spectrum, as a
 percentage of the speed at which the real machine runs. If your
 machine isn't fast enough to keep up with the requested speed, Fuse
 will just run as fast as it can. Note that if the emulation speed is
-not exactly 100%, no sound output will be produced.
+faster than 500%, no sound output will be produced.
 .RE
 .PP
 .I "Frame rate"
@@ -2103,6 +2155,20 @@ Early versions of the Spectrum used a different value for unused bits
 on the keyboard input ports, and a few games depended on the old value
 of these bits. Enabling this option switches to the old value, to let
 you run them.
+.RE
+.PP
+.I "Recreated ZX Spectrum"
+.RS
+Enable the use of a Recreated ZX Spectrum in `Layer A' (game) mode. This
+is a Bluetooth keyboard that can be paired to the device where Fuse is
+running.
+.RE
+.PP
+.I "Use shift with arrow keys"
+.RS
+Treat the keyboard arrow keys as shifted like the ZX Spectrum+ keyboard's
+arrow keys or as unshifted like a cursor joystick that maps to the 5, 6, 7
+and 8 keys.
 .RE
 .PP
 .I "Allow writes to ROM"
@@ -2342,6 +2408,11 @@ Sets the relative volume of the AY-3-8912 chip from a range of 0\(en100%.
 Sets the relative volume of the beeper from a range of 0\(en100%.
 .RE
 .PP
+.I "Covox volume"
+.RS
+Sets the relative volume of the Covox from a range of 0\(en100%.
+.RE
+.PP
 .I "SpecDrum volume"
 .RS
 Sets the relative volume of the SpecDrum from a range of 0\(en100%.
@@ -2488,6 +2559,14 @@ If this option is selected, Fuse will emulate a Currah \(mcSource interface.
 See the World of Spectrum Infoseek web page at
 .I http://www.worldofspectrum.org/infoseekid.cgi?id=1000080
 for the manual.
+.RE
+.PP
+.I "Covox interface"
+.RS
+If this option is selected, Fuse will emulate a Covox digital sound
+interface. This emulation is only available for the Pentagon, Pentagon 512k,
+Pentagon 1024k and Scorpion machines. The Pentagon variants use port 0xfb and
+the Scorpion version uses port 0xdd.
 .RE
 .RE
 .PP
@@ -4258,7 +4337,7 @@ evaluates true. If
 is omitted, it defaults to the current value of PC.
 .RE
 .PP
-br{eakpoint} p{ort} (r{ead}|w{rite})
+br{eakpoint} p{ort} (re{ad}|w{rite})
 .IR port " [if " condition ]
 .RS
 Set a breakpoint to trigger whenever IO port
@@ -4268,7 +4347,7 @@ is read from or written to and
 evaluates true.
 .RE
 .PP
-br{eakpoint} (r{ead}|w{rite})
+br{eakpoint} (re{ad}|w{rite})
 .RI [ address "] [if " condition ]
 .RS
 Set a breakpoint to trigger whenever memory location
@@ -4299,51 +4378,93 @@ occurs and
 .I condition
 evaluates to true. The events which can be caught are:
 .PP
+beta128:page
+.br
+beta128:unpage
+.RS
+The Beta\ 128 interface is paged into or out of memory respectively.
+.RE
+.br
+didaktik80:page
+.br
+didaktik80:unpage
+.RS
+The Didaktik\ 80 interface is paged into or out of memory respectively.
+.RE
+.br
+disciple:page
+.br
+disciple:unpage
+.RS
+The DISCiPLE interface is paged into or out of memory respectively.
+.RE
+.br
 divide:page
 .br
 divide:unpage
 .RS
-The DivIDE interface is paged into or out of memory respectively
+The DivIDE interface is paged into or out of memory respectively.
 .RE
 .br
 if1:page
 .br
 if1:unpage
 .RS
-The Interface\ 1 shadow ROM is paged into or out of memory
+The Interface\ 1 shadow ROM is paged into or out of memory.
+.RE
+.br
+opus:page
+.br
+opus:unpage
+.RS
+The Opus Discovery is paged into or out of memory respectively.
+.RE
+.br
+plusd:page
+.br
+plusd:unpage
+.RS
+The +D interface is paged into or out of memory respectively.
 .RE
 .br
 rzx:end
 .RS
-An RZX recording finishes playing
+An RZX recording finishes playing.
+.RE
+.br
+speccyboot:page
+.br
+speccyboot:unpage
+.RS
+The SpeccyBoot interface is paged into or out of memory.
 .RE
 .br
 spectranet:page
 .br
 spectranet:unpage
 .RS
-The Spectranet interface is paged into or out of memory
+The Spectranet interface is paged into or out of memory.
 .RE
 .br
 tape:play
 .br
 tape:stop
 .RS
-The emulated tape starts or stops playing
+The emulated tape starts or stops playing.
 .RE
 .br
 zxatasp:page
 .br
 zxatasp:unpage
 .RS
-The ZXATASP interface is paged into or out of memory
+The ZXATASP interface is paged into or out of memory.
 .RE
 .br
 zxcf:page
 .br
 zxcf:unpage
 .RS
-The ZXCF interface is paged into or out of memory
+The ZXCF interface is paged into or out of memory.
 .RE
 .PP
 In all cases, the event can be specified as
@@ -4507,6 +4628,17 @@ to
 .IR value .
 .RE
 .PP
+se{t}
+.IR area : detail
+.I value
+.RS
+Set the value of the system variable
+.IR area : detail
+to
+.IR value .
+The available system variables are listed below.
+.RE
+.PP
 s{tep}
 .RS
 Equivalent to the
@@ -4549,7 +4681,8 @@ Other available sources are:
 .RI ` If2 "',"
 .RI ` "Opus RAM" "',"
 .RI ` "Opus ROM" "',"
-.RI ` PlusD "',"
+.RI ` "PlusD RAM" "',"
+.RI ` "PlusD ROM" "',"
 .RI ` SpeccyBoot "',"
 .RI ` Spectranet "',"
 .RI ` "Timex Dock" "',"
@@ -4570,14 +4703,63 @@ expects a breakpoint id, you can instead use a numeric expression,
 which uses a restricted version of C's syntax; exactly the same syntax
 is used for conditional breakpoints, with `0' being false and any
 other value being true. In numeric expressions, you can use integer
-constants (all calculations are done in integers), register names
-(which simply evaluate to the value of the register), debugger
-variables, parentheses, the standard four numeric operations (`+',
-`\-', `*' and `/'), the (non-)equality operators `==' and `!=', the
-comparison operators `>', `<', `>=' and `<=', bitwise and (`&'), or
+constants (all calculations are done in integers), system variables,
+debugger variables, parentheses, the standard four numeric operations
+(`+', `\-', `*' and `/'), the (non-)equality operators `==' and `!=',
+the comparison operators `>', `<', `>=' and `<=', bitwise and (`&'), or
 (`|') and exclusive or (`^') and logical and (`&&') and or (`||').
 Square brackets (`[' and `]') can be used to dereference a value; for
 example `[0x4000]' will give the value of the first byte of the screen.
+.PP
+System variables are specified via an
+.RI ` area : detail '
+syntax. The available system variables are:
+.PP
+ay:current
+.RS
+The current AY-3-8912 register.
+.RE
+ula:last
+.RS
+The last byte written to the ULA. Note that this variable can only
+be read, not written to.
+.RE
+ula:mem1ffd
+.RS
+The last byte written to memory control port used by the ZX Spectrum +2A/3;
+normally addressed at 0x1ffd, hence the name.
+.RE
+ula:mem7ffd
+.RS
+The last byte written to primary memory control port used by the ZX Spectrum
+128 and later; normally addressed at 0x7ffd, hence the name.
+.RE
+ula:tstates
+.RS
+The number of tstates since the last interrupt.
+.RE
+z80:
+.I register name
+.RS
+The value of the specified register. Both 8-bit registers and 16-bit
+register pairs are supported. The MEMPTR / WZ hidden register is also
+supported.
+.RE
+z80:im
+.RS
+The current interrupt mode of the Z80.
+.RE
+z80:iff1
+.br
+z80:iff2
+.RS
+1 if the specified interrupt flip-flop is currently set, or 0 if it is
+not set.
+.RE
+.PP
+The Z80 registers, interrupt mode and interrupt flip-flops can also be
+specified without the `z80:' prefix, but this syntax is deprecated and
+will be removed in Fuse 1.4.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -4894,7 +5076,9 @@ Didaktik 80 and Didaktik 40 file formats.
 .PP
 .I .TRD
 .RS
-TR-DOS disk image; for detailed information please see
+TR-DOS disk image. TRD and SCL sectors are loaded interleaved, therefore
+you might experience problems with TR\-DOS ROMs that use the turbo
+format (sequential sectors); for detailed information please see
 .I http://web.archive.org/web/20070808150548/http://www.ramsoft.bbk.org/tech/tr\-info.zip
 .RE
 .PP
@@ -4944,8 +5128,8 @@ was compiled, than Fuse will try to create UDI images with compressed
 tracks to save disk space.
 There is a
 .I .LOG
-`image' format for debugging purpose. This is a plain text file
-contains three dump of the loaded disk image at different details.
+`image' format for debugging purpose. This is a plain text file that
+contains three dumps of the loaded disk image at different details.
 Not all image formats can store all disk images.
 You cannot save a disk image with an inappropriate format
 that loses some information (e.g. variable track length or
@@ -5030,11 +5214,13 @@ frequency stereo sound default compression level.
 Assuming the appropriate libraries were available when
 .IR libspectrum (3)
 was compiled, snapshots, tape images, dock cartridges and input
-recording files can be read from files compressed with
-.IR bzip2 (3)
-or
+recording files (RZX) can be read from files compressed with
+.IR bzip2 "(3),"
 .IR gzip (3)
-just as if they were uncompressed.
+or
+.IR zip (3)
+just as if they were uncompressed. In the zip case, only the first
+supported file found inside the archive is loaded.
 There is currently no support for reading compressed +3, DISCiPLE/+D
 or Beta disk images.
 .\"
@@ -5073,7 +5259,8 @@ error messages.
 .IR libspectrum "(3),"
 .IR ogg123 "(1),"
 .IR xspect "(1),"
-.IR xzx "(1)."
+.IR xzx "(1),"
+.IR zip "(3)."
 .PP
 The comp.sys.sinclair Spectrum FAQ, at
 .br

@@ -2,8 +2,6 @@
    Copyright (c) 1999-2011 Philip Kendall
    Copyright (c) 2015 Adrien Destugues
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -34,7 +32,7 @@
 #include "machine.h"
 #include "machines.h"
 #include "machines_periph.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "periph.h"
 #include "settings.h"
 #include "spec48.h"

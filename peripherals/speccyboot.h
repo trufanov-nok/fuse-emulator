@@ -11,9 +11,7 @@
    SpeccyBoot:
      http://patrikpersson.github.io/speccyboot/
   
-   Copyright (c) 2009-2011 Patrik Persson, Philip Kendall
-
-   $Id$
+   Copyright (c) 2009-2016 Patrik Persson, Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,9 +36,7 @@
 #ifndef FUSE_SPECCYBOOT_H
 #define FUSE_SPECCYBOOT_H
 
-void speccyboot_init( void );
-
-void speccyboot_end( void );
+void speccyboot_register_startup( void );
 
 int speccyboot_unittest( void );
 

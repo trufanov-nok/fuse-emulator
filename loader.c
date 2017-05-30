@@ -1,8 +1,6 @@
 /* loader.c: loader detection
    Copyright (c) 2006 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -27,7 +25,8 @@
 
 #include "event.h"
 #include "loader.h"
-#include "memory.h"
+#include "memory_pages.h"
+#include "rzx.h"
 #include "settings.h"
 #include "spectrum.h"
 #include "tape.h"
@@ -346,7 +345,8 @@ loader_detect_loader( void )
 
   }
 
-  if( settings_current.accelerate_loader && tape_is_playing() )
+  if( settings_current.accelerate_loader && tape_is_playing() &&
+      !rzx_recording )
     check_for_acceleration();
 
 }

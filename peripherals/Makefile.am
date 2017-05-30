@@ -3,8 +3,6 @@
 ## Copyright (c) 2015 Stuart Brady
 ## Copyright (c) 2015 Sergio Baldoví
 
-## $Id$
-
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -25,6 +23,7 @@
 
 fuse_SOURCES += \
                 peripherals/ay.c \
+                peripherals/covox.c \
                 peripherals/dck.c \
                 peripherals/fuller.c \
                 peripherals/if1.c \
@@ -48,6 +47,7 @@ fuse_SOURCES += \
                 peripherals/disk/fdd.c \
                 peripherals/disk/opus.c \
                 peripherals/disk/plusd.c \
+                peripherals/disk/trdos.c \
                 peripherals/disk/upd_fdc.c \
                 peripherals/disk/wd_fdc.c \
                 peripherals/ide/divide.c \
@@ -69,6 +69,7 @@ endif
 
 noinst_HEADERS += \
                   peripherals/ay.h \
+                  peripherals/covox.h \
                   peripherals/dck.h \
                   peripherals/fuller.h \
                   peripherals/if1.h \
@@ -92,6 +93,7 @@ noinst_HEADERS += \
                   peripherals/disk/fdd.h \
                   peripherals/disk/opus.h \
                   peripherals/disk/plusd.h \
+                  peripherals/disk/trdos.h \
                   peripherals/disk/upd_fdc.h \
                   peripherals/disk/wd_fdc.h \
                   peripherals/ide/divide.h \

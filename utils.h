@@ -1,8 +1,6 @@
 /* utils.h: some useful helper functions
    Copyright (c) 1999-2012 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -49,8 +47,6 @@ void utils_close_file( utils_file *file );
 
 int utils_write_file( const char *filename, const unsigned char *buffer,
 		      size_t length );
-int utils_make_temp_file( int *fd, char *tempfilename, const char *filename,
-			  const char *template );
 
 int utils_find_file_path( const char *filename, char *path,
                           utils_aux_type type );

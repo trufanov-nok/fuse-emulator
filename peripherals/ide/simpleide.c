@@ -1,11 +1,7 @@
 /* simpleide.c: Simple 8-bit IDE interface routines
-   Copyright (c) 2003-2004 Garry Lancaster,
-		 2004 Philip Kendall,
-		 2008 Fredrick Meunier
+   Copyright (c) 2003-2017 Garry Lancaster, Philip Kendall, Fredrick Meunier
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 Sergio Baldoví
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,6 +28,7 @@
 #include <libspectrum.h>
 
 #include "ide.h"
+#include "infrastructure/startup_manager.h"
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
@@ -74,29 +71,19 @@ static module_info_t simpleide_module_info = {
 
 /* Housekeeping functions */
 
-int
-simpleide_init( void )
+static int
+simpleide_init( void *context )
 {
   int error;
 
   simpleide_idechn = libspectrum_ide_alloc( LIBSPECTRUM_IDE_DATA8 );
 
-  ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT, 0 );
-  ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT, 0 );
-
-  if( settings_current.simpleide_master_file ) {
-    error = libspectrum_ide_insert( simpleide_idechn, LIBSPECTRUM_IDE_MASTER,
-				    settings_current.simpleide_master_file );
-    if( error ) return error;
-    ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT, 1 );
-  }
-
-  if( settings_current.simpleide_slave_file ) {
-    error = libspectrum_ide_insert( simpleide_idechn, LIBSPECTRUM_IDE_SLAVE,
-				    settings_current.simpleide_slave_file );
-    if( error ) return error;
-    ui_menu_activate( UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT, 1 );
-  }
+  error = ide_init( simpleide_idechn,
+		    settings_current.simpleide_master_file,
+		    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT,
+		    settings_current.simpleide_slave_file,
+		    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT );
+  if( error ) return error;
 
   module_register( &simpleide_module_info );
   periph_register( PERIPH_TYPE_SIMPLEIDE, &simpleide_periph );
@@ -104,10 +91,22 @@ simpleide_init( void )
   return 0;
 }
 
-int
+static void
 simpleide_end( void )
 {
-  return libspectrum_ide_free( simpleide_idechn );
+  libspectrum_ide_free( simpleide_idechn );
+}
+
+void
+simpleide_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DISPLAY,
+    STARTUP_MANAGER_MODULE_SETUID
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_SIMPLEIDE, dependencies,
+                            ARRAY_SIZE( dependencies ), simpleide_init, NULL,
+                            simpleide_end );
 }
 
 void
@@ -119,26 +118,12 @@ simpleide_reset( int hard_reset GCC_UNUSED )
 int
 simpleide_insert( const char *filename, libspectrum_ide_unit unit )
 {
-  char **setting;
-  ui_menu_item item;
-
-  switch( unit ) {
-
-  case LIBSPECTRUM_IDE_MASTER:
-    setting = &settings_current.simpleide_master_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT;
-    break;
-    
-  case LIBSPECTRUM_IDE_SLAVE:
-    setting = &settings_current.simpleide_slave_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT;
-    break;
-    
-    default: return 1;
-  }
-
-  return ide_insert( filename, simpleide_idechn, unit, simpleide_commit,
-		     setting, item );
+  return ide_master_slave_insert(
+    simpleide_idechn, unit, filename,
+    &settings_current.simpleide_master_file,
+    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT,
+    &settings_current.simpleide_slave_file,
+    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT );
 }
 
 int
@@ -154,24 +139,12 @@ simpleide_commit( libspectrum_ide_unit unit )
 int
 simpleide_eject( libspectrum_ide_unit unit )
 {
-  char **setting;
-  ui_menu_item item;
-
-  switch( unit ) {
-  case LIBSPECTRUM_IDE_MASTER:
-    setting = &settings_current.simpleide_master_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT;
-    break;
-    
-  case LIBSPECTRUM_IDE_SLAVE:
-    setting = &settings_current.simpleide_slave_file;
-    item = UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT;
-    break;
-    
-  default: return 1;
-  }
-
-  return ide_eject( simpleide_idechn, unit, simpleide_commit, setting, item );
+  return ide_master_slave_eject(
+    simpleide_idechn, unit,
+    &settings_current.simpleide_master_file,
+    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_MASTER_EJECT,
+    &settings_current.simpleide_slave_file,
+    UI_MENU_ITEM_MEDIA_IDE_SIMPLE8BIT_SLAVE_EJECT );
 }
 
 /* Port read/writes */

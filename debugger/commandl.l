@@ -1,8 +1,6 @@
 /* commandl.l: Debugger command lexical scanner
-   Copyright (c) 2002-2013 Philip Kendall
+   Copyright (c) 2002-2016 Philip Kendall
    Copyright (c) 2015 Sergio Baldoví
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,7 +45,7 @@
 
 %}
 
-ID	[a-z]([a-z0-9]|\\[ ])+
+ID	[a-z]([a-z0-9]|\\[ ])*
 
 %option caseless
 
@@ -83,22 +81,9 @@ t|tb|tbr|tbre|tbrea|tbreak|tbreakp|tbreakpo|tbreakpoi|tbreakpoin|tbreakpoint {
 ti|tim|time { return TIME; }
 w|wr|wri|writ|write { return WRITE; }
 
-a|b|c|d|e|f|h|l { yylval.reg = debugger_register_hash( yytext );
-		  return DEBUGGER_REGISTER; }
-
-"a'"|"b'"|"c'"|"d'"|"e'"|"f'"|"h'"|"l'" {
-                             yylval.reg = debugger_register_hash( yytext );
-			     return DEBUGGER_REGISTER; }
-
-af|bc|de|hl|"af\'"|"bc\'"|"de\'"|"hl\'" {
-                             yylval.reg = debugger_register_hash( yytext );
-			     return DEBUGGER_REGISTER; }
-
-sp|pc|ix|iy|i|r { yylval.reg = debugger_register_hash( yytext );
-	      return DEBUGGER_REGISTER; }
-
-im|iff1|iff2 { yylval.reg = debugger_register_hash( yytext );
-	      return DEBUGGER_REGISTER; }
+a|b|c|d|e|f|h|l|af|bc|de|hl|sp|pc|ix|iy|i|r|im|iff1|iff2|"a'"|"b'"|"c'"|"d'"|"e'"|"f'"|"h'"|"l'"|"af\'"|"bc\'"|"de\'"|"hl\'" {
+  yylval.string = mempool_strdup( debugger_memory_pool, yytext );
+  return DEBUGGER_REGISTER; }
 
 "("		{ return '('; }
 ")"		{ return ')'; }

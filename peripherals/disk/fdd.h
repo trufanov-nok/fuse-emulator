@@ -1,8 +1,6 @@
 /* fdd.h: Routines for emulating floppy disk drives
-   Copyright (c) 2007-2015 Gergely Szasz
+   Copyright (c) 2007-2016 Gergely Szasz, Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,8 +24,6 @@
 
 #ifndef FUSE_FDD_H
 #define FUSE_FDD_H
-
-#include <config.h>
 
 #include "event.h"
 #include "disk.h"
@@ -119,8 +115,7 @@ typedef struct fdd_params_t {
 
 extern const fdd_params_t fdd_params[];
 
-/* initialize the event codes */
-void fdd_init_events( void );
+void fdd_register_startup( void );
 
 const char *fdd_strerror( int error );
 /* initialize the fdd_t struct, and set fdd_heads and cylinders (e.g. 2/83 ) */

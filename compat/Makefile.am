@@ -2,8 +2,6 @@
 ## Copyright (c) 2003-2013 Philip Kendall
 ## Copyright (c) 2015 Sergio Baldoví
 
-## $Id$
-
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -30,10 +28,6 @@ endif
 
 if COMPAT_GETOPT
 fuse_SOURCES += compat/getopt.c compat/getopt1.c
-endif
-
-if COMPAT_MKSTEMP
-fuse_SOURCES += compat/mkstemp.c
 endif
 
 ## Amiga routines

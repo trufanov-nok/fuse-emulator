@@ -2,8 +2,6 @@
    Copyright (c) 2008-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -33,6 +31,7 @@
 #include "mempool.h"
 #include "periph.h"
 #include "peripherals/disk/beta.h"
+#include "peripherals/disk/didaktik.h"
 #include "peripherals/disk/disciple.h"
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
@@ -758,6 +757,7 @@ paging_test( void )
     r += usource_unittest();
 
     r += beta_unittest();
+    r += didaktik80_unittest();
     r += disciple_unittest();
     r += opus_unittest();
     r += plusd_unittest();

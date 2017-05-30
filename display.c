@@ -2,8 +2,6 @@
    Copyright (c) 1999-2015 Philip Kendall, Thomas Harte, Witold Filipczyk
                            and Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -32,8 +30,8 @@
 #include <string.h>
 
 #include "display.h"
-#include "event.h"
 #include "fuse.h"
+#include "infrastructure/startup_manager.h"
 #include "machine.h"
 #include "movie.h"
 #include "peripherals/scld.h"
@@ -98,9 +96,6 @@ static libspectrum_qword display_all_dirty;
 
 /* Used to signify that we're redrawing the entire screen */
 static int display_redraw_all;
-
-/* Value used to signify a border line has more than one colour on it. */
-static const int display_border_mixed = 0xff;
 
 /* The last point at which we updated the screen display */
 int critical_region_x = 0, critical_region_y = 0;
@@ -213,6 +208,26 @@ display_init( int *argc, char ***argv )
                             display_hires_border : display_lores_border;
 
   return 0;
+}
+
+static int
+display_init_wrapper( void *context )
+{
+  display_startup_context *typed_context =
+    (display_startup_context*) context;
+
+  return display_init( typed_context->argc, typed_context->argv );
+}
+
+void
+display_register_startup( display_startup_context *context )
+{
+  /* The Wii has an explicit call to display_init for now */
+#ifndef GEKKO
+  startup_manager_register_no_dependencies( STARTUP_MANAGER_MODULE_DISPLAY,
+                                            display_init_wrapper, context,
+                                            NULL );
+#endif                          /* #ifndef GEKKO */
 }
 
 /* Mark as 'dirty' the pixels which have been changed by a write to

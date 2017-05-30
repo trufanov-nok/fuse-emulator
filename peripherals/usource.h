@@ -1,7 +1,5 @@
 /* usource.h: Routines for handling the Currah uSource interface
-   Copyright (c) 2007,2011 Stuart Brady
-
-   $Id$
+   Copyright (c) 2007-2016 Stuart Brady, Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,8 +29,7 @@
 extern int usource_active;
 extern int usource_available;
 
-int usource_init( void );
-void usource_end( void );
+void usource_register_startup( void );
 
 void usource_toggle( void );
 

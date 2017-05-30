@@ -1,10 +1,8 @@
 /* zxcf.c: ZXCF interface routines
-   Copyright (c) 2003-2015 Garry Lancaster and Philip Kendall
+   Copyright (c) 2003-2016 Garry Lancaster, Philip Kendall
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 Sergio Baldoví
 		 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -33,8 +31,9 @@
 
 #include "debugger/debugger.h"
 #include "ide.h"
+#include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
@@ -110,8 +109,8 @@ static int page_event, unpage_event;
 
 /* Housekeeping functions */
 
-int
-zxcf_init( void )
+static int
+zxcf_init( void *context )
 {
   int error, i;
 
@@ -141,10 +140,24 @@ zxcf_init( void )
   return 0;
 }
 
-int
+static void
 zxcf_end( void )
 {
-  return libspectrum_ide_free( zxcf_idechn );
+  libspectrum_ide_free( zxcf_idechn );
+}
+
+void
+zxcf_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DEBUGGER,
+    STARTUP_MANAGER_MODULE_DISPLAY,
+    STARTUP_MANAGER_MODULE_MEMORY,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_ZXCF, dependencies,
+                            ARRAY_SIZE( dependencies ), zxcf_init, NULL,
+                            zxcf_end );
 }
 
 static void
@@ -161,23 +174,11 @@ zxcf_reset( int hard_reset GCC_UNUSED )
   libspectrum_ide_reset( zxcf_idechn );
 }
 
-static int
-zxcf_commit_wrapper( libspectrum_ide_unit unit )
-{
-  if( unit != LIBSPECTRUM_IDE_MASTER ) {
-    ui_error( UI_ERROR_ERROR, "%s:%d: unit is %d, not LIBSPECTRUM_IDE_MASTER",
-	      __FILE__, __LINE__, unit );
-    abort();
-  }
-
-  return zxcf_commit();
-}
-
 int
 zxcf_insert( const char *filename )
 {
   return ide_insert( filename, zxcf_idechn, LIBSPECTRUM_IDE_MASTER,
-		     zxcf_commit_wrapper, &settings_current.zxcf_pri_file,
+		     &settings_current.zxcf_pri_file,
 		     UI_MENU_ITEM_MEDIA_IDE_ZXCF_EJECT );
 }
 
@@ -194,7 +195,7 @@ zxcf_commit( void )
 int
 zxcf_eject( void )
 {
-  return ide_eject( zxcf_idechn, LIBSPECTRUM_IDE_MASTER, zxcf_commit_wrapper,
+  return ide_eject( zxcf_idechn, LIBSPECTRUM_IDE_MASTER,
 		    &settings_current.zxcf_pri_file,
 		    UI_MENU_ITEM_MEDIA_IDE_ZXCF_EJECT );
 }
@@ -279,17 +280,12 @@ zxcf_ide_write( libspectrum_word port, libspectrum_byte data )
 static void
 zxcf_memory_map( void )
 {
-  int i;
+  int map_read;
 
   if( !settings_current.zxcf_active ) return;
 
-  if( !settings_current.zxcf_upload ) {
-    for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
-      memory_map_read[i] = zxcf_memory_map_romcs[i];
-  }
-
-  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
-    memory_map_write[i] = zxcf_memory_map_romcs[i];
+  map_read = !settings_current.zxcf_upload;
+  memory_map_16k_read_write( 0x0000, zxcf_memory_map_romcs, 0, map_read, 1 );
 }
 
 static void

@@ -4,8 +4,6 @@
    Copyright (c) 2015 Tom Seddon
    Copyright (c) 2016 BogDan Vatra
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -36,7 +34,7 @@
 #include "debugger_internals.h"
 #include "event.h"
 #include "fuse.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "ui/ui.h"
 #include "utils.h"
 
@@ -136,8 +134,8 @@ debugger_breakpoint_add_port( debugger_breakpoint_type type,
 
 int
 debugger_breakpoint_add_time( debugger_breakpoint_type type,
-			      libspectrum_dword tstates, size_t ignore,
-			      debugger_breakpoint_life life,
+			      libspectrum_dword breakpoint_tstates,
+                              size_t ignore, debugger_breakpoint_life life,
 			      debugger_expression *condition )
 {
   debugger_breakpoint_value value;
@@ -153,8 +151,8 @@ debugger_breakpoint_add_time( debugger_breakpoint_type type,
   }
 
   value.time.triggered = 0;
-  value.time.tstates = tstates;
-  value.time.initial_tstates = tstates;
+  value.time.tstates = breakpoint_tstates;
+  value.time.initial_tstates = breakpoint_tstates;
 
   return breakpoint_add( type, value, ignore, life, condition );
 }

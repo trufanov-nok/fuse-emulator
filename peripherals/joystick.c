@@ -1,8 +1,6 @@
 /* joystick.c: Joystick emulation support
-   Copyright (c) 2001-2011 Russell Marks, Darren Salt, Philip Kendall
+   Copyright (c) 2001-2016 Russell Marks, Darren Salt, Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,6 +27,7 @@
 #include <libspectrum.h>
 
 #include "fuse.h"
+#include "infrastructure/startup_manager.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "module.h"
@@ -124,8 +123,8 @@ static const periph_t kempston_loose_periph = {
 
 /* Init/shutdown functions. Errors aren't important here */
 
-void
-fuse_joystick_init (void)
+int
+joystick_init( void *context )
 {
   joysticks_supported = ui_joystick_init();
   kempston_value = timex1_value = timex2_value = 0x00;
@@ -134,12 +133,26 @@ fuse_joystick_init (void)
   module_register( &joystick_module_info );
   periph_register( PERIPH_TYPE_KEMPSTON, &kempston_strict_periph );
   periph_register( PERIPH_TYPE_KEMPSTON_LOOSE, &kempston_loose_periph );
+
+  return 0;
 }
 
 void
-fuse_joystick_end (void)
+joystick_end( void )
 {
   ui_joystick_end();
+}
+
+void
+joystick_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_LIBSPECTRUM,
+    STARTUP_MANAGER_MODULE_SETUID
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_JOYSTICK, dependencies,
+                            ARRAY_SIZE( dependencies ), joystick_init,
+                            joystick_end, NULL );
 }
 
 int
@@ -280,7 +293,7 @@ joystick_from_snapshot( libspectrum_snap *snap )
       ui_error( UI_ERROR_INFO, "Ignoring unsupported joystick in snapshot %s", 
         libspectrum_joystick_name( libspectrum_snap_joystick_list( snap, i ) ));
       continue;
-    };
+    }
 
     if( settings_current.joystick_keyboard_output != fuse_type &&
         settings_current.joystick_1_output != fuse_type &&

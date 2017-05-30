@@ -1,8 +1,6 @@
-/* memory.h: memory access routines
-   Copyright (c) 2003-2011 Philip Kendall
+/* memory_pages.h: memory access routines
+   Copyright (c) 2003-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,8 +22,8 @@
 
 */
 
-#ifndef FUSE_MEMORY_H
-#define FUSE_MEMORY_H
+#ifndef FUSE_MEMORY_PAGES_H
+#define FUSE_MEMORY_PAGES_H
 
 #include <libspectrum.h>
 
@@ -117,8 +115,7 @@ extern int memory_current_screen;
 /* Which bits to look at when working out where the screen is */
 extern libspectrum_word memory_screen_mask;
 
-void memory_init( void );
-void memory_end( void );
+void memory_register_startup( void );
 libspectrum_byte *memory_pool_allocate( size_t length );
 libspectrum_byte *memory_pool_allocate_persistent( size_t length,
                                                    int persistent );
@@ -141,9 +138,25 @@ void memory_ram_set_16k_contention( int page_num, int contended );
 void memory_map_16k( libspectrum_word address, memory_page source[],
   int page_num );
 
+/* Map 16K of memory for either reading, writing or both */
+void memory_map_16k_read_write( libspectrum_word address, memory_page source[],
+  int page_num, int map_read, int map_write );
+
 /* Map 8K of memory */
 void memory_map_8k( libspectrum_word address, memory_page source[],
   int page_num );
+
+/* Map 8K of memory for either reading, writing or both */
+void memory_map_8k_read_write( libspectrum_word address, memory_page source[],
+  int page_num, int map_read, int map_write );
+
+/* Map 4K of memory for either reading, writing or both */
+void memory_map_4k_read_write( libspectrum_word address, memory_page source[],
+  int page_num, int map_read, int map_write );
+
+/* Map 2K of memory for either reading, writing or both */
+void memory_map_2k_read_write( libspectrum_word address, memory_page source[],
+  int page_num, int map_read, int map_write );
 
 /* Map one page of memory */
 void memory_map_page( memory_page *source[], int page_num );
@@ -196,4 +209,4 @@ typedef enum trap_type {
 /* Check whether we're actually in the right ROM when a tape or other traps hit */
 extern int trap_check_rom( trap_type type );
 
-#endif				/* #ifndef FUSE_MEMORY_H */
+#endif				/* #ifndef FUSE_MEMORY_PAGES_H */
