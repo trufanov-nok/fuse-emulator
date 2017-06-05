@@ -33,6 +33,6 @@ extern int ulaplus_available;  /* Is ULAplus available for use? */
 extern int ulaplus_palette_enabled;
 extern libspectrum_byte ulaplus_palette[ ULAPLUS_CLUT_MAX_COLOURS ];
 
-void ulaplus_init( void );
+void ulaplus_register_startup( void );
 
 #endif                  /* #ifndef FUSE_ULAPLUS_H */

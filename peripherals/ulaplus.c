@@ -31,6 +31,7 @@
 
 #include "compat.h"
 #include "display.h"
+#include "infrastructure/startup_manager.h"
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
@@ -79,11 +80,22 @@ static const periph_t ulaplus_periph = {
   /* .activate = */ NULL,
 };
 
-void
-ulaplus_init( void )
+static int
+ulaplus_init( void *context )
 {
   module_register( &ulaplus_module_info );
   periph_register( PERIPH_TYPE_ULAPLUS, &ulaplus_periph );
+
+  return 0;
+}
+
+void
+ulaplus_register_startup( void )
+{
+  startup_manager_module dependencies[] = { STARTUP_MANAGER_MODULE_SETUID };
+  startup_manager_register( STARTUP_MANAGER_MODULE_ULAPLUS, dependencies,
+                            ARRAY_SIZE( dependencies ), ulaplus_init, NULL,
+                            NULL );
 }
 
 static void

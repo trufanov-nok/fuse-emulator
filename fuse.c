@@ -331,6 +331,7 @@ run_startup_manager( int *argc, char ***argv )
   tape_register_startup();
   timer_register_startup();
   ula_register_startup();
+  ulaplus_register_startup();
   usource_register_startup();
   z80_register_startup();
   zxatasp_register_startup();
