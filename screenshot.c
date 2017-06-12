@@ -195,11 +195,30 @@ get_rgb32_data( libspectrum_byte *rgb32_data, size_t stride,
 				      { 255, 255, 255 } };
 
   libspectrum_byte grey_palette[16];
+  libspectrum_byte ulaplus_palette[256][3];
+  libspectrum_byte ulaplus_grey_palette[256];
+  const libspectrum_byte (*colour_palette_to_use)[3], *grey_palette_to_use;
 
-  /* Addition of 0.5 is to avoid rounding errors */
-  for( i = 0; i < 16; i++ )
-    grey_palette[i] =
-      utils_rgb_to_grey( palette[i][0], palette[i][1], palette[i][2] );
+  if( ulaplus_available ) {
+    for( i = 0; i < 256; i++ ) {
+      int red, green, blue, grey;
+      ulaplus_parse_colour( i, &red, &green, &blue, &grey );
+      ulaplus_palette[i][0] = red;
+      ulaplus_palette[i][1] = green;
+      ulaplus_palette[i][2] = blue;
+      ulaplus_grey_palette[i] = grey;
+    }
+
+    colour_palette_to_use = ulaplus_palette;
+    grey_palette_to_use = ulaplus_grey_palette;
+  } else {
+    for( i = 0; i < 16; i++ )
+      grey_palette[i] =
+        utils_rgb_to_grey( palette[i][0], palette[i][1], palette[i][2] );
+
+    colour_palette_to_use = palette;
+    grey_palette_to_use = grey_palette;
+  }
 
   for( y = 0; y < height; y++ ) {
     for( x = 0; x < width; x++ ) {
@@ -210,22 +229,17 @@ get_rgb32_data( libspectrum_byte *rgb32_data, size_t stride,
       colour = display_getpixel( x, y );
 
       if( settings_current.bw_tv ) {
-
-	red = green = blue = grey_palette[colour];
-
+        red = green = blue = grey_palette_to_use[colour];
       } else {
-
-	red   = palette[colour][0];
-	green = palette[colour][1];
-	blue  = palette[colour][2];
-
+        red   = colour_palette_to_use[colour][0];
+        green = colour_palette_to_use[colour][1];
+        blue  = colour_palette_to_use[colour][2];
       }
-      
+
       rgb32_data[ y * stride + 4 * x     ] = red;
       rgb32_data[ y * stride + 4 * x + 1 ] = green;
       rgb32_data[ y * stride + 4 * x + 2 ] = blue;
       rgb32_data[ y * stride + 4 * x + 3 ] = 0;		 /* padding */
-
     }
   }
 
