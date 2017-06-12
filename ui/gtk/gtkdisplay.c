@@ -38,6 +38,7 @@
 #include "ui/uidisplay.h"
 #include "ui/scaler/scaler.h"
 #include "settings.h"
+#include "utils.h"
 
 /* The size of a 1x1 image in units of
    DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
@@ -167,16 +168,15 @@ static int
 init_colours( colour_format_t format )
 {
   int i;
-  guchar red, green, blue, grey;
 
   /* Standard palette colours */
   for( i = 0; i < 16; i++ ) {
+
+    guchar red, green, blue, grey;
     red   = rgb_colours[i][0];
     green = rgb_colours[i][1];
     blue  = rgb_colours[i][2];
-
-    /* Addition of 0.5 is to avoid rounding errors */
-    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+    grey = utils_rgb_to_grey( red, green, blue );
 
     gtkdisplay_colours[i] = gtkdisplay_map_RGB( format, red, green, blue );
     bw_colours[i] = gtkdisplay_map_RGB( format, grey, grey, grey );
@@ -185,16 +185,8 @@ init_colours( colour_format_t format )
   /* ULAplus colours */
   for( i = 0; i < 256; i++ ) {
 
-    green = ( i >> 5 ) & 7;
-    red   = ( i >> 2 ) & 7;
-    blue  = ( ( i & 3 ) << 1 ) | ( ( i & 2 ) >> 1 ) | ( i & 1 );
-
-    green = ( green << 5 ) | ( green << 2 ) | ( green >> 1 );
-    red   = (   red << 5 ) | (   red << 2 ) | (   red >> 1 );
-    blue  = (  blue << 5 ) | (  blue << 2 ) | (  blue >> 1 );
-
-    /* Addition of 0.5 is to avoid rounding errors */
-    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+    int red, green, blue, grey;
+    ulaplus_parse_colour( i, &red, &green, &blue, &grey );
 
     ulaplus_colours[i] = gtkdisplay_map_RGB( format, red, green, blue );
     bw_ulaplus_colours[i] = gtkdisplay_map_RGB( format, grey, grey, grey );

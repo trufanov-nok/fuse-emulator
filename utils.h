@@ -58,4 +58,7 @@ char* utils_safe_strdup( const char *src );
 void utils_networking_init( void );
 void utils_networking_end( void );
 
+/* Convert a given RGB triplet to its greyscale equivalent */
+int utils_rgb_to_grey( int red, int green, int blue );
+
 #endif			/* #ifndef FUSE_UTILS_H */

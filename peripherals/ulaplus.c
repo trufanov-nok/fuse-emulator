@@ -38,6 +38,7 @@
 #include "ui/ui.h"
 #include "ula.h"
 #include "ulaplus.h"
+#include "utils.h"
 
 int ulaplus_available = 0;
 int ulaplus_palette_enabled = 0;
@@ -260,4 +261,17 @@ ulaplus_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_ulaplus_palette( snap, 0, buffer );
 
   libspectrum_snap_set_ulaplus_ff_register( snap, display_mode.byte );
+}
+
+void
+ulaplus_parse_colour( int colour, int *red, int *green, int *blue, int *grey )
+{
+  int g = ( colour >> 5 ) & 7;
+  int r = ( colour >> 2 ) & 7;
+  int b = ( ( colour & 3 ) << 1 ) | ( ( colour & 2 ) >> 1 ) | ( colour & 1 );
+
+  *green = ( g << 5 ) | ( g << 2 ) | ( g >> 1 );
+  *red   = ( r << 5 ) | ( r << 2 ) | ( r >> 1 );
+  *blue  = ( b << 5 ) | ( b << 2 ) | ( b >> 1 );
+  *grey = utils_rgb_to_grey( *red, *green, *blue );
 }

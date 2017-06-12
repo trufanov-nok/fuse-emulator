@@ -467,3 +467,9 @@ utils_networking_end( void )
 #endif
 }
 
+int
+utils_rgb_to_grey( int red, int green, int blue )
+{
+  /* Addition of 0.5 is to avoid rounding errors */
+  return ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+}
