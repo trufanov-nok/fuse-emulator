@@ -875,7 +875,7 @@ set_border( int y, int start, int end, libspectrum_byte colour )
   chunk_detail.type = LOWRES_TWO_COLOUR;
   chunk_detail.data.lr_2c.ink = 0x00;
   chunk_detail.data.lr_2c.paper = paper;
-  chunk_detail.data.lr_2c.data = 0xff;
+  chunk_detail.data.lr_2c.data = 0x00;
 
   for( ; start < end; start++ ) {
     /* Draw it if it is different to what was there last time */
