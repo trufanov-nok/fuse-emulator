@@ -35,6 +35,9 @@ extern libspectrum_byte ulaplus_palette[ ULAPLUS_CLUT_MAX_COLOURS ];
 
 void ulaplus_register_startup( void );
 
+/* Set the whole of the ULAplus palette */
+void ulaplus_set_palette( libspectrum_byte *palette );
+
 /* Get the R, G, B and grey components for a given ULAplus colour */
 void ulaplus_parse_colour( int colour, int *red, int *green, int *blue,
                            int *grey );

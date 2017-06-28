@@ -43,6 +43,7 @@
 #define HICOLOUR_SCR_SIZE (2 * MONO_BITMAP_SIZE)
 #define HIRES_ATTR HICOLOUR_SCR_SIZE
 #define HIRES_SCR_SIZE (HICOLOUR_SCR_SIZE + 1)
+#define ULAPLUS_SCR_SIZE (STANDARD_SCR_SIZE + ULAPLUS_CLUT_MAX_COLOURS)
 
 #ifdef USE_LIBPNG
 
@@ -404,13 +405,28 @@ screenshot_scr_read( const char *filename )
 
   switch( screen.length ) {
   case STANDARD_SCR_SIZE:
+  case ULAPLUS_SCR_SIZE:
     memcpy( &RAM[ memory_current_screen ][display_get_addr(0,0)],
-	    screen.buffer, screen.length );
+	    screen.buffer, STANDARD_SCR_SIZE );
 
     /* If it is a Timex and it is in hi colour or hires mode, switch out of
        hires or hicolour mode */
     if( scld_last_dec.name.b1 || scld_last_dec.name.hires )
       scld_dec_write( 0xff, scld_last_dec.byte & ~HIRES );
+
+    if( screen.length == ULAPLUS_SCR_SIZE ) {
+      if( ulaplus_available ) {
+        ulaplus_set_palette( screen.buffer + STANDARD_SCR_SIZE );
+        if( !ulaplus_palette_enabled ) ulaplus_palette_enabled = 1;
+      } else
+        ui_error( UI_ERROR_INFO,
+            "The file contained a ULAplus screen; ULAplus palette has been ignored");
+    } else {
+      /* Loading a normal screenshot, disable the ULAplus palette if it is
+         active */
+      if( ulaplus_available && ulaplus_palette_enabled )
+        ulaplus_palette_enabled = 0;
+    }
     break;
 
   case HICOLOUR_SCR_SIZE:

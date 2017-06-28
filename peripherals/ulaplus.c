@@ -228,8 +228,7 @@ ulaplus_from_snapshot( libspectrum_snap *snap )
     ulaplus_current_register =
       libspectrum_snap_ulaplus_current_register( snap );
 
-    memcpy( ulaplus_palette, libspectrum_snap_ulaplus_palette( snap, 0 ),
-            ULAPLUS_CLUT_MAX_COLOURS );
+    ulaplus_set_palette( libspectrum_snap_ulaplus_palette( snap, 0 ) );
 
     ulaplus_videomode_write( 0x00ff,
                              libspectrum_snap_ulaplus_ff_register( snap ) );
@@ -261,6 +260,12 @@ ulaplus_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_ulaplus_palette( snap, 0, buffer );
 
   libspectrum_snap_set_ulaplus_ff_register( snap, display_mode.byte );
+}
+
+void
+ulaplus_set_palette( libspectrum_byte *palette )
+{
+  memcpy( ulaplus_palette, palette, ULAPLUS_CLUT_MAX_COLOURS );
 }
 
 void
