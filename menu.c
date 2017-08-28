@@ -50,6 +50,7 @@
 #include "peripherals/if2.h"
 #include "peripherals/joystick.h"
 #include "peripherals/multiface.h"
+#include "peripherals/scld.h"
 #include "profile.h"
 #include "psg.h"
 #include "rzx.h"
@@ -759,8 +760,9 @@ MENU_CALLBACK( menu_file_screenshot_savescreenasmlt )
 
   fuse_emulation_pause();
 
-  if( machine_current->timex ) {
-    ui_error( UI_ERROR_ERROR, "MLT format not supported for Timex clones" );
+  if( machine_current->timex && scld_last_dec.name.hires ) {
+    ui_error( UI_ERROR_ERROR,
+              "MLT format not supported for Timex hi-res screen mode" );
     fuse_emulation_unpause();
     return;
   }

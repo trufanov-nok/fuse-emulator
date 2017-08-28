@@ -335,22 +335,30 @@ screenshot_mlt_write( const char *filename )
 
   memset( mlt_data, 0, MLT_SIZE );
 
-  if( machine_current->timex ) {
-    ui_error( UI_ERROR_ERROR, "MLT format not supported for Timex clones" );
+  if( machine_current->timex && scld_last_dec.name.hires ) {
+    ui_error( UI_ERROR_ERROR,
+              "MLT format not supported for Timex hi-res screen mode" );
     return 1;
   }
 
   for( y = 0; y < DISPLAY_HEIGHT; y++ ) {
     for( x = 0; x < DISPLAY_WIDTH_COLS; x++ ) {
-      beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
-      beam_y = y + DISPLAY_BORDER_HEIGHT;
       offset = display_get_addr( x, y );
 
-      /* Read byte, atrr/byte, and screen mode */
-      index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
+      if( machine_current->timex ) {
+        /* Read bitmap byte and atrr */
+        data = RAM[ memory_current_screen ][display_get_addr(x,y)];
+        data2 = display_get_attr_byte( x, y );
+      } else {
+        beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+        beam_y = y + DISPLAY_BORDER_HEIGHT;
 
-      data = display_last_screen[ index ] & 0xff;
-      data2 = (display_last_screen[ index ] & 0xff00)>>8;
+        /* Read byte, atrr/byte, and screen mode */
+        index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
+
+        data = display_last_screen[ index ] & 0xff;
+        data2 = (display_last_screen[ index ] & 0xff00)>>8;
+      }
 
       /* write pixel data to offset into mlt data */
       mlt_data[offset] = data;
