@@ -344,21 +344,14 @@ screenshot_mlt_write( const char *filename )
   for( y = 0; y < DISPLAY_HEIGHT; y++ ) {
     for( x = 0; x < DISPLAY_WIDTH_COLS; x++ ) {
       offset = display_get_addr( x, y );
+      beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+      beam_y = y + DISPLAY_BORDER_HEIGHT;
 
-      if( machine_current->timex ) {
-        /* Read bitmap byte and atrr */
-        data = RAM[ memory_current_screen ][display_get_addr(x,y)];
-        data2 = display_get_attr_byte( x, y );
-      } else {
-        beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
-        beam_y = y + DISPLAY_BORDER_HEIGHT;
+      /* Read byte, atrr/byte, and screen mode */
+      index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
 
-        /* Read byte, atrr/byte, and screen mode */
-        index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-
-        data = display_last_screen[ index ] & 0xff;
-        data2 = (display_last_screen[ index ] & 0xff00)>>8;
-      }
+      data = display_last_screen[ index ] & 0xff;
+      data2 = (display_last_screen[ index ] & 0xff00)>>8;
 
       /* write pixel data to offset into mlt data */
       mlt_data[offset] = data;
