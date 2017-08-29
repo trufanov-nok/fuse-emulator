@@ -293,7 +293,7 @@ display_dirty_sinclair( libspectrum_word offset )
 
 /* Get the attribute byte or equivalent for the eight pixels starting at
    ( (8*x) , y ) */
-inline libspectrum_byte
+static inline libspectrum_byte
 display_get_attr_byte( int x, int y )
 {
   libspectrum_byte attr;

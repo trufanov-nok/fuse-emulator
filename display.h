@@ -107,7 +107,6 @@ void display_dirty_flashing_sinclair(void);
 
 void display_parse_attr( libspectrum_byte attr, libspectrum_byte *ink,
 			 libspectrum_byte *paper );
-libspectrum_byte display_get_attr_byte( int x, int y );
 
 void display_set_lores_border(int colour);
 void display_set_hires_border(int colour);
