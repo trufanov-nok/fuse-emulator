@@ -31,6 +31,7 @@
 
 #ifdef SDL_USE_GL
 #include <GL/gl.h>
+#include <GL/glext.h>
 #endif
 
 #include <libspectrum.h>
