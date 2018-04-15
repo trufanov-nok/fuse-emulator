@@ -48,7 +48,9 @@ typedef enum scaler_type {
   SCALER_PALTV3X,
   SCALER_HQ2X,
   SCALER_HQ3X,
-
+#ifdef USE_HW_SCALER
+  SCALER_HW,		/* Non fixed scaler */
+#endif  /* #ifdef USE_HW_SCALER */
   SCALER_NUM		/* End marker; do not remove */
 } scaler_type;
 

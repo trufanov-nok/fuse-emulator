@@ -26,4 +26,6 @@
 
 extern SDL_Surface *sdldisplay_gc;    /* Hardware screen */
 
+void sdldisplay_resize( int w, int h );
+
 #endif			/* #ifndef FUSE_SDLDISPLAY_H */

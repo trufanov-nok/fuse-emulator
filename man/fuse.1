@@ -961,6 +961,16 @@ Options dialog's
 option.
 .RE
 .PP
+.B \-\-opengl\-filter\-nearest
+.RS
+Specify whether Fuse should use GL_NEAREST instead of the default
+GL_LINEAR magnification and minification filter for OpenGL hardware scaler
+and OpenGL fullscreen mode.
+With GL_NEAREST the image will be sharp (not blured), but you may
+see visual artifact on the magnified or minified picture.
+This option is effective only under the SDL UI, if OpenGL available.
+.RE
+.PP
 .B \-\-opus
 .RS
 Emulate an Opus Discovery interface. Same as the Disk Peripherals Options

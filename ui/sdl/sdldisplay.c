@@ -29,6 +29,10 @@
 #include <string.h>
 #include <SDL.h>
 
+#ifdef SDL_USE_GL
+#include <GL/gl.h>
+#endif
+
 #include <libspectrum.h>
 
 #include "display.h"
@@ -52,7 +56,7 @@ static SDL_Surface *red_disk[2], *green_disk[2];
 static ui_statusbar_state sdl_disk_state, sdl_mdr_state, sdl_tape_state;
 static int sdl_status_updated;
 
-static int tmp_screen_width;
+static int tmp_screen_width = 0;
 
 static Uint32 colour_values[16];
 
@@ -100,6 +104,22 @@ static int image_height;
 
 static int timex;
 
+#ifdef SDL_USE_GL
+static int gl_usable = -1;
+static int gl_scaler = -1;
+static Uint32 gl_flag;
+static float gl_tw, gl_th;   /* texture used width/height */
+static float gl_vw, gl_vh;   /* vertex width/height */
+static int gl_ttw, gl_tth;   /* GLTexture Total width height (align to 2^x) */
+static int gl_width, gl_height;   /* current size of SDL window */
+static GLuint gl_tex;
+static GLenum gl_error = GL_NO_ERROR;
+static int screen_width = -1, screen_height = -1;
+#ifdef USE_HW_SCALER
+static int hwscaler_usable = 0;
+#endif
+#endif  /* #ifdef SDL_USE_GL */
+
 static void init_scalers( void );
 static int sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
                                         Uint32 *bw_values );
@@ -122,6 +142,10 @@ init_scalers( void )
   scaler_register( SCALER_DOTMATRIX );
   scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
+#ifdef USE_HW_SCALER
+  if( hwscaler_usable )
+    scaler_register( SCALER_HW );
+#endif  /* USE_HW_SCALER */
   if( machine_current->timex ) {
     scaler_register( SCALER_HALF ); 
     scaler_register( SCALER_HALFSKIP );
@@ -220,6 +244,51 @@ uidisplay_init( int width, int height )
   int no_modes;
   int i, mw = 0, mh = 0, mn = 0;
 
+#ifdef SDL_USE_GL
+  const GLubyte *gl_ven = NULL, *gl_ren = NULL, *gl_ver = NULL;
+  GLint gl_tsize;
+  const SDL_VideoInfo* info;
+
+  /* get current screen height and width */
+  info = SDL_GetVideoInfo();   /* calls SDL_GetVideoInfo() */
+  screen_width = info->current_w;
+  screen_height = info->current_h;
+
+#ifdef USE_HW_SCALER
+  /* Check resizable GL video mode available */
+  modes = SDL_ListModes( NULL, SDL_OPENGL | SDL_RESIZABLE );
+  /* -1 if any dimension is okay for the given format. -> we need this */
+  hwscaler_usable = ( modes == (SDL_Rect **) -1 ) ? 1 : 0;
+#endif
+
+  /* Check GL available */
+  modes = SDL_ListModes( NULL, SDL_OPENGL | SDL_FULLSCREEN );
+  gl_usable = ( modes == (SDL_Rect **) 0 || modes == (SDL_Rect **) -1 ) ? 0 : 1;
+  if( gl_usable ) {
+    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
+    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
+    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    /* try to set up a 320x240 GL video mode */
+    if( SDL_SetVideoMode( 320, 240, 15, SDL_OPENGL ) == 0 ) {
+      gl_usable = 0;
+    } else {
+      /* get essential parameters to check we can use OpenGL */
+      gl_ven = glGetString( GL_VENDOR );
+      gl_ren = glGetString( GL_RENDERER );
+      gl_ver = glGetString( GL_VERSION );
+      glGetIntegerv( GL_MAX_TEXTURE_SIZE, &gl_tsize );
+      gl_usable = gl_tsize >= 1024 ? 1 : 0;
+    }
+  }
+
+#ifdef USE_HW_SCALER
+  if( !gl_usable )
+    hwscaler_usable = 0;
+#endif
+#endif  /* #ifdef SDL_USE_GL */
+
   /* Get available fullscreen/software modes */
   modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_SWSURFACE);
 
@@ -231,10 +300,31 @@ uidisplay_init( int width, int height )
     fprintf( stderr,
     "=====================================================================\n"
     " List of available SDL fullscreen modes:\n"
-    "---------------------------------------------------------------------\n"
-    "  No. width height\n"
-    "---------------------------------------------------------------------\n"
-    );
+    "---------------------------------------------------------------------\n" );
+
+#ifdef SDL_USE_GL
+    /* if we have GL video mode, we print some parameters */
+    if( gl_usable ) {
+      fprintf( stderr,
+        " OpenGL informations:\n  Vendor: %s\n  Renderer: %s\n"
+        "  Version: %s\n"
+        "  Max texture size: %ux%u pixel\n  OpenGL full screen scaler is supported.\n",
+        gl_ven, gl_ren, gl_ver, gl_tsize, gl_tsize );
+#ifdef USE_HW_SCALER
+      if( hwscaler_usable ) {
+        fprintf( stderr, " Hardware scaler is supported (OpenGL backend)\n" );
+      }
+#endif
+      fprintf( stderr,
+        "---------------------------------------------------------------------\n"
+      );
+    }
+#endif  /* #ifdef SDL_USE_GL */
+
+    fprintf( stderr,
+      "  No. width height\n"
+      "---------------------------------------------------------------------\n"
+      );
     if( no_modes ) {
       fprintf( stderr, "  ** The modes list is empty%s...\n",
                        no_modes == 2 ? ", all resolution allowed" : "" );
@@ -325,10 +415,18 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
   return 0;
 }
 
+/*
+fixed <-> fullscreen x <-> y
+hardware <-> fixed x <-> y
+hardware <-> fullscreen gl / normal <-> normal
+*/
 static void
 sdldisplay_find_best_fullscreen_scaler( void )
 {
   static int windowed_scaler = -1;
+#ifdef USE_HW_SCALER
+  static int last_w, last_h;
+#endif
   static int searching_fullscreen_scaler = 0;
 
   /* Make sure we have at least more than half of the screen covered in
@@ -339,6 +437,20 @@ sdldisplay_find_best_fullscreen_scaler( void )
 
     if( searching_fullscreen_scaler ) return;
     searching_fullscreen_scaler = 1;
+
+#ifdef SDL_USE_GL
+    if( gl_scaler > 1 ) {
+      /* with OpenGL we always "use" (not really use) the Normal scaler */
+      if( windowed_scaler == -1) {
+        windowed_scaler = current_scaler;
+#ifdef USE_HW_SCALER
+        last_w = sdldisplay_gc->w; last_h = sdldisplay_gc->h;
+#endif
+      }
+      return;
+    }
+#endif  /* #ifdef SDL_USE_GL */
+
     while( i < SCALER_NUM &&
            ( image_height*sdldisplay_current_size <= min_fullscreen_height/2 ||
              image_height*sdldisplay_current_size > max_fullscreen_height ) ) {
@@ -357,6 +469,13 @@ sdldisplay_find_best_fullscreen_scaler( void )
     searching_fullscreen_scaler = 0;
   } else {
     if( windowed_scaler != -1 ) {
+
+#ifdef USE_HW_SCALER
+      if( windowed_scaler == SCALER_HW ) {
+        gl_width = last_w; gl_height = last_h;
+      }
+#endif  /* #ifdef USE_HW_SCALER */
+
       scaler_select_scaler( windowed_scaler );
       windowed_scaler = -1;
       sdldisplay_current_size = scaler_get_scaling_factor( current_scaler );
@@ -364,10 +483,82 @@ sdldisplay_find_best_fullscreen_scaler( void )
   }
 }
 
+#ifdef SDL_USE_GL
+/* If we want to debug OpenGL
+void MessageCallback( GLenum source,
+                      GLenum type,
+                      GLuint id,
+                      GLenum severity,
+                      GLsizei length,
+                      const GLchar* message,
+                      const void* userParam )
+{
+  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+*/
+
+#if defined SDL_USE_GL || defined USE_HW_SCALER
+void
+sdldisplay_resize( int w, int h )
+{
+  if( settings_current.aspect_hint ) {
+    gl_vw = w > h * 4 / 3 ? h * 4.0 / 3 / w : 1.0;
+    gl_vh = h > w * 3 / 4 ? w * 3.0 / 4 / h : 1.0;
+  } else {
+    gl_vw = 1.0; gl_vh = 1.0;
+  }
+
+  /* we have to resize the SDL window after a window resize event!!! (?) */
+  if( sdldisplay_gc->w != w || sdldisplay_gc->h != h )
+    sdldisplay_gc = SDL_SetVideoMode( w, h, 16, gl_flag );
+
+  glViewport( 0, 0, w, h ); /* setup viewport */
+}
+#endif  /* #if defined SDL_USE_GL || defined USE_HW_SCALER */
+
+static int
+create_gl_texture( void )
+{
+  /* we create a 2^n dimension texture to maximal compatibility with older HW */
+  gl_ttw = timex ? 1024 : 512;
+  gl_tth = 256;
+
+  glGenTextures( 1, &gl_tex );
+  glBindTexture( GL_TEXTURE_2D, gl_tex );
+
+  /* we do not use mipmaps */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+  /* create the texture */
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, gl_ttw, gl_tth, 0, GL_RGB,
+                GL_UNSIGNED_BYTE, NULL );
+
+  /* for scaling, we use this texture to strech to a rectangle which has a
+     proper size */
+  if( ( gl_error = glGetError() ) != GL_NO_ERROR ) {
+    ui_error( UI_ERROR_ERROR, "Cannot create OpenGL texture. Error code: %d",
+              gl_error );
+    return 0;
+  }
+
+  return 1;
+}
+#endif  /* #ifdef SDL_USE_GL */
+
 static int
 sdldisplay_load_gfx_mode( void )
 {
   Uint16 *tmp_screen_pixels;
+  int   tmp_screen_height;
+
+  static int load_gfx = 0;
+
+  if( load_gfx ) return 0;
+
+  load_gfx = 1;
 
   sdldisplay_force_full_refresh = 1;
 
@@ -378,13 +569,66 @@ sdldisplay_load_gfx_mode( void )
     tmp_screen = NULL;
   }
 
-  tmp_screen_width = (image_width + 3);
+#ifdef SDL_USE_GL
+  /* 0 -> none; 1 -> hwscaler; 2,3 -> GL fullscreen */
+  gl_scaler = 0 +
+#ifdef USE_HW_SCALER
+              ( hwscaler_usable && current_scaler == SCALER_HW ) +
+#endif  /* #ifdef USE_HW_SCALER */
+              2 * ( gl_usable && settings_current.full_screen );
+#endif  /* #ifdef SDL_USE_GL */
+
+#ifdef SDL_USE_GL
+  if( gl_scaler ) {
+    /* for fullscreen, we use the screen dimensions, but for hwscaler we use
+       the current window size */
+    gl_width = ( gl_scaler > 1 ? screen_width : sdldisplay_gc->w );
+    gl_height = ( gl_scaler > 1 ? screen_height : sdldisplay_gc->h );
+  }
+#endif  /* #ifdef SDL_USE_GL */
 
   sdldisplay_current_size = scaler_get_scaling_factor( current_scaler );
 
   sdldisplay_find_best_fullscreen_scaler();
 
   /* Create the surface that contains the scaled graphics in 16 bit mode */
+#ifdef SDL_USE_GL
+  if( gl_scaler ) {
+    gl_flag = SDL_OPENGL + ( gl_scaler > 1 ? SDL_FULLSCREEN : 0 ) +
+        ( gl_scaler == 1 ? SDL_RESIZABLE : 0 );
+    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
+    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 6 );
+    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 0 );
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    sdldisplay_gc = SDL_SetVideoMode( gl_width, gl_height,
+      16, gl_flag
+    );
+    /* restore video mode to normal... */
+    if( !sdldisplay_gc  ) {
+      sdldisplay_gc = SDL_SetVideoMode( gl_width, gl_height, 16, 0 );
+      fuse_abort();
+    }
+    if( !create_gl_texture() ) {
+      gl_usable = 0; /* disable OpenGL scaler */
+#ifdef USE_HW_SCALER
+      hwscaler_usable = 0; /* disable HW scaler */
+#endif
+      gl_scaler = 0;
+    } else {
+      /* we use 4 byte aligned buffer */
+      tmp_screen_width = image_width + 4;
+      tmp_screen_height = image_height + 4;
+    }
+  }
+
+  /* if cannot create GL texture, we switch back to normal fullscreen scaler */
+  if( !gl_scaler ) {
+#endif  /* #ifdef SDL_USE_GL */
+
+  tmp_screen_width = image_width + 3;
+  tmp_screen_height = image_height + 3;
+
   sdldisplay_gc = SDL_SetVideoMode(
     settings_current.full_screen && fullscreen_width ? fullscreen_width :
       image_width * sdldisplay_current_size,
@@ -394,6 +638,11 @@ sdldisplay_load_gfx_mode( void )
     settings_current.full_screen ? (SDL_FULLSCREEN|SDL_SWSURFACE)
                                  : SDL_SWSURFACE
   );
+
+#ifdef SDL_USE_GL
+  }  /* if( !gl_scaler ) */
+#endif
+
   if( !sdldisplay_gc ) {
     fprintf( stderr, "%s: couldn't create SDL graphics context\n", fuse_progname );
     fuse_abort();
@@ -403,24 +652,47 @@ sdldisplay_load_gfx_mode( void )
       !!( sdldisplay_gc->flags & ( SDL_FULLSCREEN | SDL_NOFRAME ) );
   sdldisplay_is_full_screen = settings_current.full_screen;
 
+#ifdef SDL_USE_GL
+  /* for openGL we always use 565, BTW: OpenGL fb novadays 8888 */
+  if( gl_scaler ) {
+    scaler_select_bitformat( 565 );
+  } else {
+#endif
   /* Distinguish 555 and 565 mode */
   if( sdldisplay_gc->format->Gmask >> sdldisplay_gc->format->Gshift == 0x1f )
     scaler_select_bitformat( 555 );
   else
     scaler_select_bitformat( 565 );
+#ifdef SDL_USE_GL
+  }
+#endif
 
   /* Create the surface used for the graphics in 16 bit before scaling */
 
   /* Need some extra bytes around when using 2xSaI */
-  tmp_screen_pixels = (Uint16*)calloc(tmp_screen_width*(image_height+3), sizeof(Uint16));
+  tmp_screen_pixels = (Uint16*)calloc(tmp_screen_width*tmp_screen_height, sizeof(Uint16));
+#ifdef SDL_USE_GL
+  if( gl_scaler ) {
+    /* We create an RGB565 surface.
+       WARNING: we have no BE/LE (scaler) code for RGB565/BGR565 */
+    tmp_screen = SDL_CreateRGBSurfaceFrom( tmp_screen_pixels,
+                                           tmp_screen_width,
+                                           tmp_screen_height,
+                                           16, tmp_screen_width * 2,
+                                           0xf800, 0x07e0, 0x001f, 0x0 );
+  } else {
+#endif  /* #ifdef SDL_USE_GL */
   tmp_screen = SDL_CreateRGBSurfaceFrom(tmp_screen_pixels,
                                         tmp_screen_width,
-                                        image_height + 3,
+                                        tmp_screen_height,
                                         16, tmp_screen_width*2,
                                         sdldisplay_gc->format->Rmask,
                                         sdldisplay_gc->format->Gmask,
                                         sdldisplay_gc->format->Bmask,
                                         sdldisplay_gc->format->Amask );
+#ifdef SDL_USE_GL
+  }
+#endif
 
   if( !tmp_screen ) {
     fprintf( stderr, "%s: couldn't create tmp_screen\n", fuse_progname );
@@ -434,8 +706,44 @@ sdldisplay_load_gfx_mode( void )
 
   sdldisplay_allocate_colours( 16, colour_values, bw_values );
 
+#ifdef SDL_USE_GL
+  if( gl_scaler ) {
+    sdldisplay_resize( gl_width, gl_height );
+
+    /* now set up the transformation */
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    glOrtho( -1.0, 1.0, -1.0, 1.0, -1.0, 1.0 );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+
+    /* "set up" tmp_screen pitch */
+    glPixelStorei( GL_UNPACK_ROW_LENGTH, tmp_screen->pitch / 2 );
+    glBindTexture( GL_TEXTURE_2D, gl_tex );
+
+    /* magnifying and minifying filters */
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                     settings_current.opengl_filter_nearest ?
+                       GL_NEAREST : GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                     settings_current.opengl_filter_nearest ?
+                       GL_NEAREST : GL_LINEAR );
+
+    /* calculate the "real" texture size (we use a 2^n with/height texture for
+       maximal compability */
+    gl_tw = (double)image_width  / gl_ttw;
+    gl_th = (double)image_height / gl_tth;
+
+    /* simple replace the texture if update_rects */
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    glClearColor( 0.0, 0.0, 0.0, 0.0 );
+  }
+#endif  /* #ifdef SDL_USE_GL */
+
   /* Redraw the entire screen... */
   display_refresh_all();
+
+  load_gfx = 0;
 
   return 0;
 }
@@ -526,6 +834,15 @@ sdl_blit_icon( SDL_Surface **icon,
   dst_h = h;
   dst_x = x * sdldisplay_current_size + fullscreen_x_off;
 
+#ifdef SDL_USE_GL
+/* with OpenGL we just draw over the texture with pixels of the icon */
+  if( gl_scaler ) {
+    glTexSubImage2D( GL_TEXTURE_2D, 0, r->x, r->y, r->w, r->h,
+                     GL_RGB, GL_UNSIGNED_SHORT_5_6_5,
+                     tmp_screen->pixels + ( r->y + 1 ) * tmp_screen_pitch
+                                        + 2 * ( r->x + 1 ) );
+  } else {
+#endif  /* #ifdef SDL_USE_GL */
   scaler_proc16(
 	(libspectrum_byte*)tmp_screen->pixels +
 			(x+1) * tmp_screen->format->BytesPerPixel +
@@ -536,6 +853,9 @@ sdl_blit_icon( SDL_Surface **icon,
 			dst_y * dstPitch,
 	dstPitch, w, dst_h
   );
+#ifdef SDL_USE_GL
+  }
+#endif
 
   if( num_rects == MAX_UPDATE_RECT ) {
     sdldisplay_force_full_refresh = 1;
@@ -787,6 +1107,15 @@ uidisplay_frame_end( void )
     int dst_h = r->h;
     int dst_x = r->x * sdldisplay_current_size + fullscreen_x_off;
 
+#ifdef SDL_USE_GL
+/* we just update the texture */
+    if( gl_scaler ) {
+      glTexSubImage2D( GL_TEXTURE_2D, 0, r->x, r->y, r->w, r->h,
+                       GL_RGB, GL_UNSIGNED_SHORT_5_6_5,
+                       tmp_screen->pixels + ( r->y + 1 ) * tmp_screen_pitch
+                                          + 2 * ( r->x + 1 ) );
+    } else {
+#endif  /* #ifdef SDL_USE_GL */
     scaler_proc16(
       (libspectrum_byte*)tmp_screen->pixels +
                         (r->x+1) * tmp_screen->format->BytesPerPixel +
@@ -797,6 +1126,9 @@ uidisplay_frame_end( void )
 			 dst_y*dstPitch,
       dstPitch, r->w, dst_h
     );
+#ifdef SDL_USE_GL
+    }
+#endif
 
     /* Adjust rects for the destination rect size */
     r->x = dst_x;
@@ -810,8 +1142,31 @@ uidisplay_frame_end( void )
 
   if( SDL_MUSTLOCK( sdldisplay_gc ) ) SDL_UnlockSurface( sdldisplay_gc );
 
+#ifdef SDL_USE_GL
+  /* with OpenGL we draw the whole texture to the screen (a GL_QUAD) */
+  if( gl_scaler ) {
+    glClear( GL_COLOR_BUFFER_BIT );
+    glEnable( GL_TEXTURE_2D );
+    glBegin( GL_QUADS );
+    glTexCoord2f( 0.0, gl_th );
+    glVertex2f( -gl_vw, -gl_vh );
+    glTexCoord2f( 0.0, 0.0 );
+    glVertex2f( -gl_vw, gl_vh );
+    glTexCoord2f( gl_tw, 0.0 );
+    glVertex2f( gl_vw, gl_vh );
+    glTexCoord2f( gl_tw, gl_th );
+    glVertex2f( gl_vw, -gl_vh );
+    glEnd();
+    glDisable( GL_TEXTURE_2D );
+    /* and swap GL buffers */
+    SDL_GL_SwapBuffers();
+  } else {
+#endif  /* #ifdef SDL_USE_GL */
   /* Finally, blit all our changes to the screen */
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );
+#ifdef SDL_USE_GL
+  }
+#endif
 
   num_rects = 0;
   sdldisplay_force_full_refresh = 0;

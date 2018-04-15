@@ -113,6 +113,11 @@ ui_event( void )
 
 #endif			/* if defined USE_JOYSTICK && !defined HAVE_JSW_H */
 
+#if defined SDL_USE_GL && defined USE_HW_SCALER
+    case SDL_VIDEORESIZE:
+      sdldisplay_resize( event.resize.w, event.resize.h );
+      break;
+#endif
     case SDL_QUIT:
       fuse_emulation_pause();
       menu_file_exit(0);

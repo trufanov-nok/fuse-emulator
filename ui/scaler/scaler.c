@@ -114,6 +114,10 @@ static const struct scaler_info available_scalers[] = {
     scaler_HQ2x_16,       scaler_HQ2x_32,       expand_1            },
   { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,       3.0,
     scaler_HQ3x_16,       scaler_HQ3x_32,       expand_1            },
+#ifdef USE_HW_SCALER
+  { "Resizable",       "resizable", SCALER_FLAGS_NONE,         0.0,
+    NULL,                 NULL,                 NULL                },
+#endif /* USE_HW_SCALER */
 };
 
 scaler_type current_scaler = SCALER_NUM;

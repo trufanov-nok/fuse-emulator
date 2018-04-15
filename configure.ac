@@ -428,6 +428,40 @@ else
 fi
 AC_SUBST(OPTIONS_DIR)
 
+dnl Check for OpenGL
+if test "$UI" = sdl; then
+  AC_MSG_CHECKING(whether to use OpenGL)
+  AC_ARG_WITH(opengl,
+    [  --without-opengl        don't use OpenGL extension],
+    if test "$withval" = no; then opengl=no; else opengl=yes; fi,
+    opengl=yes)
+  AC_MSG_RESULT($opengl)
+  if test "$opengl" = yes; then
+    AC_CHECK_LIB( GL, glTexImage2D,
+      [AC_CHECK_HEADERS([GL/gl.h],
+        [AC_DEFINE([SDL_USE_GL], 1, [Defined if we're going to be using OpenGL])
+          LIBS="$LIBS -lGL"],
+        [AC_MSG_WARN(OpenGL header not found - no OpenGL scaler support)
+          opengl=no]
+      )],
+      [AC_MSG_WARN(glTexSubImage2D not found - no OpenGL scaler support)
+        opengl=no],
+    )
+  fi
+  if test "$opengl" = yes; then
+    AC_MSG_CHECKING(whether to use hardware scaler)
+    AC_ARG_WITH(hwscaler,
+    [  --without-hwscaler      don't use hardware scaler],
+    if test "$withval" = no; then hwscaler=no; else hwscaler=yes; fi,
+    hwscaler=yes)
+    AC_MSG_RESULT($hwscaler)
+    if test "$hwscaler" = yes; then
+      AC_DEFINE([USE_HW_SCALER], 1, [Defined if HW SCALER is in use])
+    fi
+  fi
+fi
+AC_SUBST(USE_HW_SCALER)
+
 dnl Check whether to use zlib (the UNIX version is called z, Win32 zdll)
 AC_MSG_CHECKING(whether to use zlib)
 AC_ARG_WITH(zlib,
@@ -940,6 +974,10 @@ echo ""
 echo "User interface: ${UI}"
 if test "${UI}" = "gtk"; then
    echo "Using GTK+ 3: ${gtk3}"
+fi
+if test "${UI}" = "sdl"; then
+   echo "Using OpenGL fullscreen scaler: ${opengl}"
+   echo "Using OpenGL hardware scaler: ${hwscaler}"
 fi
 if test x"${gpm}" != "x"; then
    echo "libgpm support: ${gpm}"
