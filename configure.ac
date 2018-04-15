@@ -450,9 +450,9 @@ if test "$UI" = sdl; then
   fi
   if test "$opengl" = yes; then
     AC_MSG_CHECKING(whether to use hardware scaler)
-    AC_ARG_WITH(hwscaler,
-    [  --without-hwscaler      don't use hardware scaler],
-    if test "$withval" = no; then hwscaler=no; else hwscaler=yes; fi,
+    AC_ARG_ENABLE(hwscaler,
+    [  --disable-hwscaler      don't use hardware scaler],
+    if test "$enableval" = no; then hwscaler=no; else hwscaler=yes; fi,
     hwscaler=yes)
     AC_MSG_RESULT($hwscaler)
     if test "$hwscaler" = yes; then
