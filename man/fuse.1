@@ -964,11 +964,11 @@ option.
 .B \-\-opengl\-filter\-nearest
 .RS
 Specify whether Fuse should use GL_NEAREST instead of the default
-GL_LINEAR magnification and minification filter for OpenGL hardware scaler
+GL_LINEAR magnification and minification filter for OpenGL resizable scaler
 and OpenGL fullscreen mode.
-With GL_NEAREST the image will be sharp (not blured), but you may
-see visual artifact on the magnified or minified picture.
-This option is effective only under the SDL UI, if OpenGL available.
+With GL_NEAREST the image will be sharp (not smooth), but you may
+see visual artifacts on the magnified or minified picture.
+This option is effective only under the SDL UI, if OpenGL is available.
 .RE
 .PP
 .B \-\-opus
@@ -4182,6 +4182,13 @@ user interfaces or when saving screenshots.
 .RS
 Two filters which do high quality (but slow) antialiasing. Doubles and
 triples the size of the displayed screen respectively.
+.RE
+.PP
+.IR "Resizable " ( resizable )
+.RS
+The screen resizes to the window size keeping the aspect ratio. The image
+is smooth but the \-\-opengl\-filter\-nearest option can force a sharp
+scaling. Available only in SDL UI if OpenGL is supported.
 .\"
 .\"------------------------------------------------------------------
 .\"
