@@ -90,7 +90,7 @@ _fuse()
         --graphics-filter|-g)
             COMPREPLY=( $( compgen -W '2x 2xsai 3x advmame2x
                 advmame3x dotmatrix half halfskip hq2x hq3x normal
-                super2xsai supereagle timex15x timextv tv2x paltv
+                resizable super2xsai supereagle timex15x timextv tv2x paltv
                 paltv2x paltv3x' -- "$cur" ) )
             return 0
             ;;
@@ -236,8 +236,8 @@ _fuse()
             --no-late-timings --no-loading-sound --no-mdr-random-len
             --no-melodik --no-mouse-swap-buttons --no-movie-stop-after-rzx
             --no-multiface1 --no-multiface128 --no-multiface3
-            --no-multiface1-stealth --no-opus --no-pal-tv2x
-            --no-plus3-detect-speedlock --no-plusd --no-printer
+            --no-multiface1-stealth --no-opengl-filter-nearest --no-opus
+            --no-pal-tv2x --no-plus3-detect-speedlock --no-plusd --no-printer
             --no-raw-s-net --no-recreated-spectrum --no-rs232-handshake
             --no-rzx-autosaves --no-simpleide --no-slt --no-sound
             --no-sound-force-8bit --no-speccyboot --no-specdrum
@@ -245,7 +245,8 @@ _fuse()
             --no-strict-aspect-hint --no-traps --no-unittests --no-usource
             --no-writable-roms --no-zxatasp --no-zxatasp-upload
             --no-zxatasp-write-protect --no-zxcf --no-zxcf-upload --no-zxmmc
-            --no-zxprinter --opus --opusdisk --pal-tv2x --phantom-typist-mode
+            --no-zxprinter --opengl-filter-nearest --opus --opusdisk --pal-tv2x
+            --phantom-typist-mode
             --playback --plus3-detect-speedlock --plus3disk --plusd --plusddisk
             --printer --rate --raw-s-net --record --recreated-spectrum
             --rom-128-0 --rom-128-1
