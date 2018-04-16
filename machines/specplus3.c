@@ -2,8 +2,6 @@
    Copyright (c) 1999-2015 Philip Kendall, Darren Salt, Gergely Szasz
    Copyright (c) 2016 Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -40,11 +38,12 @@
 #include "fuse.h"
 #include "machine.h"
 #include "machines_periph.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "periph.h"
 #include "peripherals/disk/fdd.h"
 #include "peripherals/disk/upd_fdc.h"
 #include "peripherals/printer.h"
+#include "phantom_typist.h"
 #include "settings.h"
 #include "snapshot.h"
 #include "spec128.h"
@@ -69,6 +68,7 @@ static int ui_drive_is_available( void );
 static const fdd_params_t *ui_drive_get_params_a( void );
 static const fdd_params_t *ui_drive_get_params_b( void );
 static int ui_drive_inserted( const ui_media_drive_info_t *drive, int new );
+static int ui_drive_autoload( void );
 
 static ui_media_drive_info_t ui_drives[ SPECPLUS3_NUM_DRIVES ] = {
   {
@@ -83,6 +83,7 @@ static ui_media_drive_info_t ui_drives[ SPECPLUS3_NUM_DRIVES ] = {
     /* .is_available = */ &ui_drive_is_available,
     /* .get_params = */ &ui_drive_get_params_a,
     /* .insert_hook = */ &ui_drive_inserted,
+    /* .autoload_hook = */ &ui_drive_autoload,
   },
   {
     /* .name = */ "+3 Disk B:",
@@ -96,6 +97,7 @@ static ui_media_drive_info_t ui_drives[ SPECPLUS3_NUM_DRIVES ] = {
     /* .is_available = */ &ui_drive_is_available,
     /* .get_params = */ &ui_drive_get_params_b,
     /* .insert_hook = */ &ui_drive_inserted,
+    /* .autoload_hook = */ &ui_drive_autoload,
   },
 };
 
@@ -179,7 +181,8 @@ specplus3_765_reset( void )
   fdd_init( &specplus3_drives[ 0 ], FDD_SHUGART, dt, 1 );
 
   dt = &fdd_params[ option_enumerate_diskoptions_drive_plus3b_type() ];
-  fdd_init( &specplus3_drives[ 1 ], dt->enabled ? FDD_SHUGART : FDD_TYPE_NONE, dt, 1 );
+  fdd_init( &specplus3_drives[ 1 ], dt->enabled ? FDD_SHUGART : FDD_TYPE_NONE,
+            dt, 1 );
 }
 
 static int
@@ -286,12 +289,9 @@ select_special_map( int page1, int page2, int page3, int page4 )
 }
 
 void
-specplus3_memoryport2_write( libspectrum_word port GCC_UNUSED,
-			     libspectrum_byte b )
+specplus3_memoryport2_write_internal( libspectrum_word port GCC_UNUSED,
+                                      libspectrum_byte b )
 {
-  /* Do nothing else if we've locked the RAM configuration */
-  if( machine_current->ram.locked ) return;
-
   /* Let the parallel printer code know about the strobe bit */
   printer_parallel_strobe_write( b & 0x10 );
 
@@ -308,6 +308,15 @@ specplus3_memoryport2_write( libspectrum_word port GCC_UNUSED,
   machine_current->ram.last_byte2 = b;
 
   machine_current->memory_map();
+}
+
+void
+specplus3_memoryport2_write( libspectrum_word port, libspectrum_byte b )
+{
+  /* Do nothing else if we've locked the RAM configuration */
+  if( machine_current->ram.locked ) return;
+
+  specplus3_memoryport2_write_internal( port, b );
 }
 
 int
@@ -362,14 +371,16 @@ specplus3_menu_items( void )
 }
 
 libspectrum_byte
-specplus3_fdc_status( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
+specplus3_fdc_status( libspectrum_word port GCC_UNUSED,
+                      libspectrum_byte *attached )
 {
   *attached = 0xff; /* TODO: check this */
   return upd_fdc_read_status( specplus3_fdc );
 }
 
 libspectrum_byte
-specplus3_fdc_read( libspectrum_word port GCC_UNUSED, libspectrum_byte *attached )
+specplus3_fdc_read( libspectrum_word port GCC_UNUSED,
+                    libspectrum_byte *attached )
 {
   *attached = 0xff; /* TODO: check this */
   return upd_fdc_read_data( specplus3_fdc );
@@ -435,5 +446,13 @@ ui_drive_inserted( const ui_media_drive_info_t *drive, int new )
 int
 specplus3_shutdown( void )
 {
+  return 0;
+}
+
+static int
+ui_drive_autoload( void )
+{
+  machine_reset( 0 );
+  phantom_typist_activate_disk();
   return 0;
 }

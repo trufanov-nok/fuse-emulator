@@ -2,8 +2,6 @@
    Copyright (c) 2004-2016 Gergely Szasz, Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -39,7 +37,7 @@
 #include "if1.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
@@ -465,8 +463,7 @@ if1_memory_map( void )
 static void
 if1_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_interface1_active( snap ) )
-    settings_current.interface1 = 1;
+  settings_current.interface1 = libspectrum_snap_interface1_active( snap );
 }
 
 static void

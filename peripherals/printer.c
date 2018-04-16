@@ -4,8 +4,6 @@
    Copyright (c) 2015 Fredrick Meunier
    Copyright (c) 2016 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -39,7 +37,7 @@
 #include "fuse.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "printer.h"
 #include "settings.h"

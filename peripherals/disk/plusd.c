@@ -2,8 +2,6 @@
    Copyright (c) 1999-2016 Stuart Brady, Fredrick Meunier, Philip Kendall,
    Dmitry Sanarin, Darren Salt, 2014 Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -410,8 +408,7 @@ plusd_get_fdd( plusd_drive_number which )
 static void
 plusd_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_plusd_active( snap ) )
-    settings_current.plusd = 1;
+  settings_current.plusd = libspectrum_snap_plusd_active( snap );
 }
 
 static void

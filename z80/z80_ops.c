@@ -4,8 +4,6 @@
    Copyright (c) 2015 Gergely Szasz
    Copyright (c) 2015 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -33,7 +31,7 @@
 #include "debugger/debugger.h"
 #include "event.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "periph.h"
 #include "peripherals/disk/beta.h"
 #include "peripherals/disk/didaktik.h"
@@ -41,7 +39,9 @@
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/if1.h"
+#include "peripherals/multiface.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
@@ -60,8 +60,7 @@ static int z80_cbxx( libspectrum_byte opcode2 );
 static int z80_ddxx( libspectrum_byte opcode2 );
 static int z80_edxx( libspectrum_byte opcode2 );
 static int z80_fdxx( libspectrum_byte opcode2 );
-static void z80_ddfdcbxx( libspectrum_byte opcode3,
-			  libspectrum_word tempaddr );
+static void z80_ddfdcbxx( libspectrum_byte opcode3 );
 #endif				/* #ifndef HAVE_ENOUGH_MEMORY */
 
 /* Certain features (eg RZX playback trigged interrupts, the debugger,
@@ -217,6 +216,14 @@ z80_do_opcodes( void )
 
     END_CHECK
 
+    CHECK( multiface, multiface_activated )
+
+    if( PC == 0x0066 ) {
+      multiface_setic8();
+    }
+
+    END_CHECK
+
     CHECK( if1p, if1_available )
 
     if( PC == 0x0008 || PC == 0x1708 ) {
@@ -229,6 +236,14 @@ z80_do_opcodes( void )
     
     if( ( PC & 0xff00 ) == 0x3d00 ) {
       divide_set_automap( 1 );
+    }
+    
+    END_CHECK
+
+    CHECK( divmmc_early, settings_current.divmmc_enabled )
+    
+    if( ( PC & 0xff00 ) == 0x3d00 ) {
+      divmmc_set_automap( 1 );
     }
     
     END_CHECK
@@ -279,6 +294,17 @@ z80_do_opcodes( void )
     } else if( (PC == 0x0000) || (PC == 0x0008) || (PC == 0x0038)
       || (PC == 0x0066) || (PC == 0x04c6) || (PC == 0x0562) ) {
       divide_set_automap( 1 );
+    }
+    
+    END_CHECK
+
+    CHECK( divmmc_late, settings_current.divmmc_enabled )
+
+    if( ( PC & 0xfff8 ) == 0x1ff8 ) {
+      divmmc_set_automap( 0 );
+    } else if( (PC == 0x0000) || (PC == 0x0008) || (PC == 0x0038)
+      || (PC == 0x0066) || (PC == 0x04c6) || (PC == 0x0562) ) {
+      divmmc_set_automap( 1 );
     }
     
     END_CHECK
@@ -386,7 +412,7 @@ z80_fdxx( libspectrum_byte opcode2 )
 }
 
 static void
-z80_ddfdcbxx( libspectrum_byte opcode3, libspectrum_word tempaddr )
+z80_ddfdcbxx( libspectrum_byte opcode3 )
 {
   switch(opcode3) {
 #include "z80/z80_ddfdcb.c"

@@ -1,8 +1,6 @@
 # menu_data.dat: Menu structure for Fuse
 # Copyright (c) 2004-2015 Philip Kendall
 
-# $Id$
-
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -32,7 +30,9 @@ File/Recording/_Continue recording..., Item
 File/Recording/separator, Separator
 File/Recording/_Insert snapshot, Item, Insert
 File/Recording/Roll_back, Item, Delete
+#ifndef USE_WIDGET
 File/Recording/Rollback _to..., Item
+#endif
 File/Recording/separator, Separator
 File/Recording/_Play..., Item
 File/Recording/_Stop, Item
@@ -43,11 +43,14 @@ File/AY Logging/_Record..., Item
 File/AY Logging/_Stop, Item
 
 File/separator, Separator
-File/O_pen SCR Screenshot..., Item
-File/S_ave Screen as SCR..., Item
+File/S_creenshot, Branch
+File/Screenshot/O_pen SCR Screenshot..., Item
+File/Screenshot/S_ave Screen as SCR..., Item
+File/Screenshot/Op_en MLT Screenshot..., Item
+File/Screenshot/Sa_ve Screen as MLT..., Item
 
 #ifdef USE_LIBPNG
-File/Save S_creen as PNG..., Item
+File/Screenshot/Save S_creen as PNG..., Item
 #endif
 
 #ifdef HAVE_LIB_XML2
@@ -117,9 +120,12 @@ Options/Select ROMs/Peripheral ROMs/_Beta 128..., Item,, menu_options_selectroms
 Options/Select ROMs/Peripheral ROMs/+_D..., Item,, menu_options_selectroms_peripheral_select,, 3
 Options/Select ROMs/Peripheral ROMs/Didaktik _80..., Item,, menu_options_selectroms_peripheral_select,, 4
 Options/Select ROMs/Peripheral ROMs/DISCiP_LE..., Item,, menu_options_selectroms_peripheral_select,, 5
-Options/Select ROMs/Peripheral ROMs/_Opus Discovery..., Item,, menu_options_selectroms_peripheral_select,, 6
-Options/Select ROMs/Peripheral ROMs/Specc_yBoot..., Item,, menu_options_selectroms_peripheral_select,, 7
-Options/Select ROMs/Peripheral ROMs/_uSource..., Item,, menu_options_selectroms_peripheral_select,, 8
+Options/Select ROMs/Peripheral ROMs/Mu_ltiface One..., Item,, menu_options_selectroms_peripheral_select,, 6
+Options/Select ROMs/Peripheral ROMs/Multiface _128..., Item,, menu_options_selectroms_peripheral_select,, 7
+Options/Select ROMs/Peripheral ROMs/Multiface _3..., Item,, menu_options_selectroms_peripheral_select,, 8
+Options/Select ROMs/Peripheral ROMs/_Opus Discovery..., Item,, menu_options_selectroms_peripheral_select,, 9
+Options/Select ROMs/Peripheral ROMs/Specc_yBoot..., Item,, menu_options_selectroms_peripheral_select,, 10
+Options/Select ROMs/Peripheral ROMs/_uSource..., Item,, menu_options_selectroms_peripheral_select,, 11
 
 Options/_Filter..., Item,,, menu_filter_detail
 
@@ -151,6 +157,7 @@ Machine/Profiler/_Start, Item
 Machine/Profiler/_Stop, Item
 
 Machine/_NMI, Item
+Machine/Multiface Red _Button, Item
 Machine/Didaktik SNA_P, Item
 
 M_edia, Branch
@@ -485,6 +492,16 @@ Media/IDE/DivIDE/_Slave, Branch
 Media/IDE/DivIDE/Slave/_Insert..., Item,, menu_media_ide_insert,, 7
 Media/IDE/DivIDE/Slave/_Commit, Item,, menu_media_ide_commit,, 7
 Media/IDE/DivIDE/Slave/_Eject, Item,, menu_media_ide_eject,, 7
+
+Media/IDE/_DivMMC, Branch
+Media/IDE/DivMMC/_Insert..., Item,, menu_media_ide_insert,, 8
+Media/IDE/DivMMC/_Commit, Item,, menu_media_ide_commit,, 8
+Media/IDE/DivMMC/_Eject, Item,, menu_media_ide_eject,, 8
+
+Media/IDE/_ZXMMC, Branch
+Media/IDE/ZXMMC/_Insert..., Item,, menu_media_ide_insert,, 9
+Media/IDE/ZXMMC/_Commit, Item,, menu_media_ide_commit,, 9
+Media/IDE/ZXMMC/_Eject, Item,, menu_media_ide_eject,, 9
 
 _Help, Branch
 Help/_Keyboard..., Item

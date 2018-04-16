@@ -1,8 +1,6 @@
 /* pokemem.c: help with handling pokes
    Copyright (c) 2011-2015 Philip Kendall, Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -30,7 +28,7 @@
 
 #include "compat.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "pokemem.h"
 #include "spectrum.h"
 #include "utils.h"
@@ -366,8 +364,8 @@ pokemem_trainer_list_add( libspectrum_byte bank, libspectrum_word address,
 {
   char *title;
 
-  title = libspectrum_new( char, 17 );
-  snprintf( title, 17, "Custom %u,%u", address, value );
+  title = libspectrum_new( char, 19 );
+  snprintf( title, 19, "Custom %u,%u", address, value );
 
   /* Create trainer */
   current_trainer = libspectrum_new0( trainer_t, 1 );

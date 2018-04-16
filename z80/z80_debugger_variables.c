@@ -1,8 +1,6 @@
 /* z80_debugger_variables.c: routines to expose Z80 registers to the debugger
    Copyright (c) 2016 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -70,6 +68,9 @@ static const char * const iy_detail_string = "iy";
 static const char * const i_detail_string = "i";
 static const char * const r_detail_string = "r";
 
+static const char * const memptr_detail_string = "memptr";
+static const char * const wz_detail_string = "wz"; /* Synonym for MEMPTR */
+
 static const char * const im_detail_string = "im";
 static const char * const iff1_detail_string = "iff1";
 static const char * const iff2_detail_string = "iff2";
@@ -134,6 +135,18 @@ set_R( libspectrum_dword value )
 }
 
 static libspectrum_dword
+get_memptr( void )
+{
+  return z80.memptr.w;
+}
+
+static void
+set_memptr( libspectrum_dword value )
+{
+  z80.memptr.w = value;
+}
+
+static libspectrum_dword
 get_IM( void )
 {
   return IM;
@@ -142,7 +155,7 @@ get_IM( void )
 static void
 set_IM( libspectrum_dword value )
 {
-  if( value >= 0 && value <= 2 ) IM = value;
+  if( value <= 2 ) IM = value;
 }
 
 static libspectrum_dword
@@ -237,6 +250,12 @@ z80_debugger_variables_init( void )
                                      get_I, set_I );
   debugger_system_variable_register( debugger_type_string, r_detail_string, 
                                      get_R, set_R );
+
+  debugger_system_variable_register( debugger_type_string, memptr_detail_string,
+		  		     get_memptr, set_memptr );
+  /* WZ is a synonym for MEMPTR */
+  debugger_system_variable_register( debugger_type_string, wz_detail_string,
+		  		     get_memptr, set_memptr );
 
   debugger_system_variable_register( debugger_type_string, im_detail_string, 
                                      get_IM, set_IM );

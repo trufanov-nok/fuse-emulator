@@ -2,8 +2,6 @@
    Copyright (c) 2007-2016 Stuart Brady, Philip Kendall
    Copyright (c) 2016 Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -35,7 +33,7 @@
 #include "compat.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
@@ -197,8 +195,7 @@ usource_unittest( void )
 static void
 usource_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_usource_active( snap ) )
-    settings_current.usource = 1;
+  settings_current.usource = libspectrum_snap_usource_active( snap );
 }
 
 static void

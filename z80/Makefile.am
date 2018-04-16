@@ -2,8 +2,6 @@
 ## Copyright (c) 2001-2003 Philip Kendall
 ## Copyright (c) 2015-2016 Sergio Baldoví
 
-## $Id$
-
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -81,8 +79,8 @@ EXTRA_DIST += \
 noinst_PROGRAMS += z80/coretest
 
 z80_coretest_SOURCES = z80/coretest.c z80/z80.c
-z80_coretest_LDADD = z80/z80_coretest.o $(GLIB_LIBS) $(LIBSPEC_LIBS)
-z80_coretest_CPPFLAGS = $(GLIB_CFLAGS) $(LIBSPEC_CFLAGS) -DCORETEST
+z80_coretest_LDADD = z80/z80_coretest.o $(GLIB_LIBS) $(LIBSPECTRUM_LIBS)
+z80_coretest_CPPFLAGS = $(GLIB_CFLAGS) $(LIBSPECTRUM_CFLAGS) -DCORETEST
 
 z80/coretest.o: $(srcdir)/z80/coretest.c
 	$(AM_V_CC)$(COMPILE) -DCORETEST -c $(srcdir)/z80/coretest.c -o $@

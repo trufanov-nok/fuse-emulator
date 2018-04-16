@@ -1,8 +1,6 @@
-/* ay.h: AY-8-3912 routines
+/* ay.h: AY-3-8912 routines
    Copyright (c) 1999-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
-
-   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

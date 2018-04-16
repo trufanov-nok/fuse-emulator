@@ -2,8 +2,6 @@
    Copyright (c) 2003-2016 Fredrick Meunier, Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -31,7 +29,7 @@
 
 #include <libspectrum.h>
 
-#include "memory.h"
+#include "memory_pages.h"
 #include "fdd.h"
 
 extern int beta_available;  /* Is the Beta disk interface available for use? */

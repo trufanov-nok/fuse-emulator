@@ -2,8 +2,6 @@
    Copyright (c) 2002-2015 Philip Kendall
    Copyright (c) 2016 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -50,10 +48,8 @@ int ui_widget_level = -1;
 static char last_message[ MESSAGE_MAX_LENGTH ] = "";
 static size_t frames_since_last_message = 0;
 
-#ifndef UI_WIN32
 static int
 print_error_to_stderr( ui_error_level severity, const char *message );
-#endif			/* #ifndef UI_WIN32 */
 
 int
 ui_error( ui_error_level severity, const char *format, ... )
@@ -85,9 +81,7 @@ ui_verror( ui_error_level severity, const char *format, va_list ap )
   strncpy( last_message, message, MESSAGE_MAX_LENGTH );
   last_message[ MESSAGE_MAX_LENGTH - 1 ] = '\0';
 
-#ifndef UI_WIN32
   print_error_to_stderr( severity, message );
-#endif			/* #ifndef UI_WIN32 */
 
   /* Do any UI-specific bits as well */
   ui_error_specific( severity, message );
@@ -241,7 +235,9 @@ static const struct menu_item_entries menu_item_lookup[] = {
   
   { UI_MENU_ITEM_MACHINE_PROFILER, "/Machine/Profiler/Stop",
     "/Machine/Profiler/Start", 1 },
-  
+
+  { UI_MENU_ITEM_MACHINE_MULTIFACE, "/Machine/Multiface Red Button" },
+
   { UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP, "/Machine/Didaktik SNAP" },
 
   { UI_MENU_ITEM_MEDIA_CARTRIDGE, "/Media/Cartridge" },
@@ -634,6 +630,18 @@ static const struct menu_item_entries menu_item_lookup[] = {
   { UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT,
     "/Media/IDE/DivIDE/Slave/Commit",
     "/Media/IDE/DivIDE/Slave/Eject", 0 },
+
+  { UI_MENU_ITEM_MEDIA_IDE_DIVMMC, "/Media/IDE/DivMMC" },
+
+  { UI_MENU_ITEM_MEDIA_IDE_DIVMMC_EJECT,
+    "/Media/IDE/DivMMC/Commit",
+    "/Media/IDE/DivMMC/Eject", 0 },
+
+  { UI_MENU_ITEM_MEDIA_IDE_ZXMMC, "/Media/IDE/ZXMMC" },
+
+  { UI_MENU_ITEM_MEDIA_IDE_ZXMMC_EJECT,
+    "/Media/IDE/ZXMMC/Commit",
+    "/Media/IDE/ZXMMC/Eject", 0 },
 
   { UI_MENU_ITEM_RECORDING,
     "/File/Recording/Stop", 

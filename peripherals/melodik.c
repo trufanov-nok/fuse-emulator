@@ -2,8 +2,6 @@
    Copyright (c) 2009-2016 Fredrick Meunier, Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -66,8 +64,7 @@ static const periph_t melodik_periph = {
 static void
 melodik_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_melodik_active( snap ) )
-    settings_current.melodik = 1;
+  settings_current.melodik = libspectrum_snap_melodik_active( snap );
 }
 
 static void

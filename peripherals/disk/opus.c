@@ -2,8 +2,6 @@
    Copyright (c) 1999-2016 Stuart Brady, Fredrick Meunier, Philip Kendall,
    Dmitry Sanarin, Darren Salt, Michael D Wynne, Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -427,8 +425,7 @@ opus_write( libspectrum_word address, libspectrum_byte b )
 static void
 opus_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_opus_active( snap ) )
-    settings_current.opus = 1;
+  settings_current.opus = libspectrum_snap_opus_active( snap );
 }
 
 static void

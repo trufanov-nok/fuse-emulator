@@ -4,8 +4,6 @@
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 BogDan Vatra
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -43,7 +41,7 @@
 #include "gtkcompat.h"
 #include "gtkinternals.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "peripherals/ide/zxcf.h"
 #include "peripherals/scld.h"
 #include "peripherals/ula.h"
@@ -777,9 +775,9 @@ static int
 create_buttons( GtkDialog *parent, GtkAccelGroup *accel_group )
 {
   static const gtkstock_button
-    step  = { "Single step", G_CALLBACK( gtkui_debugger_done_step ), NULL, NULL, 0, 0, 0, 0 },
-    cont  = { "Continue", G_CALLBACK( gtkui_debugger_done_continue ), NULL, NULL, 0, 0, 0, 0 },
-    brk   = { "Break", G_CALLBACK( gtkui_debugger_break ), NULL, NULL, 0, 0, 0, 0 };
+    step  = { "Single step", G_CALLBACK( gtkui_debugger_done_step ), NULL, NULL, 0, 0, 0, 0, GTK_RESPONSE_NONE },
+    cont  = { "Continue", G_CALLBACK( gtkui_debugger_done_continue ), NULL, NULL, 0, 0, 0, 0, GTK_RESPONSE_NONE },
+    brk   = { "Break", G_CALLBACK( gtkui_debugger_break ), NULL, NULL, 0, 0, 0, 0, GTK_RESPONSE_NONE };
 
   /* Create the action buttons for the dialog box */
   gtkstock_create_button( GTK_WIDGET( parent ), accel_group, &step );

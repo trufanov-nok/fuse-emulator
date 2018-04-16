@@ -3,8 +3,6 @@
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2016 Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -39,6 +37,7 @@
 #include "machines/specplus3.h"
 #include "module.h"
 #include "periph.h"
+#include "phantom_typist.h"
 #include "settings.h"
 #include "sound.h"
 #include "spectrum.h"
@@ -141,7 +140,7 @@ get_1ffd( void )
 static void
 set_1ffd( libspectrum_dword value )
 {
-  specplus3_memoryport2_write( 0, value );
+  specplus3_memoryport2_write_internal( 0, value );
 }
 
 static int
@@ -186,6 +185,8 @@ ula_read( libspectrum_word port, libspectrum_byte *attached )
   *attached = 0xff;
 
   loader_detect_loader();
+
+  r &= phantom_typist_ula_read( port );
 
   r &= keyboard_read( port >> 8 );
   if( tape_microphone ) r ^= 0x40;

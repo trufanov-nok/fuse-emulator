@@ -4,8 +4,6 @@
    Copyright (c) 2015 Tom Seddon
    Copyright (c) 2016 BogDan Vatra
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -36,7 +34,7 @@
 #include "debugger_internals.h"
 #include "event.h"
 #include "fuse.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "ui/ui.h"
 #include "utils.h"
 
@@ -317,11 +315,11 @@ debugger_breakpoint_trigger( debugger_breakpoint *bp )
 {
   if( bp->ignore ) { bp->ignore--; return 0; }
 
-  if( bp->condition && !debugger_expression_evaluate( bp->condition ) )
-    return 0;
-
   if( bp->type == DEBUGGER_BREAKPOINT_TYPE_TIME )
     bp->value.time.triggered = 1;
+
+  if( bp->condition && !debugger_expression_evaluate( bp->condition ) )
+    return 0;
 
   return 1;
 }

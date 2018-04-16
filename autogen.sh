@@ -4,8 +4,6 @@
 # Copyright (c) 2004 Philip Kendall
 # Copyright (c) 2014 Sergio Baldoví
 
-# $Id$
-
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -27,11 +25,4 @@
 # Exit on errors
 set -e
 
-aclocal -I m4
-# Mac OS X: Use glibtoolize instead
-(glibtoolize --version) < /dev/null > /dev/null 2>&1 && LIBTOOLIZE=glibtoolize \
-  || LIBTOOLIZE=libtoolize
-$LIBTOOLIZE --automake
-autoheader
-automake --add-missing
-autoconf
+autoreconf -f -i -I m4

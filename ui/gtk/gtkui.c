@@ -1,8 +1,6 @@
 /* gtkui.c: GTK+ routines for dealing with the user interface
    Copyright (c) 2000-2015 Philip Kendall, Russell Marks, Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -325,7 +323,7 @@ ui_end(void)
 int
 ui_error_specific( ui_error_level severity, const char *message )
 {
-  GtkWidget *dialog, *label, *vbox, *content_area, *action_area;
+  GtkWidget *dialog, *label, *vbox, *content_area;
   const gchar *title;
 
   /* If we don't have a UI yet, we can't output widgets */
@@ -352,10 +350,8 @@ ui_error_specific( ui_error_level severity, const char *message )
   /* Make a new vbox for the top part for saner spacing */
   vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
   content_area = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );
-  action_area = gtk_dialog_get_action_area( GTK_DIALOG( dialog ) );
   gtk_box_pack_start( GTK_BOX( content_area ), vbox, TRUE, TRUE, 0 );
   gtk_container_set_border_width( GTK_CONTAINER( vbox ), 5 );
-  gtk_container_set_border_width( GTK_CONTAINER( action_area ), 5 );
 
   /* Put the label in it */
   gtk_container_add( GTK_CONTAINER( vbox ), label );
@@ -409,7 +405,7 @@ menu_file_exit( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 
     /* Ensure we break out of the main Z80 loop, there could be active
        breakpoints before the next event */
-    debugger_exit_emulator();
+    debugger_exit_emulator( NULL );
   }
 }
 
@@ -467,6 +463,9 @@ menu_get_scaler( scaler_available_fn selector )
                              G_CALLBACK( menu_options_filter_done ),
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
+
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
 
   gtk_widget_show_all( dialog.dialog );
 
@@ -605,6 +604,9 @@ menu_machine_select( GtkAction *gtk_action GCC_UNUSED,
                              G_CALLBACK( menu_machine_select_done ),
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
+
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
 
   gtk_widget_show_all( dialog.dialog );
 
@@ -768,6 +770,9 @@ ui_confirm_joystick( libspectrum_joystick libspectrum_type,
                              G_CALLBACK( confirm_joystick_done ),
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
+
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
 
   gtk_widget_show_all( dialog.dialog );
 

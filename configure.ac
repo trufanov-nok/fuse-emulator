@@ -1,5 +1,4 @@
 dnl Process this file with autoconf to produce a configure script.
-dnl $Id$
 
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -20,18 +19,18 @@ dnl
 dnl E-mail: philip-fuse@shadowmagic.org.uk
 
 dnl Package version
-m4_define([fuse_version], [1.2.1])
+m4_define([fuse_version], [1.5.2])
 
 dnl Product full version
 m4_define([fuse_major_version], [1])
-m4_define([fuse_minor_version], [2])
-m4_define([fuse_micro_version], [1])
+m4_define([fuse_minor_version], [5])
+m4_define([fuse_micro_version], [2])
 m4_define([fuse_nano_version],  [0])
 m4_define([fuse_full_version], [fuse_major_version.fuse_minor_version.fuse_micro_version.fuse_nano_version])
 m4_define([fuse_rc_version], [fuse_major_version,fuse_minor_version,fuse_micro_version,fuse_nano_version])
 
 dnl Package info
-m4_define([fuse_copyright], ["(c) 1999-2016 Philip Kendall and others"])
+m4_define([fuse_copyright], ["(c) 1999-2018 Philip Kendall and others"])
 m4_define([fuse_url], [http://fuse-emulator.sourceforge.net/])
 m4_define([fuse_bugreport], [http://sourceforge.net/p/fuse-emulator/bugs/])
 
@@ -42,8 +41,8 @@ AC_CONFIG_HEADERS(config.h)
 AC_CANONICAL_HOST
 
 dnl Use automake to produce `Makefile.in'
-AM_INIT_AUTOMAKE([foreign subdir-objects -Wall])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
+AM_INIT_AUTOMAKE([1.11 foreign subdir-objects -Wall])
+AM_SILENT_RULES([yes])
 
 dnl Substitutions for .in files
 FUSE_FULL_VERSION=fuse_full_version
@@ -61,7 +60,6 @@ AC_DEFINE([FUSE_COPYRIGHT], [fuse_copyright], [Define copyright of Fuse])
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
-AC_PROG_RANLIB
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
 AM_PROG_LEX
@@ -107,6 +105,11 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(dirname geteuid getopt_long fsync)
 AC_CHECK_LIB([m],[cos])
 
+AX_STRING_STRCASECMP
+if test x"$ac_cv_string_strcasecmp" = "xno" ; then
+  AX_STRINGS_STRCASECMP
+fi
+
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
@@ -115,39 +118,13 @@ if test "$prefix" != "NONE"; then
   CPPFLAGS="$CPPFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi)
 
-dnl Check that libspectrum is available
-AC_ARG_WITH(libspectrum-prefix,
-[  --with-libspectrum-prefix=PFX where libspectrum is installed (optional)],
-LIBSPEC_CFLAGS=-I$withval/include; LIBSPEC_LIBS=-L$withval/lib,
-LIBSPEC_CFLAGS=""; LIBSPEC_LIBS="")
-ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS $GLIB_CFLAGS"
-AC_CHECK_HEADERS(libspectrum.h,LIBSPEC_LIBS="$LIBSPEC_LIBS -lspectrum",
-	         AC_MSG_ERROR(Sorry - I need libspectrum to be available))
-CPPFLAGS="$ac_save_CPPFLAGS"
-AC_SUBST(LIBSPEC_CFLAGS)
-AC_SUBST(LIBSPEC_LIBS)
-
-dnl Check that libspectrum is new enough
-AC_MSG_CHECKING(whether libspectrum is new enough)
-ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
-AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
-    [[
-      int test = LIBSPECTRUM_HAS_GLIB_REPLACEMENT;
-    ]])
-  ],
-  [AC_MSG_RESULT(yes)],
-  [AC_MSG_RESULT(no)
-   AC_MSG_ERROR(Sorry - I need a newer libspectrum)]
-)
-CPPFLAGS="$ac_save_CPPFLAGS"
+dnl Check that libspectrum is available and that it is new enough
+PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.4.0])
 
 dnl Check if supplied libspectrum has its own internal GLib replacement
 AC_MSG_CHECKING(whether libspectrum has its own internal GLib replacement)
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_PREPROC_IFELSE(
   [AC_LANG_SOURCE([
 #include <libspectrum.h>
@@ -174,35 +151,18 @@ AS_IF([test "$fakeglib" = no], [
 dnl Check if supplied libspectrum has support for compressed szx files
 AC_MSG_CHECKING(whether libspectrum supports compressed szx snaps)
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
   [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
     [[
       int test = LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION;
     ]])
   ],
-  [AUTOLOAD_SNAPS=compressed; LIBSPEC_HAVE_ZLIB=yes; AC_MSG_RESULT(yes)],
-  [AUTOLOAD_SNAPS=uncompressed; LIBSPEC_HAVE_ZLIB=""; AC_MSG_RESULT(no)]
+  [LIBSPEC_HAVE_ZLIB=yes; AC_MSG_RESULT(yes)],
+  [LIBSPEC_HAVE_ZLIB=""; AC_MSG_RESULT(no)]
 )
 CPPFLAGS="$ac_save_CPPFLAGS"
-AC_SUBST(AUTOLOAD_SNAPS)
 AC_SUBST(LIBSPEC_HAVE_ZLIB)
-AC_CONFIG_LINKS([
-	lib/disk_plus3.szx:lib/"$AUTOLOAD_SNAPS"/disk_plus3.szx
-	lib/tape_128.szx:lib/"$AUTOLOAD_SNAPS"/tape_128.szx
-	lib/tape_16.szx:lib/"$AUTOLOAD_SNAPS"/tape_16.szx
-	lib/tape_2048.szx:lib/"$AUTOLOAD_SNAPS"/tape_2048.szx
-	lib/tape_2068.szx:lib/"$AUTOLOAD_SNAPS"/tape_2068.szx
-	lib/tape_48.szx:lib/"$AUTOLOAD_SNAPS"/tape_48.szx
-	lib/tape_48_ntsc.szx:lib/"$AUTOLOAD_SNAPS"/tape_48_ntsc.szx
-	lib/tape_plus2.szx:lib/"$AUTOLOAD_SNAPS"/tape_plus2.szx
-	lib/tape_plus2a.szx:lib/"$AUTOLOAD_SNAPS"/tape_plus2a.szx
-	lib/tape_plus3.szx:lib/"$AUTOLOAD_SNAPS"/tape_plus3.szx
-	lib/tape_plus3e.szx:lib/"$AUTOLOAD_SNAPS"/tape_plus3e.szx
-	lib/tape_pentagon.szx:lib/"$AUTOLOAD_SNAPS"/tape_pentagon.szx
-	lib/tape_scorpion.szx:lib/"$AUTOLOAD_SNAPS"/tape_scorpion.szx
-	lib/tape_se.szx:lib/"$AUTOLOAD_SNAPS"/tape_se.szx
-	lib/tape_ts2068.szx:lib/"$AUTOLOAD_SNAPS"/tape_ts2068.szx])
 
 dnl Select a user interface
 
@@ -336,6 +296,20 @@ if test -z "$UI"; then
   fi
 fi
 
+dnl Look for null UI (default=no)
+if test -z "$UI"; then
+  AC_MSG_CHECKING(whether null UI requested)
+  AC_ARG_WITH(null-ui,
+  [  --with-null-ui          use null user interface],
+  if test "$withval" = no; then null_ui=no; else null_ui=yes; fi,
+  null_ui=no)
+  AC_MSG_RESULT($null_ui)
+  if test "$null_ui" = yes; then
+    AC_DEFINE([UI_NULL], 1, [Defined if null UI is in use])
+    UI=null
+  fi
+fi
+
 dnl Look for GTK+ (default=yes)
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether GTK+ UI requested)
@@ -437,6 +411,7 @@ fi
 
 AM_CONDITIONAL(UI_FB, test "$UI" = fb)
 AM_CONDITIONAL(UI_GTK, test "$UI" = gtk)
+AM_CONDITIONAL(UI_NULL, test "$UI" = null)
 AM_CONDITIONAL(UI_SDL, test "$UI" = sdl)
 AM_CONDITIONAL(UI_SVGA, test "$UI" = svga)
 AM_CONDITIONAL(UI_WII, test "$UI" = wii)
@@ -461,16 +436,17 @@ if test "$withval" = no; then zlib=no; else zlib=yes; fi,
 zlib=yes)
 AC_MSG_RESULT($zlib)
 if test "$zlib" = yes; then
+  zlib=no
   AC_CHECK_HEADERS(
     zlib.h,
-    AC_SEARCH_LIBS(compress2, z zdll)
+    AC_SEARCH_LIBS(compress2, z zdll, zlib=yes)
   )
 fi
 
 dnl Check if supplied libspectrum has support for bz2 compressed files
 AC_MSG_CHECKING(whether libspectrum supports compressed bz2 files)
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
   [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
     [[
@@ -486,7 +462,7 @@ AC_SUBST(LIBSPEC_HAVE_BZ2)
 dnl Check if supplied libspectrum has support for wav files
 AC_MSG_CHECKING(whether libspectrum supports wav files)
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
   [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
     [[
@@ -507,39 +483,17 @@ if test "$withval" = no; then libpng=no; else libpng=yes; fi,
 libpng=yes)
 AC_MSG_RESULT($libpng)
 if test "$libpng" = yes; then
-  AC_PATH_PROG([LIBPNG_CONFIG], [libpng-config])
-  if test -n "$LIBPNG_CONFIG"; then
-    PNG_CFLAGS=`libpng-config --cflags`
-    PNG_LIBS=`libpng-config --ldflags`
-    AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng])
-  else
-    ac_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
-    ac_save_LDFLAGS="$LDFLAGS"
-    LDFLAGS="$PNG_LIBS $LDFLAGS"
-
-    AC_CHECK_LIB( png, png_write_png,
-      [AC_CHECK_HEADER(
-        png.h,
-        [AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng]) PNG_LIBS='-lpng -lm -lz'],
-        [AC_CHECK_HEADERS(libpng/png.h,
-                     [CPPFLAGS="$ac_save_CPPFLAGS $PNG_CFLAGS/libpng"
-                      AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng]) PNG_LIBS='-lpng -lm -lz'],
-                     [AC_MSG_WARN(png.h not found - saving screenshots disabled)
-                      PNG_LIBS='']
-        )],
-      )],
-      [AC_MSG_WARN(png_write_png not found - saving screenshots disabled)
-       PNG_LIBS='']
-    )
-
-    CPPFLAGS="$ac_save_CPPFLAGS"
-    LDFLAGS="$ac_save_LDFLAGS"
-  fi
-
-  AC_SUBST(PNG_CFLAGS)
-  AC_SUBST(PNG_LIBS)
+  PKG_CHECK_MODULES(
+    [PNG],
+    [libpng],
+    [AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng])],
+    [AC_MSG_WARN([libpng not found - saving screenshots disabled])
+     libpng=no]
+  )
 fi
+
+AC_SUBST(PNG_CFLAGS)
+AC_SUBST(PNG_LIBS)
 
 dnl Check if a version of libasound which supplies pcm is available
 AC_MSG_CHECKING(whether ALSA requested)
@@ -606,40 +560,44 @@ dnl
 AC_MSG_CHECKING(which sound routines to use)
 if test "$UI" = sdl; then
   SOUND_LIBADD='sound/sdlsound.$(OBJEXT)' SOUND_LIBS='' sound_fifo=yes
-  AC_MSG_RESULT(SDL)
+  audio_driver="SDL"
 elif test "$dxsound_available" = yes; then
   SOUND_LIBADD='sound/dxsound.$(OBJEXT)' SOUND_LIBS='-ldsound -lole32 -ldxguid'
-  AC_MSG_RESULT(DirectX)
+  audio_driver="DirectX"
   AC_DEFINE([DIRECTSOUND_VERSION], 0x0700, [DirectX 7 or higher is required])
 elif test "$win32sound_available" = yes; then
   SOUND_LIBADD='sound/win32sound.$(OBJEXT)' SOUND_LIBS='-lwinmm'
-  AC_MSG_RESULT(win32sound)
+  audio_driver="win32sound"
 elif test "$alsa_available" = yes; then
   SOUND_LIBADD='sound/alsasound.$(OBJEXT)' SOUND_LIBS='-lasound'
-  AC_MSG_RESULT(ALSA)
+  audio_driver="ALSA"
 elif test "$ao_available" = yes; then
   SOUND_LIBADD='sound/aosound.$(OBJEXT)' SOUND_LIBS='-lao'
-  AC_MSG_RESULT(libao)
+  audio_driver="libao"
 elif test "$ac_cv_header_dsound_h" = yes; then
   # Later selection between these two
   SOUND_LIBADD='sound/sunsound.$(OBJEXT) sound/hpsound.$(OBJEXT)' SOUND_LIBS=''
-  AC_MSG_RESULT(Solaris or HP/UX)
+  audio_driver="Solaris or HP/UX"
 elif test "$ac_cv_header_sys_soundcard_h" = yes; then
   SOUND_LIBADD='sound/osssound.$(OBJEXT)' SOUND_LIBS=''
-  AC_MSG_RESULT(OSS)
+  audio_driver="OSS"
 elif test "$ac_cv_header_sys_audioio_h" = yes; then
   dnl OpenBSD
   SOUND_LIBADD='sound/sunsound.$(OBJEXT)' SOUND_LIBS=''
-  AC_MSG_RESULT(OpenBSD)
+  audio_driver="OpenBSD"
 elif test "$coreaudio_available" = yes; then
   SOUND_LIBADD='sound/coreaudiosound.$(OBJEXT)' SOUND_LIBS='-framework CoreAudio -framework AudioUnit' sound_fifo=yes
-  AC_MSG_RESULT(CoreAudio)
+  audio_driver="CoreAudio"
 elif test "$wii" = yes; then
   SOUND_LIBADD='sound/wiisound.$(OBJEXT)' SOUND_LIBS='' sound_fifo=yes
-  AC_MSG_RESULT(Wii)
+  audio_driver="Wii"
 else
   SOUND_LIBADD='sound/nullsound.$(OBJEXT)' SOUND_LIBS=''
-  AC_MSG_RESULT(none)
+  audio_driver="none"
+fi
+
+AC_MSG_RESULT($audio_driver)
+if test "$audio_driver" = "none"; then
   AC_DEFINE([NO_SOUND], 1, [Defined if no sound code is present])
   AC_MSG_WARN(No sound library has been found)
 fi
@@ -706,7 +664,8 @@ if test "$stick" = yes; then
         SDL_VERSION=1.2.4
         AM_PATH_SDL($SDL_VERSION,		    
           AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks]),
-          AC_MSG_WARN([SDL version $SDL_VERSION not found - joystick support disabled]))
+          AC_MSG_WARN([SDL version $SDL_VERSION not found - joystick support disabled])
+          stick=no)
       fi
       ;;
     wii)
@@ -725,7 +684,8 @@ if test "$stick" = yes; then
                      LIBS="$LIBS -ljsw";
 		     AC_DEFINE([USE_JOYSTICK], 1,
 		               [Defined if we're using hardware joysticks]),
-                     AC_MSG_WARN(jsw.h not found - joystick support disabled))
+                     AC_MSG_WARN(jsw.h not found - joystick support disabled)
+                     stick=no)
   fi
 fi
 
@@ -737,10 +697,17 @@ AC_MSG_CHECKING(whether libxml2 support requested)
   libxml2=yes)
 AC_MSG_RESULT($libxml2)
 if test "$libxml2" = yes; then
-  AM_PATH_XML2(2.0.0,AC_DEFINE([HAVE_LIB_XML2], 1,
-               [Defined if we've got libxml2]),
-               AC_MSG_WARN(libxml2 not found - config file will use ini format))
+  PKG_CHECK_MODULES(
+    [XML],
+    [libxml-2.0 >= 2.6.0],
+    [AC_DEFINE([HAVE_LIB_XML2], 1, [Defined if we've got libxml2])],
+    [AC_MSG_WARN([libxml2 not found - config file will use ini format])
+     libxml2="no"]
+  )
 fi
+
+AC_SUBST(XML_CFLAGS)
+AC_SUBST(XML_LIBS)
 
 dnl Work out which timer routines to use
 AC_MSG_CHECKING(which timer routines to use)
@@ -795,7 +762,7 @@ AM_CONDITIONAL(BUILD_SPECTRANET, test "$build_spectranet" = yes)
 dnl See if Linux TAP devices are supported
 AC_MSG_CHECKING(whether Linux TAP devices are supported)
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
   [AC_LANG_PROGRAM([[
       #include <linux/if_tun.h>
@@ -853,8 +820,8 @@ case "$host_os" in
     ;;
   mingw32*)
     COMPAT_OSNAME='win32'
-    AC_DEFINE([WINVER], 0x0400, [Minimal supported version of Windows is 95 or NT4])
-    AC_DEFINE([_WIN32_IE], 0x400, [Internet Explorer is 4.0 or higher is required])
+    AC_DEFINE([WINVER], 0x0500, [Minimal supported version of Windows is 2000])
+    AC_DEFINE([_WIN32_IE], 0x501, [Internet Explorer 5.01 or higher is required])
     AC_DEFINE([WIN32_LEAN_AND_MEAN],, [Exclude rarely used stuff from Windows headers <windows.h>])
     ;;
   wii)
@@ -876,7 +843,7 @@ dnl Decide whether to install desktop and mime files
 AC_ARG_ENABLE(desktop-integration,
 AS_HELP_STRING([--enable-desktop-integration], [add menu entry and file associations]),
 if test "$enableval" = yes; then desktopintegration=yes; else desktopintegration=no; fi,
-desktdesktopintegration=no)
+desktopintegration=no)
 AC_MSG_CHECKING(whether to install desktop file)
 AC_MSG_RESULT($desktopintegration)
 AM_CONDITIONAL(DESKTOP_INTEGRATION, test "$desktopintegration" = yes)
@@ -954,3 +921,40 @@ data/win32/installer.nsi
 ])
 
 AC_OUTPUT
+
+dnl Status summary
+echo ""
+echo "****************************"
+echo "*** Libspectrum features ***"
+echo "****************************"
+echo ""
+echo "Internal GLib replacement: ${fakeglib}"
+echo "zlib support: ${LIBSPEC_HAVE_ZLIB:-no}"
+echo "bzip2 support: ${LIBSPEC_HAVE_BZ2:-no}"
+echo "audiofile support: ${LIBSPEC_HAVE_AUDIOFILE:-no}"
+echo ""
+echo "********************"
+echo "*** Fuse options ***"
+echo "********************"
+echo ""
+echo "User interface: ${UI}"
+if test "${UI}" = "gtk"; then
+   echo "Using GTK+ 3: ${gtk3}"
+fi
+if test x"${gpm}" != "x"; then
+   echo "libgpm support: ${gpm}"
+fi
+echo "Joystick support: ${stick}"
+if test "${stick}" = "yes"; then
+   echo "Using libjsw for joystick support: ${libjsw}"
+fi
+echo "zlib support: ${zlib}"
+echo "libxml2 support: ${libxml2}"
+echo "libpng support: ${libpng}"
+echo "Audio driver: ${audio_driver}"
+echo "Spectranet support: ${build_spectranet}"
+echo "SpeccyBoot support: ${linux_tap:-no}"
+echo "Desktop integration: ${desktopintegration}"
+echo ""
+echo "Type 'make' to compile Fuse"
+echo ""

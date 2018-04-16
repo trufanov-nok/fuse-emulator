@@ -3,8 +3,6 @@
 			   Marek Januszewski
    Copyright (c) 2015 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -32,6 +30,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_STRCASECMP
+#include <strings.h>
+#endif      /* #ifdef HAVE_STRINGS_STRCASECMP */
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -227,7 +228,7 @@ amiga_asl( char *title, BOOL is_saving ) {
                                            ASLFR_RejectIcons,TRUE,
                                            ASLFR_TitleText,title,
                                            ASLFR_DoSaveMode,is_saving,
-                                           ASLFR_InitialPattern,"#?.(sna|z80|szx|sp|snp|zxs|tap|tzx|csw|rzx|dsk|trd|scl|mdr|dck|hdf|rom|psg|scr|png|gz|bz2)",
+                                           ASLFR_InitialPattern,"#?.(sna|z80|szx|sp|snp|zxs|tap|tzx|csw|rzx|dsk|trd|scl|mdr|dck|hdf|rom|psg|scr|mlt|png|gz|bz2)",
                                            ASLFR_DoPatterns,TRUE,
                                            TAG_DONE );
       if( err = IAsl->AslRequest( filereq, NULL ) ) {
@@ -238,7 +239,7 @@ amiga_asl( char *title, BOOL is_saving ) {
                                      ASLFR_RejectIcons,TRUE,
                                      ASLFR_TitleText,title,
                                      ASLFR_DoSaveMode,is_saving,
-                                     ASLFR_InitialPattern,"#?.(sna|z80|szx|sp|snp|zxs|tap|tzx|csw|rzx|dsk|trd|scl|mdr|dck|hdf|rom|psg|scr|png|gz|bz2)",
+                                     ASLFR_InitialPattern,"#?.(sna|z80|szx|sp|snp|zxs|tap|tzx|csw|rzx|dsk|trd|scl|mdr|dck|hdf|rom|psg|scr|mlt|png|gz|bz2)",
                                      ASLFR_DoPatterns,TRUE,
                                      TAG_DONE );
       if( err = AslRequest( filereq, NULL ) ) {
@@ -791,7 +792,7 @@ http://thread.gmane.org/gmane.comp.gnu.mingw.user/9197
 #else   /* #ifndef WIN32 */
     if( GetFileAttributes( fn ) != FILE_ATTRIBUTE_DIRECTORY ) {
 #endif  /* #ifndef WIN32 */
-      widget_filesel_name = fn;
+      widget_filesel_name = fn; fn = NULL;
       if( exit_all_widgets ) {
 	widget_end_all( WIDGET_FINISHED_OK );
       } else {
@@ -799,11 +800,13 @@ http://thread.gmane.org/gmane.comp.gnu.mingw.user/9197
       }
     }
   } else {
-    widget_scan( fn ); free( fn );
+    widget_scan( fn );
     new_current_file = 0;
     /* Force a redisplay of all filenames */
     current_file = 1; top_left_file = 1;
   }
+
+  free( fn );
 
   return 0;
 }
@@ -900,6 +903,7 @@ widget_filesel_keyhandler( input_key key )
       widget_text_t text_data;
       text_data.title = title;
       text_data.allow = WIDGET_INPUT_ASCII;
+      text_data.max_length = 30;
       text_data.text[0] = 0;
       if( widget_do_text( &text_data ) ||
 	  !widget_text_text || !*widget_text_text      )

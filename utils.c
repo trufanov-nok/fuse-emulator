@@ -6,8 +6,6 @@
    Copyright (c) 2016 BogDan Vatra
    Copyright (c) 2016 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -42,12 +40,14 @@
 
 #include "fuse.h"
 #include "machines/specplus3.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "peripherals/dck.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/ide/simpleide.h"
 #include "peripherals/ide/zxatasp.h"
 #include "peripherals/ide/zxcf.h"
+#include "peripherals/ide/zxmmc.h"
 #include "peripherals/if1.h"
 #include "peripherals/if2.h"
 #include "pokefinder/pokemem.h"
@@ -196,6 +196,8 @@ utils_open_file( const char *filename, int autoload,
     if( !settings_current.simpleide_active &&
 	!settings_current.zxatasp_active   &&
 	!settings_current.divide_enabled   &&
+	!settings_current.divmmc_enabled   &&
+	!settings_current.zxmmc_enabled    &&
 	!settings_current.zxcf_active         ) {
       settings_current.zxcf_active = 1;
       periph_update();
@@ -207,8 +209,12 @@ utils_open_file( const char *filename, int autoload,
       error = zxatasp_insert( filename, LIBSPECTRUM_IDE_MASTER );
     } else if( settings_current.simpleide_active ) {
       error = simpleide_insert( filename, LIBSPECTRUM_IDE_MASTER );
-    } else {
+    } else if( settings_current.divide_enabled ) {
       error = divide_insert( filename, LIBSPECTRUM_IDE_MASTER );
+    } else if( settings_current.zxmmc_enabled ) {
+      error = zxmmc_insert( filename );
+    } else {
+      error = divmmc_insert( filename );
     }
     if( error ) return error;
     
@@ -294,15 +300,14 @@ utils_find_file_path( const char *filename, char *ret_path,
   init_path_context( &ctx, type );
 
   while( compat_get_next_path( &ctx ) ) {
-
+    int bytes_written;
 #ifdef AMIGA
-    snprintf( ret_path, PATH_MAX, "%s%s", ctx.path, filename );
+    bytes_written = snprintf( ret_path, PATH_MAX, "%s%s", ctx.path, filename );
 #else
-    snprintf( ret_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", ctx.path,
-              filename );
+    bytes_written = snprintf( ret_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s",
+        ctx.path, filename );
 #endif
-    if( compat_file_exists(ret_path) ) return 0;
-
+    if( bytes_written < PATH_MAX && compat_file_exists(ret_path) ) return 0;
   }
 
   return 1;
@@ -405,7 +410,6 @@ utils_read_auxiliary_file( const char *filename, utils_file *file,
   if( error ) return error;
 
   return 0;
-
 }
 
 int

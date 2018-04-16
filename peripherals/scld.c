@@ -2,8 +2,6 @@
    Copyright (c) 2002-2016 Fredrick Meunier, Philip Kendall, Witold Filipczyk
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -37,7 +35,7 @@
 #include "display.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "periph.h"
 #include "scld.h"

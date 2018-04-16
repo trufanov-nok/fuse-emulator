@@ -4,8 +4,6 @@
    Copyright (c) 2016 Sergio Baldoví
    Copyright (c) 2016 Fredrick Meunier
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -467,8 +465,7 @@ static ui_media_drive_info_t didaktik_ui_drives[ DIDAKTIK80_NUM_DRIVES ] = {
 static void
 didaktik_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_didaktik80_active( snap ) )
-    settings_current.didaktik80 = 1;
+  settings_current.didaktik80 = libspectrum_snap_didaktik80_active( snap );
 }
 
 static void

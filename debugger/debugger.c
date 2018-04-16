@@ -1,8 +1,6 @@
 /* debugger.c: Fuse's monitor/debugger
    Copyright (c) 2002-2016 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -30,7 +28,7 @@
 #include "event.h"
 #include "fuse.h"
 #include "infrastructure/startup_manager.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "mempool.h"
 #include "periph.h"
 #include "ui/ui.h"
@@ -49,8 +47,8 @@ int debugger_memory_pool;
 /* The event type used for time breakpoints */
 int debugger_breakpoint_event;
 
-/* The system variable type used for Z80 registers */
-const char *debugger_z80_system_variable_type = "z80";
+/* Fuse's exit code */
+static int exit_code = 0;
 
 static int
 debugger_init( void *context )
@@ -190,9 +188,12 @@ debugger_port_write( libspectrum_word port, libspectrum_byte value )
 
 /* Exit the emulator */
 void
-debugger_exit_emulator( void )
+debugger_exit_emulator( debugger_expression *exit_code_expression )
 {
   fuse_exiting = 1;
+
+  exit_code = exit_code_expression ?
+    debugger_expression_evaluate( exit_code_expression ) : 0;
 
   /* Ensure we break out of the main Z80 loop immediately */
   event_add( 0, event_type_null );
@@ -206,4 +207,10 @@ debugger_frame( void )
 {
   debugger_add_time_events();
   debugger_listener_check();
+}
+
+int
+debugger_get_exit_code( void )
+{
+  return exit_code;
 }

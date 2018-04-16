@@ -1,8 +1,6 @@
 /* spectrum.h: Spectrum 48K specific routines
    Copyright (c) 1999-2016 Philip Kendall, Darren Salt
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -30,7 +28,7 @@
 
 #include <libspectrum.h>
 
-#include "memory.h"
+#include "memory_pages.h"
 
 /* How many tstates have elapsed since the last interrupt? (or more
    precisely, since the ULA last pulled the /INT line to the Z80 low) */

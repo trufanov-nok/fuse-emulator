@@ -3,8 +3,6 @@
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2015 Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -43,7 +41,10 @@ typedef enum periph_type {
   PERIPH_TYPE_BETA128,        /* Beta128 disk interface */
   PERIPH_TYPE_BETA128_PENTAGON, /* Beta128 disk interface as found on the original Pentagon */
   PERIPH_TYPE_BETA128_PENTAGON_LATE, /* Beta128 disk interface as found on later Pentagons */
+  PERIPH_TYPE_COVOX_DD,       /* Covox interface on port #dd */
+  PERIPH_TYPE_COVOX_FB,       /* Covox interface on port #fb */
   PERIPH_TYPE_DIVIDE,         /* DivIDE interface */
+  PERIPH_TYPE_DIVMMC,         /* DivMMC interface */
   PERIPH_TYPE_PLUSD,          /* +D disk interface */
   PERIPH_TYPE_DIDAKTIK80,     /* Didaktik 40/80 disk interface */
   PERIPH_TYPE_DISCIPLE,       /* DISCiPLE disk interface */
@@ -58,6 +59,9 @@ typedef enum periph_type {
 
   PERIPH_TYPE_KEMPSTON_MOUSE, /* Kempston mouse */
   PERIPH_TYPE_MELODIK,        /* Melodik interface */
+  PERIPH_TYPE_MULTIFACE_1,    /* Multiface 1 */
+  PERIPH_TYPE_MULTIFACE_128,  /* Multiface 128 */
+  PERIPH_TYPE_MULTIFACE_3,    /* Multiface 3 */
   PERIPH_TYPE_OPUS,           /* Opus disk interface */
   PERIPH_TYPE_PARALLEL_PRINTER, /* +2A/+3 parallel printer */
   PERIPH_TYPE_PENTAGON1024_MEMORY, /* Pentagon 1024-style memory paging */
@@ -74,6 +78,7 @@ typedef enum periph_type {
   PERIPH_TYPE_USOURCE,        /* Currah uSource interface */
   PERIPH_TYPE_ZXATASP,        /* ZXATASP IDE interface */
   PERIPH_TYPE_ZXCF,           /* ZXCF IDE interface */
+  PERIPH_TYPE_ZXMMC,          /* ZXMMC interface */
   PERIPH_TYPE_ZXPRINTER,      /* ZX Printer */
   PERIPH_TYPE_ZXPRINTER_FULL_DECODE, /* ZX Printer responding only to 0xfb */
 } periph_type;
@@ -159,6 +164,8 @@ int periph_update( void );
 void periph_posthook( void );
 
 int periph_postcheck( void );
+
+void periph_disable_optional( void );
 
 /* Register debugger page/unpage events for a peripheral */
 void periph_register_paging_events( const char *type_string, int *page_event,

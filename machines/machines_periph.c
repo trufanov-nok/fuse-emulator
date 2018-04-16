@@ -3,8 +3,6 @@
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2015 Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -183,6 +181,7 @@ static void
 base_peripherals( void )
 {
   periph_set_present( PERIPH_TYPE_DIVIDE, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_DIVMMC, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_KEMPSTON, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_KEMPSTON_MOUSE, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_SIMPLEIDE, PERIPH_PRESENT_OPTIONAL );
@@ -201,7 +200,7 @@ base_peripherals_48_128( void )
   periph_set_present( PERIPH_TYPE_BETA128, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_INTERFACE1, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_INTERFACE2, PERIPH_PRESENT_OPTIONAL );
-  periph_set_present( PERIPH_TYPE_MELODIK, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_MULTIFACE_128, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_OPUS, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_PLUSD, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_SPECDRUM, PERIPH_PRESENT_OPTIONAL );
@@ -214,6 +213,8 @@ machines_periph_48( void )
 {
   base_peripherals_48_128();
   periph_set_present( PERIPH_TYPE_FULLER, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_MELODIK, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_MULTIFACE_1, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_ZXPRINTER, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_DIDAKTIK80, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_DISCIPLE, PERIPH_PRESENT_OPTIONAL );
@@ -234,8 +235,10 @@ machines_periph_plus3( void )
 {
   base_peripherals();
   periph_set_present( PERIPH_TYPE_AY_PLUS3, PERIPH_PRESENT_ALWAYS );
+  periph_set_present( PERIPH_TYPE_MULTIFACE_3, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_PARALLEL_PRINTER, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_PLUS3_MEMORY, PERIPH_PRESENT_ALWAYS );
+  periph_set_present( PERIPH_TYPE_ZXMMC, PERIPH_PRESENT_OPTIONAL );
 }
 
 /* The set of peripherals available on the TC2068 and TS2068 */

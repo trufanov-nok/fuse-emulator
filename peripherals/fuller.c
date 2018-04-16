@@ -1,8 +1,6 @@
 /* fuller.c: Routines for handling the Fuller Box
    Copyright (c) 2007-2016 Stuart Brady, Fredrick Meunier, Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -67,8 +65,7 @@ static const periph_t fuller_periph = {
 static void
 fuller_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_fuller_box_active( snap ) )
-    settings_current.fuller = 1;
+  settings_current.fuller = libspectrum_snap_fuller_box_active( snap );
 }
 
 static void

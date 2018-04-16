@@ -1,8 +1,6 @@
 /* machine.c: Routines for handling the various machine types
    Copyright (c) 1999-2015 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -38,7 +36,7 @@
 #include "machines/spec48.h"
 #include "machines/specplus3.h"
 #include "machines/tc2068.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "movie.h"
 #include "peripherals/ula.h"
@@ -437,7 +435,10 @@ machine_end( void )
 void
 machine_register_startup( void )
 {
-  startup_manager_module dependencies[] = { STARTUP_MANAGER_MODULE_SETUID };
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_MEMORY,
+    STARTUP_MANAGER_MODULE_SETUID
+  };
   startup_manager_register( STARTUP_MANAGER_MODULE_MACHINE, dependencies,
                             ARRAY_SIZE( dependencies ), machine_init_machines,
                             NULL, machine_end );

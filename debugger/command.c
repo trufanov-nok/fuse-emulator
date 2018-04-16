@@ -1,8 +1,6 @@
 /* command.c: Parse a debugger command
    Copyright (c) 2002-2015 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -102,15 +100,4 @@ void
 yyerror( const char *s )
 {
   ui_error( UI_ERROR_ERROR, "Invalid debugger command: %s", s );
-}
-
-/* Set the value of a register
- 
-   Now just a pass through to the appropriate system variable.
-   This function should be removed in Fuse 1.4 */
-void
-debugger_register_set( const char *which, libspectrum_word value )
-{
-  debugger_system_variable_set( debugger_z80_system_variable_type, which,
-                                value );
 }

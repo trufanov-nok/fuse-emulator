@@ -2,8 +2,6 @@
    Copyright (c) 2011-2016 Jon Mitchell, Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -94,8 +92,7 @@ specdrum_reset( int hard_reset GCC_UNUSED )
 static void 
 specdrum_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_specdrum_active( snap ) )
-    settings_current.specdrum = 1;
+  settings_current.specdrum = libspectrum_snap_specdrum_active( snap );
 }
 
 static void

@@ -2,8 +2,6 @@
    Copyright (c) 1999-2016 Philip Kendall
    Copyright (c) 2015 Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -52,8 +50,7 @@ int tape_save_trap( void );
 int tape_do_play( int autoplay );
 int tape_toggle_play( int autoplay );
 
-void tape_next_edge( libspectrum_dword last_tstates, int type,
-		     void *user_data );
+void tape_next_edge( libspectrum_dword last_tstates, int from_acceleration );
 
 int tape_stop( void );
 int tape_is_playing( void );

@@ -2,8 +2,6 @@
    Copyright (c) 2011-2016 Philip Kendall
    Copyright (c) 2015 Stuart Brady
    
-   $Id$
-   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -33,7 +31,7 @@
 #include "flash/am29f010.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
-#include "memory.h"
+#include "memory_pages.h"
 #include "module.h"
 #include "nic/w5100.h"
 #include "periph.h"
@@ -265,8 +263,7 @@ spectranet_activate( void )
 static void
 spectranet_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_spectranet_active( snap ) )
-    settings_current.spectranet = 1;
+  settings_current.spectranet = libspectrum_snap_spectranet_active( snap );
 }
 
 static void

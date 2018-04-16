@@ -2,8 +2,6 @@
    Copyright (c) 1999-2013 Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -47,6 +45,8 @@ int specplus3_shutdown( void );
 
 void specplus3_memoryport_write( libspectrum_word port, libspectrum_byte b );
 void specplus3_memoryport2_write( libspectrum_word port, libspectrum_byte b );
+void specplus3_memoryport2_write_internal( libspectrum_word port,
+                                           libspectrum_byte b );
 
 libspectrum_byte specplus3_fdc_status( libspectrum_word port, libspectrum_byte *attached );
 libspectrum_byte specplus3_fdc_read( libspectrum_word port, libspectrum_byte *attached );
@@ -62,11 +62,6 @@ typedef enum specplus3_drive_number {
 
 int specplus3_disk_insert( specplus3_drive_number which, const char *filename,
                            int autoload );
-int specplus3_disk_eject( specplus3_drive_number which );
-int specplus3_disk_save( specplus3_drive_number which, int saveas );
-int specplus3_disk_write( specplus3_drive_number which, const char *filename );
-int specplus3_disk_flip( specplus3_drive_number which, int flip );
-int specplus3_disk_writeprotect( specplus3_drive_number which, int wp );
 fdd_t *specplus3_get_fdd( specplus3_drive_number which );
 
 #endif			/* #ifndef FUSE_SPECPLUS3_H */

@@ -1,8 +1,6 @@
 /* event.c: Debugger system variables
    Copyright (c) 2016 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -26,6 +24,9 @@
 #include <config.h>
 
 #include <string.h>
+#ifdef HAVE_STRINGS_STRCASECMP
+#include <strings.h>
+#endif      /* #ifdef HAVE_STRINGS_STRCASECMP */
 
 #ifdef HAVE_LIB_GLIB
 #include <glib.h>

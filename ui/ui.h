@@ -2,8 +2,6 @@
    Copyright (c) 2000-2015 Philip Kendall
    Copyright (c) 2016 BogDan Vatra
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -135,6 +133,7 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_FILE_MOVIE_RECORDING,
   UI_MENU_ITEM_FILE_MOVIE_PAUSE,
   UI_MENU_ITEM_MACHINE_PROFILER,
+  UI_MENU_ITEM_MACHINE_MULTIFACE,
   UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP,
   UI_MENU_ITEM_MEDIA_CARTRIDGE,
   UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK,
@@ -235,6 +234,10 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE,
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT,
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT,
+  UI_MENU_ITEM_MEDIA_IDE_DIVMMC,
+  UI_MENU_ITEM_MEDIA_IDE_DIVMMC_EJECT,
+  UI_MENU_ITEM_MEDIA_IDE_ZXMMC,
+  UI_MENU_ITEM_MEDIA_IDE_ZXMMC_EJECT,
   UI_MENU_ITEM_RECORDING,
   UI_MENU_ITEM_RECORDING_ROLLBACK,
   UI_MENU_ITEM_AY_LOGGING,

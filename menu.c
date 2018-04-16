@@ -1,12 +1,6 @@
 /* menu.c: general menu callbacks
-   Copyright (c) 2004-2013 Philip Kendall
-   Copyright (c) 2013 Alex Badea
-   Copyright (c) 2014-2015 Sergio Baldoví
-   Copyright (c) 2015 Stuart Brady
-   Copyright (c) 2015 Gergely Szasz
-   Copyright (c) 2015 Stefano Bodrato
-
-   $Id$
+   Copyright (c) 2004-2017 Philip Kendall, Alex Badea, Sergio Baldoví,
+     Stuart Brady, Gergely Szasz, Stefano Bodrato, Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,12 +38,16 @@
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/ide/simpleide.h"
 #include "peripherals/ide/zxatasp.h"
 #include "peripherals/ide/zxcf.h"
+#include "peripherals/ide/zxmmc.h"
 #include "peripherals/if1.h"
 #include "peripherals/if2.h"
 #include "peripherals/joystick.h"
+#include "peripherals/multiface.h"
+#include "peripherals/scld.h"
 #include "profile.h"
 #include "psg.h"
 #include "rzx.h"
@@ -208,7 +206,7 @@ MENU_CALLBACK( menu_file_aylogging_stop )
   ui_menu_activate( UI_MENU_ITEM_AY_LOGGING, 0 );
 }
 
-MENU_CALLBACK( menu_file_openscrscreenshot )
+MENU_CALLBACK( menu_file_screenshot_openscrscreenshot )
 {
   char *filename;
 
@@ -218,6 +216,22 @@ MENU_CALLBACK( menu_file_openscrscreenshot )
   if( !filename ) { fuse_emulation_unpause(); return; }
 
   screenshot_scr_read( filename );
+
+  libspectrum_free( filename );
+
+  fuse_emulation_unpause();
+}
+
+MENU_CALLBACK( menu_file_screenshot_openmltscreenshot )
+{
+  char *filename;
+
+  fuse_emulation_pause();
+
+  filename = ui_get_open_filename( "Fuse - Open MLT Screenshot" );
+  if( !filename ) { fuse_emulation_unpause(); return; }
+
+  screenshot_mlt_read( filename );
 
   libspectrum_free( filename );
 
@@ -274,9 +288,12 @@ MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_peripheral_select )
   case  3: menu_select_peripheral_roms( "+D",              2, 1 ); return;
   case  4: menu_select_peripheral_roms( "Didaktik 80",     3, 1 ); return;
   case  5: menu_select_peripheral_roms( "DISCiPLE",        4, 1 ); return;
-  case  6: menu_select_peripheral_roms( "Opus Discovery",  5, 1 ); return;
-  case  7: menu_select_peripheral_roms( "SpeccyBoot",      6, 1 ); return;
-  case  8: menu_select_peripheral_roms( "uSource",         7, 1 ); return;
+  case  6: menu_select_peripheral_roms( "Multiface One",   5, 1 ); return;
+  case  7: menu_select_peripheral_roms( "Multiface 128",   6, 1 ); return;
+  case  8: menu_select_peripheral_roms( "Multiface 3",     7, 1 ); return;
+  case  9: menu_select_peripheral_roms( "Opus Discovery",  8, 1 ); return;
+  case 10: menu_select_peripheral_roms( "SpeccyBoot",      9, 1 ); return;
+  case 11: menu_select_peripheral_roms( "uSource",        10, 1 ); return;
 
   }
 
@@ -338,6 +355,12 @@ MENU_CALLBACK( menu_machine_nmi )
 {
   ui_widget_finish();
   event_add( 0, z80_nmi_event );
+}
+
+MENU_CALLBACK( menu_machine_multifaceredbutton )
+{
+  ui_widget_finish();
+  multiface_red_button();
 }
 
 MENU_CALLBACK( menu_media_tape_open )
@@ -620,6 +643,8 @@ MENU_CALLBACK_WITH_ACTION( menu_media_ide_insert )
   case 5: zxcf_insert( filename ); break;
   case 6: divide_insert( filename, LIBSPECTRUM_IDE_MASTER ); break;
   case 7: divide_insert( filename, LIBSPECTRUM_IDE_SLAVE  ); break;
+  case 8: divmmc_insert( filename ); break;
+  case 9: zxmmc_insert( filename ); break;
   }
 
   libspectrum_free( filename );
@@ -639,6 +664,8 @@ MENU_CALLBACK_WITH_ACTION( menu_media_ide_commit )
   case 5: zxcf_commit(); break;
   case 6: divide_commit( LIBSPECTRUM_IDE_MASTER ); break;
   case 7: divide_commit( LIBSPECTRUM_IDE_SLAVE  ); break;
+  case 8: divmmc_commit(); break;
+  case 9: zxmmc_commit(); break;
   }
 
   fuse_emulation_unpause();
@@ -658,6 +685,7 @@ MENU_CALLBACK_WITH_ACTION( menu_media_ide_eject )
   case 5: zxcf_eject(); break;
   case 6: divide_eject( LIBSPECTRUM_IDE_MASTER ); break;
   case 7: divide_eject( LIBSPECTRUM_IDE_SLAVE  ); break;
+  case 8: divmmc_eject(); break;
   }
 
   fuse_emulation_unpause();
@@ -683,13 +711,6 @@ MENU_CALLBACK( menu_media_ide_zxcf_upload )
   ui_widget_finish();
 }
 
-MENU_CALLBACK( menu_media_ide_divide_writeprotect )
-{
-  settings_current.divide_wp = !settings_current.divide_wp;
-  divide_refresh_page_state();
-  ui_widget_finish();
-}
-
 MENU_CALLBACK( menu_file_savesnapshot )
 {
   char *filename;
@@ -708,7 +729,7 @@ MENU_CALLBACK( menu_file_savesnapshot )
   fuse_emulation_unpause();
 }
 
-MENU_CALLBACK( menu_file_savescreenasscr )
+MENU_CALLBACK( menu_file_screenshot_savescreenasscr )
 {
   char *filename;
 
@@ -726,9 +747,34 @@ MENU_CALLBACK( menu_file_savescreenasscr )
   fuse_emulation_unpause();
 }
 
+MENU_CALLBACK( menu_file_screenshot_savescreenasmlt )
+{
+  char *filename;
+
+  ui_widget_finish();
+
+  fuse_emulation_pause();
+
+  if( machine_current->timex && scld_last_dec.name.hires ) {
+    ui_error( UI_ERROR_ERROR,
+              "MLT format not supported for Timex hi-res screen mode" );
+    fuse_emulation_unpause();
+    return;
+  }
+
+  filename = ui_get_save_filename( "Fuse - Save Screenshot as MLT" );
+  if( !filename ) { fuse_emulation_unpause(); return; }
+
+  screenshot_mlt_write( filename );
+
+  libspectrum_free( filename );
+
+  fuse_emulation_unpause();
+}
+
 #ifdef USE_LIBPNG
 
-MENU_CALLBACK( menu_file_savescreenaspng )
+MENU_CALLBACK( menu_file_screenshot_savescreenaspng )
 {
   scaler_type scaler;
   char *filename;
@@ -1009,6 +1055,16 @@ menu_check_media_changed( void )
     if( confirm ) return 1;
   }
 
+  if( settings_current.divmmc_file ) {
+    confirm = divmmc_eject();
+    if( confirm ) return 1;
+  }
+
+  if( settings_current.zxmmc_file ) {
+    confirm = zxmmc_eject();
+    if( confirm ) return 1;
+  }
+
   return 0;
 }
 
@@ -1070,6 +1126,11 @@ static const char * const disk_detail_str[] = {
   "Inserted WP",
   "Inserted UD",
   "Inserted WP,UD",
+
+  "*Inserted",
+  "*Inserted WP",
+  "*Inserted UD",
+  "*Inserted WP,UD",
   "Not inserted",
 };
 
@@ -1078,9 +1139,10 @@ menu_disk_detail( fdd_t *f )
 {
   int i = 0;
 
-  if( !f->loaded ) return disk_detail_str[4];
+  if( !f->loaded ) return disk_detail_str[8];
   if( f->wrprot ) i = 1;
   if( f->upsidedown ) i += 2;
+  if( f->disk.dirty ) i += 4;
   return disk_detail_str[i];
 }
 

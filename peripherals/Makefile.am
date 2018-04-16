@@ -2,8 +2,7 @@
 ## Copyright (c) 2011 Philip Kendall
 ## Copyright (c) 2015 Stuart Brady
 ## Copyright (c) 2015 Sergio Baldoví
-
-## $Id$
+## Copyright (c) 2017 Fredrick Meunier
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -25,6 +24,7 @@
 
 fuse_SOURCES += \
                 peripherals/ay.c \
+                peripherals/covox.c \
                 peripherals/dck.c \
                 peripherals/fuller.c \
                 peripherals/if1.c \
@@ -32,6 +32,7 @@ fuse_SOURCES += \
                 peripherals/joystick.c \
                 peripherals/kempmouse.c \
                 peripherals/melodik.c \
+                peripherals/multiface.c \
                 peripherals/printer.c \
                 peripherals/scld.c \
                 peripherals/speccyboot.c \
@@ -47,13 +48,17 @@ fuse_SOURCES += \
                 peripherals/disk/fdd.c \
                 peripherals/disk/opus.c \
                 peripherals/disk/plusd.c \
+                peripherals/disk/trdos.c \
                 peripherals/disk/upd_fdc.c \
                 peripherals/disk/wd_fdc.c \
                 peripherals/ide/divide.c \
+                peripherals/ide/divmmc.c \
+                peripherals/ide/divxxx.c \
                 peripherals/ide/ide.c \
                 peripherals/ide/simpleide.c \
                 peripherals/ide/zxatasp.c \
-                peripherals/ide/zxcf.c
+                peripherals/ide/zxcf.c \
+                peripherals/ide/zxmmc.c
 
 if BUILD_SPECCYBOOT
 fuse_SOURCES += peripherals/nic/enc28j60.c
@@ -68,6 +73,7 @@ endif
 
 noinst_HEADERS += \
                   peripherals/ay.h \
+                  peripherals/covox.h \
                   peripherals/dck.h \
                   peripherals/fuller.h \
                   peripherals/if1.h \
@@ -75,6 +81,7 @@ noinst_HEADERS += \
                   peripherals/joystick.h \
                   peripherals/kempmouse.h \
                   peripherals/melodik.h \
+                  peripherals/multiface.h \
                   peripherals/printer.h \
                   peripherals/scld.h \
                   peripherals/speccyboot.h \
@@ -90,13 +97,17 @@ noinst_HEADERS += \
                   peripherals/disk/fdd.h \
                   peripherals/disk/opus.h \
                   peripherals/disk/plusd.h \
+                  peripherals/disk/trdos.h \
                   peripherals/disk/upd_fdc.h \
                   peripherals/disk/wd_fdc.h \
                   peripherals/ide/divide.h \
+                  peripherals/ide/divmmc.h \
+                  peripherals/ide/divxxx.h \
                   peripherals/ide/ide.h \
                   peripherals/ide/simpleide.h \
                   peripherals/ide/zxatasp.h \
                   peripherals/ide/zxcf.h \
+                  peripherals/ide/zxmmc.h \
                   peripherals/flash/am29f010.h \
                   peripherals/nic/enc28j60.h \
                   peripherals/nic/w5100.h \

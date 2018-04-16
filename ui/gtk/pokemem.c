@@ -1,8 +1,6 @@
 /* pokemem.c: GTK+ interface that handles pok files
    Copyright (c) 2011-2015 Philip Kendall, Sergio Baldoví
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -158,7 +156,7 @@ create_dialog( void )
   /* Create Add button for custom pokes */
   static const gtkstock_button
     add  = { "_Add", G_CALLBACK( pokemem_add_custom_poke ), NULL, NULL,
-             0, 0, 0, 0 };
+             0, 0, 0, 0, GTK_RESPONSE_NONE };
   gtkstock_create_button( GTK_WIDGET( hbox ), accel_group, &add );
 
   label = gtk_label_new( "Choose active POKES:" );
@@ -184,7 +182,6 @@ create_dialog( void )
                              (gpointer) &dialog,
                              G_CALLBACK( pokemem_close ),
                              G_CALLBACK( pokemem_close ) );
-  gtk_accel_group_disconnect_key( accel_group, GDK_KEY_Return, 0 );
 
   /* Users shouldn't be able to resize this window */
   gtk_window_set_resizable( GTK_WINDOW( dialog ), FALSE );

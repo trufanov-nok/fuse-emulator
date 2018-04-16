@@ -2,8 +2,6 @@
    Copyright (c) 1999-2016 Stuart Brady, Fredrick Meunier, Philip Kendall,
    Dmitry Sanarin, Darren Salt, Gergely Szasz
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -599,8 +597,7 @@ static ui_media_drive_info_t disciple_ui_drives[ DISCIPLE_NUM_DRIVES ] = {
 static void
 disciple_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_disciple_active( snap ) )
-    settings_current.disciple = 1;
+  settings_current.disciple = libspectrum_snap_disciple_active( snap );
 }
 
 static void

@@ -1,8 +1,6 @@
 /* expression.c: A numeric expression
    Copyright (c) 2003-2016 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -161,17 +159,6 @@ debugger_expression_new_number( libspectrum_dword number, int pool )
   exp->types.integer = number;
 
   return exp;
-}
-
-/* Create a new expression representing a Z80 register
-
-   Now just a pass through to the appropriate system variable.
-   This function should be removed in Fuse 1.4 */
-debugger_expression*
-debugger_expression_new_register( const char *which, int pool )
-{
-  return debugger_expression_new_system_variable(
-    debugger_z80_system_variable_type, which, pool );
 }
 
 debugger_expression*

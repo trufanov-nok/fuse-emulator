@@ -1,7 +1,5 @@
 /* coretest.c: Test program for Fuse's Z80 core
-   Copyright (c) 2003-2015 Philip Kendall
-
-   $Id$
+   Copyright (c) 2003-2017 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,6 +35,7 @@
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/if1.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
@@ -251,7 +250,7 @@ run_test( FILE *f )
 static int
 read_test( FILE *f, libspectrum_dword *end_tstates )
 {
-  unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc;
+  unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc, memptr;
   unsigned i, r, iff1, iff2, im;
   unsigned end_tstates2;
   unsigned address;
@@ -271,8 +270,9 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
   } while( test_name[0] == '\n' );
 
   /* FIXME: how should we read/write our data types? */
-  if( fscanf( f, "%x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
-	      &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc ) != 12 ) {
+  if( fscanf( f, "%x %x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
+	      &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc,
+	      &memptr ) != 13 ) {
     fprintf( stderr, "%s: first registers line in `%s' corrupt\n", progname,
 	     testsfile );
     return 1;
@@ -281,6 +281,7 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
   AF  = af;  BC  = bc;  DE  = de;  HL  = hl;
   AF_ = af_; BC_ = bc_; DE_ = de_; HL_ = hl_;
   IX  = ix;  IY  = iy;  SP  = sp;  PC  = pc;
+  z80.memptr.w = memptr;
 
   if( fscanf( f, "%x %x %u %u %u %d %d", &i, &r, &iff1, &iff2, &im,
 	      &z80.halted, &end_tstates2 ) != 7 ) {
@@ -326,8 +327,8 @@ read_test( FILE *f, libspectrum_dword *end_tstates )
 static void
 dump_z80_state( void )
 {
-  printf( "%04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
-	  AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC );
+  printf( "%04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+	  AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC, z80.memptr.w );
   printf( "%02x %02x %d %d %d %d %d\n", I, ( R7 & 0x80 ) | ( R & 0x7f ),
 	  IFF1, IFF2, IM, z80.halted, tstates );
 }
@@ -538,8 +539,22 @@ if1_unpage( void )
   abort();
 }
 
+int multiface_activated = 0;
+
+void
+multiface_setic8( void )
+{
+  abort();
+}
+
 void
 divide_set_automap( int state GCC_UNUSED )
+{
+  abort();
+}
+
+void
+divmmc_set_automap( int state GCC_UNUSED )
 {
   abort();
 }
@@ -651,6 +666,7 @@ init_dummies( void )
   scld_last_dec.name.intdisable = 0;
   settings_current.slt_traps = 0;
   settings_current.divide_enabled = 0;
+  settings_current.divmmc_enabled = 0;
   settings_current.z80_is_cmos = 0;
   beta_pc_mask = 0xfe00;
   beta_pc_value = 0x3c00;

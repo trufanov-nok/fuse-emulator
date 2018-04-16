@@ -1,8 +1,6 @@
 /* z80.h: z80 emulation core
    Copyright (c) 1999-2015 Philip Kendall
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -46,6 +44,7 @@ typedef struct {
 			   so it can also act as an RZX instruction counter */
   libspectrum_byte r7;	/* The high bit of the R register */
   regpair sp,pc;
+  regpair memptr;	/* The hidden register */
   int iff2_read;
   libspectrum_byte iff1, iff2, im;
   int halted;
