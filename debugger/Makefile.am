@@ -1,6 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001-2016 Philip Kendall
-## Copyright (c) 2015 Sergio Baldoví
+## Copyright (c) 2001-2018 Philip Kendall, Sergio Baldoví
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -29,6 +28,7 @@ fuse_SOURCES += \
                 debugger/disassemble.c \
                 debugger/event.c \
                 debugger/expression.c \
+                debugger/python.c \
                 debugger/system_variable.c \
                 debugger/variable.c
 

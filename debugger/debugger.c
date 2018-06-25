@@ -61,6 +61,7 @@ debugger_init( void *context )
   debugger_breakpoint_event = event_register( debugger_breakpoint_time_fn, "Breakpoint" );
 
   debugger_event_init();
+  debugger_python_init();
   debugger_system_variable_init();
   debugger_variable_init();
   debugger_reset();
@@ -81,6 +82,7 @@ debugger_end( void )
   debugger_breakpoint_remove_all();
   debugger_variable_end();
   debugger_system_variable_end();
+  debugger_python_end();
   debugger_event_end();
 }
 
