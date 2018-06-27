@@ -1,6 +1,6 @@
 import fuse
 
-def dostuff(x):
-    print('Argument: {}'.format(x))
-    y = fuse.fn();
+def dostuff(breakpoint):
+    print('Breakpoint: {}'.format(breakpoint))
+    y = fuse.fn(42);
     print('Callback: {}'.format(y))

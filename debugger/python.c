@@ -31,7 +31,12 @@ static PyObject *pModule = NULL;
 static PyObject*
 module_fn( PyObject *self, PyObject *args )
 {
-  return PyLong_FromLong(42);
+  int param;
+
+  if( !PyArg_ParseTuple( args, "i:fn", &param ) )
+      return NULL;
+
+  return PyLong_FromLong(param * 2);
 }
 
 static PyMethodDef module_methods[] = {
@@ -92,6 +97,8 @@ debugger_python_hook( size_t breakpoint_id )
     printf( "Just before Python call\n" );
     pReturn = PyObject_CallObject( pFunc, pArgs );
     printf( "Just back from Python call\n" );
+
+    if( !pReturn ) PyErr_Print();
 
     Py_DECREF( pArgs );
     Py_XDECREF( pReturn );
