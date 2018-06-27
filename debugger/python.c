@@ -28,6 +28,27 @@
 
 static PyObject *pModule = NULL;
 
+static PyObject*
+module_fn( PyObject *self, PyObject *args )
+{
+  return PyLong_FromLong(42);
+}
+
+static PyMethodDef module_methods[] = {
+  { "fn", module_fn, METH_VARARGS, "description" },
+  { NULL, NULL, 0, NULL }
+};
+
+static PyModuleDef module = {
+  PyModuleDef_HEAD_INIT, "fuse", NULL, -1, module_methods, NULL, NULL, NULL, NULL
+};
+
+static PyObject*
+create_module( void )
+{
+  return PyModule_Create( &module );
+}
+
 void
 debugger_python_init( void )
 {
@@ -35,6 +56,7 @@ debugger_python_init( void )
 
   printf( "Python init\n" );
 
+  PyImport_AppendInittab( "fuse", &create_module );
   Py_Initialize();
 
   pName = PyUnicode_FromString( "debugger" );

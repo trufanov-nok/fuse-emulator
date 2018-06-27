@@ -1,2 +1,6 @@
+import fuse
+
 def dostuff(x):
-    print('Hello from Python: {}!'.format(x))
+    print('Argument: {}'.format(x))
+    y = fuse.fn();
+    print('Callback: {}'.format(y))
