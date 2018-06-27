@@ -246,7 +246,7 @@ debugger_check( debugger_breakpoint_type type, libspectrum_dword value )
       ptr_next = ptr->next;
 
       if( breakpoint_check( bp, type, value ) ) {
-        debugger_python_hook();
+        debugger_python_hook( bp->id );
         debugger_mode = DEBUGGER_MODE_HALTED;
         debugger_command_evaluate( bp->commands );
 

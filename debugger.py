@@ -1,2 +1,2 @@
-def dostuff():
-    print('Hello from Python!')
+def dostuff(x):
+    print('Hello from Python: {}!'.format(x))

@@ -120,7 +120,7 @@ libspectrum_dword debugger_variable_get( const char *name );
 /* Python integration */
 
 void debugger_python_init( void );
-void debugger_python_hook( void );
+void debugger_python_hook( size_t breakpoint_id );
 void debugger_python_end( void );
 
 #endif				/* #ifndef FUSE_DEBUGGER_INTERNALS_H */

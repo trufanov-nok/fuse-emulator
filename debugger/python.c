@@ -33,53 +33,57 @@ debugger_python_init( void )
 {
   PyObject *pName;
 
-  printf("Python init\n");
+  printf( "Python init\n" );
 
   Py_Initialize();
 
-  pName = PyUnicode_FromString("debugger");
-  pModule = PyImport_Import(pName);
+  pName = PyUnicode_FromString( "debugger" );
+  pModule = PyImport_Import( pName );
   Py_DECREF(pName);
 
   if( !pModule ) {
-    printf("Couldn't load Python module\n");
+    printf( "Couldn't load Python module\n" );
   }
 }
 
 void
-debugger_python_hook( void )
+debugger_python_hook( size_t breakpoint_id )
 {
   PyObject *pFunc;
 
-  printf("Python hook\n");
+  printf( "Python hook\n" );
 
   if( !pModule ) {
-    printf("Python module not loaded\n");
+    printf( "Python module not loaded\n" );
     return;
   }
 
-  pFunc = PyObject_GetAttrString(pModule, "dostuff");
+  pFunc = PyObject_GetAttrString( pModule, "dostuff" );
 
-  if( pFunc && PyCallable_Check(pFunc) ) {
-    PyObject *pArgs, *pValue;
+  if( pFunc && PyCallable_Check( pFunc ) ) {
+    PyObject *pArgs, *pArgument, *pReturn;
 
-    pArgs = PyTuple_New(0);
-    printf("Just before Python call\n");
-    pValue = PyObject_CallObject(pFunc, pArgs);
-    printf("Just back from Python call\n");
-    Py_DECREF(pArgs);
-    Py_XDECREF(pValue);
+    pArgs = PyTuple_New( 1 );
+    pArgument = PyLong_FromLong( breakpoint_id );
+    PyTuple_SetItem( pArgs, 0, pArgument );
+
+    printf( "Just before Python call\n" );
+    pReturn = PyObject_CallObject( pFunc, pArgs );
+    printf( "Just back from Python call\n" );
+
+    Py_DECREF( pArgs );
+    Py_XDECREF( pReturn );
   } else {
-    printf("Couldn't find function\n");
+    printf( "Couldn't find function\n" );
   }
 
-  Py_XDECREF(pFunc);
+  Py_XDECREF( pFunc );
 }
 
 void
 debugger_python_end( void )
 {
-  Py_XDECREF(pModule);
+  Py_XDECREF( pModule );
   Py_FinalizeEx();
-  printf("Python end\n");
+  printf( "Python end\n" );
 }
