@@ -23,24 +23,45 @@
 
 #include <config.h>
 
-#include <Python.h>
 #include <stdio.h>
+
+#include <libspectrum.h>
+#include <Python.h>
+
+#include "memory_pages.h"
+#include "utils.h"
 
 static PyObject *pModule = NULL;
 
 static PyObject*
-module_fn( PyObject *self, PyObject *args )
+module_save_binary( PyObject *self, PyObject *args )
 {
-  int param;
+  unsigned start, length;
+  const char *filename;
+  libspectrum_byte *buffer;
+  size_t i;
 
-  if( !PyArg_ParseTuple( args, "i:fn", &param ) )
+  printf("In save_binary\n");
+
+  if( !PyArg_ParseTuple( args, "IIs:fn", &start, &length, &filename ) )
       return NULL;
 
-  return PyLong_FromLong(param * 2);
+  buffer = libspectrum_new( libspectrum_byte, length );
+
+  for( i = 0; i < length; i++ )
+    buffer[i] = readbyte_internal( start + i );
+
+  utils_write_file( filename, buffer, length );
+
+  libspectrum_free( buffer );
+
+  printf("Finished save_binary\n");
+
+  Py_RETURN_NONE;
 }
 
 static PyMethodDef module_methods[] = {
-  { "fn", module_fn, METH_VARARGS, "description" },
+  { "save_binary", module_save_binary, METH_VARARGS, "description" },
   { NULL, NULL, 0, NULL }
 };
 
@@ -85,7 +106,7 @@ debugger_python_hook( size_t breakpoint_id )
     return;
   }
 
-  pFunc = PyObject_GetAttrString( pModule, "dostuff" );
+  pFunc = PyObject_GetAttrString( pModule, "breakpoint" );
 
   if( pFunc && PyCallable_Check( pFunc ) ) {
     PyObject *pArgs, *pArgument, *pReturn;
