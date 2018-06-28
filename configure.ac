@@ -782,6 +782,27 @@ CPPFLAGS="$ac_save_CPPFLAGS"
 AM_CONDITIONAL(HAVE_TUNTAP, test x$linux_tap != x)
 AM_CONDITIONAL(BUILD_SPECCYBOOT, test x$linux_tap != x)
 
+dnl Check if Python embedding is possible
+AC_MSG_CHECKING(whether Python embedding requested)
+AC_ARG_WITH(python,
+[  --without-python        don't use libpng],
+if test "$withval" = no; then python=no; else python=yes; fi,
+python=yes)
+AC_MSG_RESULT($python)
+if test "$python" = yes; then
+  PKG_CHECK_MODULES(
+    [PYTHON],
+    [python3],
+    [AC_DEFINE([USE_PYTHON], 1, [Defined if we're going to be enabling embedded Python])],
+    [AC_MSG_WARN([Python not found - embedded scripting disabled])
+     python=no]
+  )
+fi
+AM_CONDITIONAL(HAVE_PYTHON, test "$python" = yes)
+
+AC_SUBST(PYTHON_CFLAGS)
+AC_SUBST(PYTHON_LIBS)
+
 dnl Work out which standard routines we're missing
 AC_MSG_CHECKING(which standard routines we're missing)
 missing_routines=''
@@ -955,6 +976,7 @@ echo "Audio driver: ${audio_driver}"
 echo "Spectranet support: ${build_spectranet}"
 echo "SpeccyBoot support: ${linux_tap:-no}"
 echo "Desktop integration: ${desktopintegration}"
+echo "Embedded Python support: ${python}"
 echo ""
 echo "Type 'make' to compile Fuse"
 echo ""

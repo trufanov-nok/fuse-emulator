@@ -62,6 +62,7 @@ fuse_LDADD = \
              $(GTK_LIBS) \
              $(GLIB_LIBS) \
              $(PNG_LIBS) \
+	     $(PYTHON_LIBS) \
              $(SDL_LIBS) \
              $(X_LIBS) \
              $(XML_LIBS)
@@ -88,7 +89,8 @@ AM_CPPFLAGS = \
               $(XML_CFLAGS) \
               -DFUSEDATADIR="\"${pkgdatadir}\"" \
               $(SDL_CFLAGS) \
-              $(PNG_CFLAGS)
+              $(PNG_CFLAGS) \
+	      $(PYTHON_CFLAGS)
 
 AM_CFLAGS = $(WARN_CFLAGS) $(PTHREAD_CFLAGS)
 

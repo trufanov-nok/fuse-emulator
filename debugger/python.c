@@ -23,6 +23,8 @@
 
 #include <config.h>
 
+#ifdef USE_PYTHON
+
 #include <stdio.h>
 
 #include <libspectrum.h>
@@ -137,3 +139,26 @@ debugger_python_end( void )
   Py_FinalizeEx();
   printf( "Python end\n" );
 }
+
+#else /* #ifdef USE_PYTHON */
+
+/* Stub versions of the functions if Python isn't available */
+
+#include <stdlib.h>
+
+void
+debugger_python_init( void )
+{
+}
+
+void
+debugger_python_hook( size_t breakpoint_id )
+{
+}
+
+void
+debugger_python_end( void )
+{
+}
+
+#endif
