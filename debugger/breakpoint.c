@@ -210,6 +210,7 @@ breakpoint_add( debugger_breakpoint_type type, debugger_breakpoint_value value,
   }
 
   bp->commands = NULL;
+  bp->hook = 0;
 
   debugger_breakpoints = g_slist_append( debugger_breakpoints, bp );
 
@@ -246,7 +247,7 @@ debugger_check( debugger_breakpoint_type type, libspectrum_dword value )
       ptr_next = ptr->next;
 
       if( breakpoint_check( bp, type, value ) ) {
-        debugger_python_hook( bp->id );
+        if( bp->hook ) debugger_python_hook( bp->id );
         debugger_mode = DEBUGGER_MODE_HALTED;
         debugger_command_evaluate( bp->commands );
 
@@ -592,6 +593,16 @@ debugger_breakpoint_set_commands( size_t id, const char *commands )
   libspectrum_free( bp->commands );
   bp->commands = utils_safe_strdup( commands );
 
+  return 0;
+}
+
+int
+debugger_breakpoint_set_hook( size_t id, debugger_expression *value )
+{
+  debugger_breakpoint *bp = get_breakpoint_by_id( id );
+  if( !bp ) return 1;
+
+  bp->hook = debugger_expression_evaluate( value );
   return 0;
 }
 

@@ -1,6 +1,5 @@
 /* commandy.y: Parse a debugger command
-   Copyright (c) 2002-2016 Philip Kendall
-   Copyright (c) 2015 Sergio Baldoví
+   Copyright (c) 2002-2018 Philip Kendall, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -83,6 +82,7 @@
 %token		 EVENT
 %token		 EXIT
 %token		 FINISH
+%token		 HOOK
 %token		 IF
 %token		 DEBUGGER_IGNORE
 %token		 NEXT
@@ -178,6 +178,7 @@ command:   BASE number { debugger_output_base = $2; }
 	 | DISASSEMBLE number { ui_debugger_disassemble( $2 ); }
 	 | EXIT expressionornull { debugger_exit_emulator( $2 ); }
 	 | FINISH   { debugger_breakpoint_exit(); }
+         | HOOK NUMBER expression { debugger_breakpoint_set_hook( $2, $3 ); }
 	 | DEBUGGER_IGNORE NUMBER number {
 	     debugger_breakpoint_ignore( $2, $3 );
 	   }

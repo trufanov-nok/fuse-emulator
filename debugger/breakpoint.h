@@ -109,6 +109,8 @@ typedef struct debugger_breakpoint {
 
   char *commands;
 
+  int hook; /* Non-zero to fire Python hook when this breakpoint is triggered */
+
 } debugger_breakpoint;
 
 /* The current breakpoints */

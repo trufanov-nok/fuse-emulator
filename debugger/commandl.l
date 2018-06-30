@@ -1,5 +1,5 @@
 /* commandl.l: Debugger command lexical scanner
-   Copyright (c) 2002-2017 Philip Kendall, Sergio Baldoví
+   Copyright (c) 2002-2018 Philip Kendall, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@ di|dis|disa|disas|disass|disasse|disassm|disassmb|diasassmbl|disassemble {
 ev|eve|even|event { return EVENT; }
 ex|exi|exit { return EXIT; }
 fi|fin|fini|finis|finish { return FINISH; }
+h|ho|hoo|hook { return HOOK; }
 if { return IF; }
 ig|ign|igno|ignor|ignore { return DEBUGGER_IGNORE; }
 n|ne|nex|next { return NEXT; }
