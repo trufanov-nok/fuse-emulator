@@ -36,34 +36,36 @@
 static PyObject *pModule = NULL;
 
 static PyObject*
-module_save_binary( PyObject *self, PyObject *args )
+module_read_memory( PyObject *self, PyObject *args )
 {
   unsigned start, length;
-  const char *filename;
-  libspectrum_byte *buffer;
+  PyObject *bytes;
+  char *buffer;
   size_t i;
 
-  printf("In save_binary\n");
+  printf("In read_memory\n");
 
-  if( !PyArg_ParseTuple( args, "IIs:fn", &start, &length, &filename ) )
-      return NULL;
+  if( !PyArg_ParseTuple( args, "II:read_memory", &start, &length ) )
+    return NULL;
 
-  buffer = libspectrum_new( libspectrum_byte, length );
+  buffer = libspectrum_new( char, length );
 
   for( i = 0; i < length; i++ )
     buffer[i] = readbyte_internal( start + i );
 
-  utils_write_file( filename, buffer, length );
+  bytes = PyByteArray_FromStringAndSize( buffer, length );
+  if( !bytes ) {
+    libspectrum_free( buffer );
+    return NULL;
+  }
 
-  libspectrum_free( buffer );
+  printf("Finished read_memory\n");
 
-  printf("Finished save_binary\n");
-
-  Py_RETURN_NONE;
+  return bytes;
 }
 
 static PyMethodDef module_methods[] = {
-  { "save_binary", module_save_binary, METH_VARARGS, "description" },
+  { "read_memory", module_read_memory, METH_VARARGS, "description" },
   { NULL, NULL, 0, NULL }
 };
 
