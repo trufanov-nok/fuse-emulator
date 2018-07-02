@@ -64,8 +64,40 @@ module_read_memory( PyObject *self, PyObject *args )
   return bytes;
 }
 
+static PyObject*
+module_write_memory( PyObject *self, PyObject *args )
+{
+  unsigned start;
+  Py_buffer buffer;
+  char *memory;
+  Py_ssize_t i;
+
+  printf("In write_memory\n");
+
+  if( !PyArg_ParseTuple( args, "Iy*:write_memory", &start, &buffer ) )
+    return NULL;
+
+  /* We can handle only simple buffers */
+  if( buffer.shape ) {
+    PyBuffer_Release(&buffer);
+    return NULL;
+  }
+
+  memory = buffer.buf;
+
+  for( i = 0; i < buffer.len; i++ )
+    writebyte_internal( start + i, memory[i] );
+
+  PyBuffer_Release(&buffer);
+
+  printf("Finished write_memory\n");
+
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef module_methods[] = {
   { "read_memory", module_read_memory, METH_VARARGS, "description" },
+  { "write_memory", module_write_memory, METH_VARARGS, "description" },
   { NULL, NULL, 0, NULL }
 };
 
