@@ -30,10 +30,22 @@
 #include <libspectrum.h>
 #include <Python.h>
 
+#include "debugger.h"
 #include "memory_pages.h"
 #include "utils.h"
 
 static PyObject *pModule = NULL;
+
+static PyObject*
+module_run( PyObject *self, PyObject *args )
+{
+  if( !PyArg_ParseTuple( args, ":run" ) )
+    return NULL;
+
+  debugger_run();
+
+  Py_RETURN_NONE;
+}
 
 static PyObject*
 module_read_memory( PyObject *self, PyObject *args )
@@ -42,8 +54,6 @@ module_read_memory( PyObject *self, PyObject *args )
   PyObject *bytes;
   char *buffer;
   size_t i;
-
-  printf("In read_memory\n");
 
   if( !PyArg_ParseTuple( args, "II:read_memory", &start, &length ) )
     return NULL;
@@ -59,8 +69,6 @@ module_read_memory( PyObject *self, PyObject *args )
     return NULL;
   }
 
-  printf("Finished read_memory\n");
-
   return bytes;
 }
 
@@ -71,8 +79,6 @@ module_write_memory( PyObject *self, PyObject *args )
   Py_buffer buffer;
   char *memory;
   Py_ssize_t i;
-
-  printf("In write_memory\n");
 
   if( !PyArg_ParseTuple( args, "Iy*:write_memory", &start, &buffer ) )
     return NULL;
@@ -90,12 +96,11 @@ module_write_memory( PyObject *self, PyObject *args )
 
   PyBuffer_Release(&buffer);
 
-  printf("Finished write_memory\n");
-
   Py_RETURN_NONE;
 }
 
 static PyMethodDef module_methods[] = {
+  { "run", module_run, METH_VARARGS, "description" },
   { "read_memory", module_read_memory, METH_VARARGS, "description" },
   { "write_memory", module_write_memory, METH_VARARGS, "description" },
   { NULL, NULL, 0, NULL }
@@ -116,8 +121,6 @@ debugger_python_init( void )
 {
   PyObject *pName;
 
-  printf( "Python init\n" );
-
   PyImport_AppendInittab( "fuse", &create_module );
   Py_Initialize();
 
@@ -135,8 +138,6 @@ debugger_python_hook( size_t breakpoint_id )
 {
   PyObject *pFunc;
 
-  printf( "Python hook\n" );
-
   if( !pModule ) {
     printf( "Python module not loaded\n" );
     return;
@@ -151,9 +152,7 @@ debugger_python_hook( size_t breakpoint_id )
     pArgument = PyLong_FromLong( breakpoint_id );
     PyTuple_SetItem( pArgs, 0, pArgument );
 
-    printf( "Just before Python call\n" );
     pReturn = PyObject_CallObject( pFunc, pArgs );
-    printf( "Just back from Python call\n" );
 
     if( !pReturn ) PyErr_Print();
 
@@ -171,7 +170,6 @@ debugger_python_end( void )
 {
   Py_XDECREF( pModule );
   Py_FinalizeEx();
-  printf( "Python end\n" );
 }
 
 #else /* #ifdef USE_PYTHON */
