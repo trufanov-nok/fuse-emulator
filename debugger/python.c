@@ -33,6 +33,7 @@
 #include "debugger.h"
 #include "memory_pages.h"
 #include "utils.h"
+#include "z80/z80.h"
 
 static PyObject *pModule = NULL;
 
@@ -99,10 +100,45 @@ module_write_memory( PyObject *self, PyObject *args )
   Py_RETURN_NONE;
 }
 
+static void
+add_member( PyObject *dict, const char *key, libspectrum_dword value )
+{
+  PyObject *key_object, *value_object;
+
+  key_object = PyUnicode_FromString(key);
+  value_object = PyLong_FromUnsignedLong(value);
+
+  PyDict_SetItem( dict, key_object, value_object );
+}
+
+static PyObject*
+module_get_z80( PyObject *self, PyObject *args )
+{
+  PyObject *z80_obj;
+
+  if( !PyArg_ParseTuple( args, ":get_z80" ) )
+    return NULL;
+
+  z80_obj = PyDict_New();
+
+  add_member( z80_obj, "af", z80.af.w );
+  add_member( z80_obj, "bc", z80.bc.w );
+  add_member( z80_obj, "de", z80.de.w );
+  add_member( z80_obj, "hl", z80.hl.w );
+
+  add_member( z80_obj, "af'", z80.af_.w );
+  add_member( z80_obj, "bc'", z80.bc_.w );
+  add_member( z80_obj, "de'", z80.de_.w );
+  add_member( z80_obj, "hl'", z80.hl_.w );
+
+  return z80_obj;
+}
+
 static PyMethodDef module_methods[] = {
   { "run", module_run, METH_VARARGS, "description" },
   { "read_memory", module_read_memory, METH_VARARGS, "description" },
   { "write_memory", module_write_memory, METH_VARARGS, "description" },
+  { "get_z80", module_get_z80, METH_VARARGS, "description" },
   { NULL, NULL, 0, NULL }
 };
 
