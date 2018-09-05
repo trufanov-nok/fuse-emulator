@@ -29,6 +29,7 @@
 
 #include <libspectrum.h>
 #include <Python.h>
+#include <structmember.h>
 
 #include "debugger.h"
 #include "memory_pages.h"
@@ -121,6 +122,66 @@ module_get_z80( PyObject *self, PyObject *args )
   return z80_obj;
 }
 
+typedef struct {
+  PyObject_HEAD
+  libspectrum_word af;
+  libspectrum_word bc;
+  libspectrum_word de;
+  libspectrum_word hl;
+  libspectrum_word af_;
+  libspectrum_word bc_;
+  libspectrum_word de_;
+  libspectrum_word hl_;
+} z80_object;
+
+static PyObject*
+z80_object_new( PyTypeObject *type, PyObject *args, PyObject *kwargs )
+{
+  z80_object *self;
+  self = (z80_object*)type->tp_alloc( type, 0 );
+  if( self != NULL ) {
+    self->af = z80.af.w;
+    self->bc = z80.bc.w;
+    self->de = z80.de.w;
+    self->hl = z80.hl.w;
+    self->af_ = z80.af_.w;
+    self->bc_ = z80.bc_.w;
+    self->de_ = z80.de_.w;
+    self->hl_ = z80.hl_.w;
+  }
+  return (PyObject*)self;
+}
+
+static void
+z80_object_dealloc( z80_object *self )
+{
+  Py_TYPE(self)->tp_free( (PyObject*)self );
+}
+
+static PyMemberDef z80_object_members[] = {
+  { "af", T_INT, offsetof(z80_object, af), 0, "AF register" },
+  { "bc", T_INT, offsetof(z80_object, bc), 0, "BC register" },
+  { "de", T_INT, offsetof(z80_object, de), 0, "DE register" },
+  { "hl", T_INT, offsetof(z80_object, hl), 0, "HL register" },
+  { "af_", T_INT, offsetof(z80_object, af_), 0, "AF' register" },
+  { "bc_", T_INT, offsetof(z80_object, bc_), 0, "BC' register" },
+  { "de_", T_INT, offsetof(z80_object, de_), 0, "DE' register" },
+  { "hl_", T_INT, offsetof(z80_object, hl_), 0, "HL' register" },
+  { NULL }
+};
+
+static PyTypeObject z80_type = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name = "fuse.Z80",
+  .tp_doc = "Z80 state",
+  .tp_basicsize = sizeof(z80_object),
+  .tp_itemsize = 0,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_new = z80_object_new,
+  .tp_dealloc = (destructor)z80_object_dealloc,
+  .tp_members = z80_object_members
+};
+
 static PyMethodDef module_methods[] = {
   { "run", module_run, METH_VARARGS, "description" },
   { "read_memory", module_read_memory, METH_VARARGS, "description" },
@@ -136,7 +197,17 @@ static PyModuleDef module = {
 static PyObject*
 create_module( void )
 {
-  return PyModule_Create( &module );
+  PyObject *m;
+
+  if( PyType_Ready( &z80_type ) < 0 ) return NULL;
+
+  m = PyModule_Create( &module );
+  if( m == NULL ) return NULL;
+
+  Py_INCREF( &z80_type );
+  PyModule_AddObject( m, "Z80", (PyObject*)&z80_type );
+
+  return m;
 }
 
 void
