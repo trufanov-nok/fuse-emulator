@@ -307,36 +307,31 @@ read_peripheral( gpointer data, gpointer user_data )
   }
 }
 
-/* Read a byte from a port, taking no time */
+static libspectrum_byte
+readport_from_rzx( libspectrum_word port )
+{
+  libspectrum_error error;
+  libspectrum_byte value;
+
+  error = libspectrum_rzx_playback( rzx, &value );
+  if( error ) {
+    rzx_stop_playback( 1 );
+
+    /* Add a null event to mean we pick up the RZX state change in
+       z80_do_opcodes() */
+    event_add( tstates, event_type_null );
+    return readport_internal( port );
+  }
+
+  return value;
+}
+
+static
 libspectrum_byte
-readport_internal( libspectrum_word port )
+readport_normal( libspectrum_word port )
 {
   struct peripheral_data_t callback_info;
 
-  /* Trigger the debugger if wanted */
-  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
-    debugger_check( DEBUGGER_BREAKPOINT_TYPE_PORT_READ, port );
-
-  /* If we're doing RZX playback, get a byte from the RZX file */
-  if( rzx_playback ) {
-
-    libspectrum_error error;
-    libspectrum_byte value;
-
-    error = libspectrum_rzx_playback( rzx, &value );
-    if( error ) {
-      rzx_stop_playback( 1 );
-
-      /* Add a null event to mean we pick up the RZX state change in
-	 z80_do_opcodes() */
-      event_add( tstates, event_type_null );
-      return readport_internal( port );
-    }
-
-    return value;
-  }
-
-  /* If we're not doing RZX playback, get the byte normally */
   callback_info.port = port;
   callback_info.attached = 0x00;
   callback_info.value = 0xff;
@@ -352,6 +347,22 @@ readport_internal( libspectrum_word port )
   if( rzx_recording ) rzx_store_byte( callback_info.value );
 
   return callback_info.value;
+}
+
+
+/* Read a byte from a port, taking no time */
+libspectrum_byte
+readport_internal( libspectrum_word port )
+{
+  libspectrum_byte b;
+
+  b = rzx_playback ? readport_from_rzx( port ) : readport_normal( port );
+
+  /* Trigger the debugger if wanted */
+  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
+    debugger_check( DEBUGGER_BREAKPOINT_TYPE_PORT_READ, port, b );
+
+  return b;
 }
 
 /* Merge the read value with the floating bus. Deliberately doesn't take
@@ -394,7 +405,7 @@ writeport_internal( libspectrum_word port, libspectrum_byte b )
 
   /* Trigger the debugger if wanted */
   if( debugger_mode != DEBUGGER_MODE_INACTIVE )
-    debugger_check( DEBUGGER_BREAKPOINT_TYPE_PORT_WRITE, port );
+    debugger_check( DEBUGGER_BREAKPOINT_TYPE_PORT_WRITE, port, b );
 
   callback_info.port = port;
   callback_info.value = b;

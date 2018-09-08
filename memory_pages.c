@@ -374,27 +374,38 @@ readbyte( libspectrum_word address )
 {
   libspectrum_word bank;
   memory_page *mapping;
+  libspectrum_byte b;
+  int got_value = 0;
 
   bank = address >> MEMORY_PAGE_SIZE_LOGARITHM;
   mapping = &memory_map_read[ bank ];
 
-  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
-    debugger_check( DEBUGGER_BREAKPOINT_TYPE_READ, address );
-
   if( mapping->contended ) tstates += ula_contention[ tstates ];
   tstates += 3;
 
-  if( opus_active && address >= 0x2800 && address < 0x3800 )
-    return opus_read( address );
-
-  if( spectranet_paged ) {
-    if( spectranet_w5100_paged_a && address >= 0x1000 && address < 0x2000 )
-      return spectranet_w5100_read( mapping, address );
-    if( spectranet_w5100_paged_b && address >= 0x2000 && address < 0x3000 )
-      return spectranet_w5100_read( mapping, address );
+  if( opus_active && address >= 0x2800 && address < 0x3800 ) {
+    got_value = 1;
+    b = opus_read( address );
   }
 
-  return mapping->page[ address & MEMORY_PAGE_SIZE_MASK ];
+  if( !got_value && spectranet_paged ) {
+    if( spectranet_w5100_paged_a && address >= 0x1000 && address < 0x2000 ) {
+      got_value = 1;
+      b = spectranet_w5100_read( mapping, address );
+    }
+    if( spectranet_w5100_paged_b && address >= 0x2000 && address < 0x3000 ) {
+      got_value = 1;
+      b = spectranet_w5100_read( mapping, address );
+    }
+  }
+
+  if( !got_value )
+    b = mapping->page[ address & MEMORY_PAGE_SIZE_MASK ];
+
+  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
+    debugger_check( DEBUGGER_BREAKPOINT_TYPE_READ, address, b );
+
+  return b;
 }
 
 void
@@ -403,11 +414,11 @@ writebyte( libspectrum_word address, libspectrum_byte b )
   libspectrum_word bank;
   memory_page *mapping;
 
+  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
+    debugger_check( DEBUGGER_BREAKPOINT_TYPE_WRITE, address, b );
+
   bank = address >> MEMORY_PAGE_SIZE_LOGARITHM;
   mapping = &memory_map_write[ bank ];
-
-  if( debugger_mode != DEBUGGER_MODE_INACTIVE )
-    debugger_check( DEBUGGER_BREAKPOINT_TYPE_WRITE, address );
 
   if( mapping->contended ) tstates += ula_contention[ tstates ];
 

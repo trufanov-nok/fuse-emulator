@@ -65,6 +65,8 @@ debugger_init( void *context )
   debugger_variable_init();
   debugger_reset();
 
+  debugger_breakpoint_init(); /* Must occur after debugger_system_variable_init() */
+
   return 0;
 }
 

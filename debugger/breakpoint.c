@@ -44,6 +44,9 @@ GSList *debugger_breakpoints;
 /* The next breakpoint ID to use */
 static size_t next_breakpoint_id;
 
+/* The data for the currently active breakpoint */
+static libspectrum_dword breakpoint_data;
+
 /* Textual representations of the breakpoint types and lifetimes */
 const char *debugger_breakpoint_type_text[] = {
   "Execute", "Read", "Write", "Port Read", "Port Write", "Time", "Event",
@@ -78,6 +81,18 @@ static gint find_breakpoint_by_address( gconstpointer data,
 					gconstpointer user_data );
 static void free_breakpoint( gpointer data, gpointer user_data );
 static void add_time_event( gpointer data, gpointer user_data );
+
+static libspectrum_dword
+get_data( void )
+{
+  return breakpoint_data;
+}
+
+void
+debugger_breakpoint_init( void )
+{
+  debugger_system_variable_register( "bp", "data", get_data, NULL );
+}
 
 /* Add a breakpoint */
 int
@@ -228,7 +243,9 @@ breakpoint_add( debugger_breakpoint_type type, debugger_breakpoint_value value,
 
 /* Check whether the debugger should become active at this point */
 int
-debugger_check( debugger_breakpoint_type type, libspectrum_dword value )
+debugger_check(
+  debugger_breakpoint_type type, libspectrum_dword value,
+  libspectrum_dword data )
 {
   GSList *ptr; debugger_breakpoint *bp;
   GSList *ptr_next;
@@ -245,6 +262,7 @@ debugger_check( debugger_breakpoint_type type, libspectrum_dword value )
       bp = ptr->data;
       ptr_next = ptr->next;
 
+      breakpoint_data = data;
       if( breakpoint_check( bp, type, value ) ) {
         debugger_mode = DEBUGGER_MODE_HALTED;
         debugger_command_evaluate( bp->commands );
@@ -619,5 +637,5 @@ void
 debugger_breakpoint_time_fn( libspectrum_dword tstates, int type GCC_UNUSED,
                              void *user_data GCC_UNUSED )
 {
-  debugger_check( DEBUGGER_BREAKPOINT_TYPE_TIME, 0 );
+  debugger_check( DEBUGGER_BREAKPOINT_TYPE_TIME, 0, 0 );
 }

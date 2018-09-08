@@ -421,7 +421,9 @@ profile_map( libspectrum_word pc GCC_UNUSED )
 }
 
 int
-debugger_check( debugger_breakpoint_type type GCC_UNUSED, libspectrum_dword value GCC_UNUSED )
+debugger_check(
+  debugger_breakpoint_type type GCC_UNUSED, libspectrum_dword value GCC_UNUSED,
+  libspectrum_dword data GCC_UNUSED )
 {
   abort();
 }

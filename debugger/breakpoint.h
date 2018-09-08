@@ -114,7 +114,13 @@ typedef struct debugger_breakpoint {
 /* The current breakpoints */
 extern GSList *debugger_breakpoints;
 
-int debugger_check( debugger_breakpoint_type type, libspectrum_dword value );
+void
+debugger_breakpoint_init( void );
+
+int
+debugger_check(
+  debugger_breakpoint_type type, libspectrum_dword value,
+  libspectrum_dword data );
 
 void
 debugger_breakpoint_reduce_tstates( libspectrum_dword tstates );
