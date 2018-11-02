@@ -343,8 +343,6 @@ register_scalers( int force_scaler )
     }
   }
 
-  printf("%s: selecting scaler %d\n", __func__, scaler);
-
   scaler_select_scaler( scaler );
 }
 
@@ -368,6 +366,7 @@ uidisplay_area( int x, int y, int w, int h )
   float scale1 = get_drawing_area_scale();
   int scaled_x, scaled_y, i, yy;
   libspectrum_dword *palette;
+  GtkAllocation allocation;
 
   /* Extend the dirty region by 1 pixel for scalers
      that "smear" the screen, e.g. 2xSAI */
@@ -376,8 +375,10 @@ uidisplay_area( int x, int y, int w, int h )
 
   scaled_x = x * scale1; scaled_y = y * scale1;
 
-  guint width = gtk_widget_get_allocated_width(gtkui_drawing_area);
-  guint height = gtk_widget_get_allocated_height(gtkui_drawing_area);
+  gtk_widget_get_allocation(gtkui_drawing_area, &allocation);
+
+  guint width = allocation.width;
+  guint height = allocation.height;
 
   float scale_x = 2.0 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale1);
   float scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale1);
@@ -637,8 +638,18 @@ gtkdisplay_update_geometry( void )
 
   geometry_widget = gtkui_drawing_area;
 
-#endif                /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
+  /* GTK+ 2.x doesn't support arbitrary scaling, so add extra
+   * constraints */
+  hints |= GDK_HINT_MAX_SIZE | GDK_HINT_BASE_SIZE | GDK_HINT_RESIZE_INC;
 
+  geometry.max_width = 3 * DISPLAY_ASPECT_WIDTH;
+  geometry.max_height = 3 * DISPLAY_SCREEN_HEIGHT;
+  geometry.base_width = scale * image_width;
+  geometry.base_height = scale * image_height;
+  geometry.width_inc = DISPLAY_ASPECT_WIDTH;
+  geometry.height_inc = DISPLAY_SCREEN_HEIGHT;
+
+#endif                /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
 
   geometry.min_width = DISPLAY_ASPECT_WIDTH;
   geometry.min_height = DISPLAY_SCREEN_HEIGHT + extra_height;
