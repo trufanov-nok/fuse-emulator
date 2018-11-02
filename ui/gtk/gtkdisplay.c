@@ -236,12 +236,30 @@ uidisplay_init( int width, int height )
   return 0;
 }
 
+/* Returns the factor by which the screen is being scaled by the currently
+   selected scaler */
 static float
 get_drawing_area_scale( void )
 {
   float drawing_area_scale = (float)gtkdisplay_current_size / image_scale;
   if( drawing_area_scale > 3 ) drawing_area_scale = 3;
   return drawing_area_scale;
+}
+
+/* Returns the factor by which the screen still needs to be scaled given
+   the scaler has already scaled it by a factor of drawing_area_scale */
+static float
+get_additional_scale( float drawing_area_scale )
+{
+  GtkAllocation allocation;
+  float scale_x, scale_y;
+
+  gtk_widget_get_allocation(gtkui_drawing_area, &allocation);
+
+  scale_x = 2 * allocation.width / (image_scale * DISPLAY_SCREEN_WIDTH * drawing_area_scale);
+  scale_y = allocation.height / (image_scale * DISPLAY_SCREEN_HEIGHT * drawing_area_scale);
+
+  return scale_x < scale_y ? scale_x : scale_y;
 }
 
 /* Ensure that an appropriate Cairo surface exists */
@@ -363,26 +381,17 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  float scale1 = get_drawing_area_scale();
+  float drawing_area_scale, additional_scale;
   int scaled_x, scaled_y, i, yy;
   libspectrum_dword *palette;
-  GtkAllocation allocation;
 
-  /* Extend the dirty region by 1 pixel for scalers
-     that "smear" the screen, e.g. 2xSAI */
+  /* Extend the dirty region for scalers that "smear" the screen, e.g. 2xSAI */
   if( scaler_flags & SCALER_FLAGS_EXPAND )
     scaler_expander( &x, &y, &w, &h, image_width, image_height );
 
-  scaled_x = x * scale1; scaled_y = y * scale1;
-
-  gtk_widget_get_allocation(gtkui_drawing_area, &allocation);
-
-  guint width = allocation.width;
-  guint height = allocation.height;
-
-  float scale_x = 2.0 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale1);
-  float scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale1);
-  float scale2 = scale_x < scale_y ? scale_x : scale_y;
+  drawing_area_scale = get_drawing_area_scale();
+  scaled_x = x * drawing_area_scale;
+  scaled_y = y * drawing_area_scale;
 
   palette = settings_current.bw_tv ? bw_colours : gtkdisplay_colours;
 
@@ -405,14 +414,22 @@ uidisplay_area( int x, int y, int w, int h )
                  &scaled_image[ scaled_y * scaled_pitch + 4 * scaled_x ],
                  scaled_pitch, w, h );
 
-  w *= scale1; h *= scale1;
+  w *= drawing_area_scale; h *= drawing_area_scale;
 
-  /* Blit to the real screen */
-  x = floor((scaled_x - 1) * scale2);
-  y = floor((scaled_y - 1) * scale2);
-  w = ceil((w + 2) * scale2);
-  h = ceil((h + 2) * scale2);
-  gtkdisplay_area( x, y, w, h );
+  /* Blit to the real screen
+
+     If we had any additional scaling, we need an extra pixel all round
+     due to the bilinear interpolation */
+  additional_scale = get_additional_scale( drawing_area_scale );
+  if( additional_scale == 1.0 ) {
+    gtkdisplay_area( scaled_x, scaled_y, w, h );
+  } else {
+    x = floor((scaled_x - 1) * additional_scale);
+    y = floor((scaled_y - 1) * additional_scale);
+    w = ceil((w + 2) * additional_scale);
+    h = ceil((h + 2) * additional_scale);
+    gtkdisplay_area( x, y, w, h );
+  }
 }
 
 static void gtkdisplay_area(int x, int y, int width, int height)
@@ -569,20 +586,15 @@ drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 static gboolean
 gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
 {
-  guint width, height;
+  float drawing_area_scale, additional_scale;
 
   /* Create a new surface for this gfx mode */
   if( !surface ) ensure_appropriate_surface();
 
-  width = gtk_widget_get_allocated_width(widget);
-  height = gtk_widget_get_allocated_height(widget);
+  drawing_area_scale = get_drawing_area_scale();
+  additional_scale = get_additional_scale( drawing_area_scale );
 
-  float scale1 = get_drawing_area_scale();
-  float scale_x = 2.0 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale1);
-  float scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale1);
-  float scale2 = scale_x < scale_y ? scale_x : scale_y;
-
-  cairo_scale(cr, scale2, scale2);
+  cairo_scale( cr, additional_scale, additional_scale );
 
   /* Repaint the drawing area */
   cairo_set_source_surface( cr, surface, 0, 0 );
