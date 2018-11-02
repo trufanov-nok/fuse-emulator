@@ -23,15 +23,12 @@
 
 #include <config.h>
 
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <gtk/gtk.h>
-
-#ifdef GDK_WINDOWING_WAYLAND
-#include <gdk/gdkwayland.h>
-#endif
 
 #include "display.h"
 #include "fuse.h"
@@ -239,6 +236,14 @@ uidisplay_init( int width, int height )
   return 0;
 }
 
+static float
+get_drawing_area_scale( void )
+{
+  float drawing_area_scale = (float)gtkdisplay_current_size / image_scale;
+  if( drawing_area_scale > 3 ) drawing_area_scale = 3;
+  return drawing_area_scale;
+}
+
 /* Ensure that an appropriate Cairo surface exists */
 static void
 ensure_appropriate_surface( void )
@@ -246,7 +251,7 @@ ensure_appropriate_surface( void )
 #if GTK_CHECK_VERSION( 3, 0, 0 )
 
   /* Create a bigger surface for the new display size */
-  float scale = (float)gtkdisplay_current_size / image_scale;
+  float scale = get_drawing_area_scale();
   if( surface ) cairo_surface_destroy( surface );
 
   surface =
@@ -267,6 +272,8 @@ drawing_area_resize( int width, int height, int force_scaler )
   size = width / DISPLAY_ASPECT_WIDTH;
   if( size > height / DISPLAY_SCREEN_HEIGHT )
     size = height / DISPLAY_SCREEN_HEIGHT;
+
+  if( size > 3 ) size = 3;
 
   /* If we're the same size as before, no need to do anything else */
   if( size == gtkdisplay_current_size ) return 0;
@@ -319,7 +326,7 @@ register_scalers( int force_scaler )
   scaler =
     scaler_is_supported( current_scaler ) ? current_scaler : SCALER_NORMAL;
 
-  drawing_area_scale = (float)gtkdisplay_current_size / image_scale;
+  drawing_area_scale = get_drawing_area_scale();
   scaling_factor = scaler_get_scaling_factor( current_scaler );
 
   /* Override scaler if the image doesn't fit well in the drawing area */
@@ -335,6 +342,8 @@ register_scalers( int force_scaler )
       break;
     }
   }
+
+  printf("%s: selecting scaler %d\n", __func__, scaler);
 
   scaler_select_scaler( scaler );
 }
@@ -356,7 +365,7 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  float scale = (float)gtkdisplay_current_size / image_scale;
+  float scale1 = get_drawing_area_scale();
   int scaled_x, scaled_y, i, yy;
   libspectrum_dword *palette;
 
@@ -365,7 +374,14 @@ uidisplay_area( int x, int y, int w, int h )
   if( scaler_flags & SCALER_FLAGS_EXPAND )
     scaler_expander( &x, &y, &w, &h, image_width, image_height );
 
-  scaled_x = scale * x; scaled_y = scale * y;
+  scaled_x = x * scale1; scaled_y = y * scale1;
+
+  guint width = gtk_widget_get_allocated_width(gtkui_drawing_area);
+  guint height = gtk_widget_get_allocated_height(gtkui_drawing_area);
+
+  float scale_x = 2.0 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale1);
+  float scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale1);
+  float scale2 = scale_x < scale_y ? scale_x : scale_y;
 
   palette = settings_current.bw_tv ? bw_colours : gtkdisplay_colours;
 
@@ -388,10 +404,14 @@ uidisplay_area( int x, int y, int w, int h )
                  &scaled_image[ scaled_y * scaled_pitch + 4 * scaled_x ],
                  scaled_pitch, w, h );
 
-  w *= scale; h *= scale;
+  w *= scale1; h *= scale1;
 
   /* Blit to the real screen */
-  gtkdisplay_area( scaled_x, scaled_y, w, h );
+  x = floor((scaled_x - 1) * scale2);
+  y = floor((scaled_y - 1) * scale2);
+  w = ceil((w + 2) * scale2);
+  h = ceil((h + 2) * scale2);
+  gtkdisplay_area( x, y, w, h );
 }
 
 static void gtkdisplay_area(int x, int y, int width, int height)
@@ -548,8 +568,20 @@ drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 static gboolean
 gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
 {
+  guint width, height;
+
   /* Create a new surface for this gfx mode */
   if( !surface ) ensure_appropriate_surface();
+
+  width = gtk_widget_get_allocated_width(widget);
+  height = gtk_widget_get_allocated_height(widget);
+
+  float scale1 = get_drawing_area_scale();
+  float scale_x = 2.0 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale1);
+  float scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale1);
+  float scale2 = scale_x < scale_y ? scale_x : scale_y;
+
+  cairo_scale(cr, scale2, scale2);
 
   /* Repaint the drawing area */
   cairo_set_source_surface( cr, surface, 0, 0 );
@@ -585,8 +617,7 @@ gtkdisplay_update_geometry( void )
 
   scale = scaler_get_scaling_factor( current_scaler );
 
-  hints = GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE |
-          GDK_HINT_BASE_SIZE | GDK_HINT_RESIZE_INC;
+  hints = GDK_HINT_MIN_SIZE;
 
 #if GTK_CHECK_VERSION( 3, 0, 0 )
 
@@ -602,16 +633,6 @@ gtkdisplay_update_geometry( void )
     extra_height += gtkstatusbar_get_height();
   }
 
-#ifdef GDK_WINDOWING_WAYLAND
-  /* We don't calculate the window size enough accurately on wayland
-     backend to force the window geometry (bug #367) */
-  GdkDisplay *display = gdk_display_get_default();
-
-  if( GDK_IS_WAYLAND_DISPLAY( display ) ) {
-    hints &= ~GDK_HINT_RESIZE_INC;
-  }
-#endif                /* #ifdef GDK_WINDOWING_WAYLAND */
-
 #else                 /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
 
   geometry_widget = gtkui_drawing_area;
@@ -621,12 +642,6 @@ gtkdisplay_update_geometry( void )
 
   geometry.min_width = DISPLAY_ASPECT_WIDTH;
   geometry.min_height = DISPLAY_SCREEN_HEIGHT + extra_height;
-  geometry.max_width = 3 * DISPLAY_ASPECT_WIDTH;
-  geometry.max_height = 3 * DISPLAY_SCREEN_HEIGHT + extra_height;
-  geometry.base_width = scale * image_width;
-  geometry.base_height = scale * image_height + extra_height;
-  geometry.width_inc = DISPLAY_ASPECT_WIDTH;
-  geometry.height_inc = DISPLAY_SCREEN_HEIGHT;
 
   if( settings_current.aspect_hint ) {
     hints |= GDK_HINT_ASPECT;
