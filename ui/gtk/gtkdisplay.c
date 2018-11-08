@@ -101,8 +101,6 @@ typedef enum {
 
 #if GTK_CHECK_VERSION( 3, 0, 0 )
 
-static int display_updated = 0;
-
 static cairo_surface_t *surface = NULL;
 
 #endif                /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
@@ -342,15 +340,6 @@ register_scalers( int force_scaler )
 void
 uidisplay_frame_end( void )
 {
-#if GTK_CHECK_VERSION( 3, 0, 0 )
-  if( display_updated ) {
-    gdk_window_process_updates( gtk_widget_get_window( gtkui_drawing_area ),
-                                FALSE );
-    display_updated = 0;
-  }
-#endif                /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
-
-  return;
 }
 
 void
@@ -405,10 +394,7 @@ static void gtkdisplay_area(int x, int y, int width, int height)
                          scaled_pitch );
 
 #else
-  display_updated = 1;
-
   gtk_widget_queue_draw_area( gtkui_drawing_area, x, y, width, height );
-
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 }
 
