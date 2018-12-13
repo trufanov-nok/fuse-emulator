@@ -21,7 +21,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -32,7 +32,7 @@
 
 #include <glib.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "debugger/debugger.h"
 #include "fuse.h"

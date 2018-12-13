@@ -21,7 +21,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -30,7 +30,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "display.h"
 #include "fuse.h"

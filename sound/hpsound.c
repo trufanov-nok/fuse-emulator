@@ -18,7 +18,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #ifdef AUDIO_FORMAT_LINEAR16BIT
 

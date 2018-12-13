@@ -17,7 +17,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #if defined AUDIO_SETINFO || defined HAVE_SYS_AUDIOIO_H
 

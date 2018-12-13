@@ -26,7 +26,7 @@
 #ifndef FUSE_PERIPH_H
 #define FUSE_PERIPH_H
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 /* The types of peripheral Fuse knows about */
 typedef enum periph_type {
