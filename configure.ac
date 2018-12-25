@@ -127,7 +127,7 @@ ac_save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_PREPROC_IFELSE(
   [AC_LANG_SOURCE([
-#include <libspectrum.h>
+#include "libspectrum.h"
 #if LIBSPECTRUM_HAS_GLIB_REPLACEMENT == 0
 #error "GLib replacement not found"
 #endif
@@ -153,7 +153,7 @@ AC_MSG_CHECKING(whether libspectrum supports compressed szx snaps)
 ac_save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
+  [AC_LANG_PROGRAM([[#include "libspectrum.h"]],
     [[
       int test = LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION;
     ]])
@@ -448,7 +448,7 @@ AC_MSG_CHECKING(whether libspectrum supports compressed bz2 files)
 ac_save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
+  [AC_LANG_PROGRAM([[#include "libspectrum.h"]],
     [[
       int test = LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION;
     ]])
@@ -464,7 +464,7 @@ AC_MSG_CHECKING(whether libspectrum supports wav files)
 ac_save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $LIBSPECTRUM_CFLAGS"
 AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([[#include <libspectrum.h>]],
+  [AC_LANG_PROGRAM([[#include "libspectrum.h"]],
     [[
       int test = LIBSPECTRUM_SUPPORTS_AUDIOFILE;
     ]])
