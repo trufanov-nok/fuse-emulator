@@ -114,6 +114,9 @@ float scale_factor_from_scaler = 1.0;
    been applied */
 float scale_factor_after_scaler = 1.0;
 
+/* The offsets we need to keep the Spectrum display centred in the window */
+int x_offset, y_offset;
+
 /* Extra height used for menu and status bars */
 static int extra_height = 0;
 
@@ -282,11 +285,18 @@ static void
 set_scale_factor_after_scaler( int width, int height )
 {
   float scale_x, scale_y;
+  float scaled_width, scaled_height;
 
   scale_x = 2 * width / (image_scale * DISPLAY_SCREEN_WIDTH * scale_factor_from_scaler);
   scale_y = height / (image_scale * DISPLAY_SCREEN_HEIGHT * scale_factor_from_scaler);
 
   scale_factor_after_scaler = scale_x < scale_y ? scale_x : scale_y;
+
+  scaled_width = 0.5 * image_scale * DISPLAY_SCREEN_WIDTH * scale_factor_from_scaler * scale_factor_after_scaler;
+  scaled_height = image_scale * DISPLAY_SCREEN_HEIGHT * scale_factor_from_scaler * scale_factor_after_scaler;
+
+  x_offset = (width - scaled_width) / 2;
+  y_offset = (height - scaled_height) / 2;
 }
 
 static int
@@ -451,7 +461,7 @@ static void gtkdisplay_area(int x, int y, int width, int height)
 #else
   display_updated = 1;
 
-  gtk_widget_queue_draw_area( gtkui_drawing_area, x, y, width, height );
+  gtk_widget_queue_draw_area( gtkui_drawing_area, x + x_offset, y + y_offset, width, height );
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 }
@@ -595,6 +605,7 @@ gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
   /* Create a new surface for this gfx mode */
   if( !surface ) ensure_appropriate_surface();
 
+  cairo_translate( cr, x_offset, y_offset );
   cairo_scale( cr, scale_factor_after_scaler, scale_factor_after_scaler );
 
   /* Repaint the drawing area */
