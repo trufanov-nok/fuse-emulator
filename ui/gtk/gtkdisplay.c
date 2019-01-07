@@ -1,5 +1,5 @@
 /* gtkdisplay.c: GTK+ routines for dealing with the Speccy screen
-   Copyright (c) 2000-2005 Philip Kendall
+   Copyright (c) 2000-2019 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -654,7 +654,7 @@ gtkdisplay_update_geometry( void )
   extra_height = gtkui_menubar_get_height();
 
   /* Add extra space for status bar + padding */
-  if( settings_current.statusbar ) {
+  if( gtkui_is_statusbar_visible() ) {
     extra_height += gtkstatusbar_get_height();
   }
 
@@ -721,4 +721,19 @@ gtkdisplay_load_gfx_mode( void )
 
   /* Redraw the entire screen... */
   display_refresh_all();
+}
+
+void
+uidisplay_set_fullscreen( int fullscreen )
+{
+  /* TODO: hide menu bar when fullscreen */
+#if GTK_CHECK_VERSION( 3, 0, 0 )
+  gtkstatusbar_set_visibility( gtkui_is_statusbar_visible() );
+
+  if( fullscreen ) {
+    gtk_window_fullscreen( GTK_WINDOW( gtkui_window ) );
+  } else {
+    gtk_window_unfullscreen( GTK_WINDOW( gtkui_window ) );
+  }
+#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 }

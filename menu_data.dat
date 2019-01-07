@@ -1,5 +1,5 @@
 # menu_data.dat: Menu structure for Fuse
-# Copyright (c) 2004-2015 Philip Kendall
+# Copyright (c) 2004-2019 Philip Kendall
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -130,6 +130,12 @@ Options/Select ROMs/Peripheral ROMs/_uSource..., Item,, menu_options_selectroms_
 Options/_Filter..., Item,,, menu_filter_detail
 
 #ifdef UI_SDL
+Options/F_ull screen, Item, F11
+#endif
+
+# TODO: disable this menu option for GTK+ 2.x
+
+#ifdef UI_GTK
 Options/F_ull screen, Item, F11
 #endif
 

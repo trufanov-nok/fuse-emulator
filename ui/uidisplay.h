@@ -1,5 +1,5 @@
 /* uidisplay.h: Low-level display routines
-   Copyright (c) 2000-2003 Philip Kendall
+   Copyright (c) 2000-2019 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ int uidisplay_init( int width, int height );
 void uidisplay_area( int x, int y, int w, int h );
 void uidisplay_frame_end( void );
 int uidisplay_hotswap_gfx_mode( void );
+
+void uidisplay_set_fullscreen( int fullscreen );
 
 #ifdef USE_WIDGET
 /* Routines for backing up and restoring the frame buffer as the widget UI does

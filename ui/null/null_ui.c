@@ -1,5 +1,5 @@
 /* null_ui.c: Routines for dealing with the null user interface
-   Copyright (c) 2017 Philip Kendall
+   Copyright (c) 2017-2019 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -256,4 +256,10 @@ void
 uidisplay_putpixel( int x, int y, int colour )
 {
   /* Do nothing */
+} 
+
+void
+uidisplay_set_fullscreen( int fullscreen )
+{
+  /* Do nothing, should never be called */
 }

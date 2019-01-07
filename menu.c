@@ -1,5 +1,5 @@
 /* menu.c: general menu callbacks
-   Copyright (c) 2004-2017 Philip Kendall, Alex Badea, Sergio Baldoví,
+   Copyright (c) 2004-2019 Philip Kendall, Alex Badea, Sergio Baldoví,
      Stuart Brady, Gergely Szasz, Stefano Bodrato, Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,7 @@
 #include "tape.h"
 #include "ui/scaler/scaler.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
 #include "ui/uimedia.h"
 #include "utils.h"
 #include "z80/z80.h"
@@ -321,6 +322,8 @@ MENU_CALLBACK( menu_options_fullscreen )
 {
   ui_widget_finish();
   settings_current.full_screen = !settings_current.full_screen;
+
+  uidisplay_set_fullscreen( settings_current.full_screen );
 }
 
 MENU_CALLBACK( menu_options_save )

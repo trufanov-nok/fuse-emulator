@@ -1,6 +1,6 @@
 /* sdldisplay.c: Routines for dealing with the SDL display
-   Copyright (c) 2000-2006 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
-   Copyright (c) 2015 Adrien Destugues
+   Copyright (c) 2000-2019 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
+                           Adrien Destugues
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -915,4 +915,10 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
   ui_error( UI_ERROR_ERROR, "Attempt to update unknown statusbar item %d",
             item );
   return 1;
+}
+
+void
+uidisplay_set_fullscreen( int fullscreen )
+{
+  /* No action needed */
 }

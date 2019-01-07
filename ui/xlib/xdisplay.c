@@ -1,7 +1,6 @@
 /* xdisplay.c: Routines for dealing with drawing the Speccy's screen via Xlib
-   Copyright (c) 2000-2005 Philip Kendall, Darren Salt, Gergely Szász
-   Copyright (c) 2015 Stuart Brady
-   Copyright (c) 2015 Sergio Baldoví
+   Copyright (c) 2000-2019 Philip Kendall, Darren Salt, Gergely Szász,
+                           Stuart Brady, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1053,4 +1052,10 @@ ui_statusbar_update_speed( float speed )
   XFree( text.value );
 
   return 0;
+}
+
+void
+uidisplay_set_fullscreen( int fullscreen )
+{
+  /* Do nothing, should never be called */
 }

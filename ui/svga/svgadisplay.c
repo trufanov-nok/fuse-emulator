@@ -1,7 +1,6 @@
 /* svgadisplay.c: Routines for dealing with the svgalib display
-   Copyright (c) 2000-2003 Philip Kendall, Matan Ziv-Av, Witold Filipczyk,
-			   Russell Marks
-   Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2000-2019 Philip Kendall, Matan Ziv-Av, Witold Filipczyk,
+			   Russell Marks, Stuart Brady
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -819,4 +818,10 @@ uidisplay_frame_restore( void )
 {
   /* FIXME: Restore saved framebuffer state as the widget UI wants to draw a
      new menu */
+}
+
+void
+uidisplay_set_fullscreen( int fullscreen )
+{
+  /* Do nothing, should never be called */
 }

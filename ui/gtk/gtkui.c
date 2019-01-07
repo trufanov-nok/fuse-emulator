@@ -1,5 +1,5 @@
 /* gtkui.c: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2015 Philip Kendall, Russell Marks, Sergio Baldoví
+   Copyright (c) 2000-2019 Philip Kendall, Russell Marks, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -225,7 +225,7 @@ ui_init( int *argc, char ***argv )
   gtkstatusbar_create( GTK_BOX( box ) );
 
   gtk_widget_show_all( gtkui_window );
-  gtkstatusbar_set_visibility( settings_current.statusbar );
+  gtkstatusbar_set_visibility( gtkui_is_statusbar_visible() );
 
   ui_mouse_present = 1;
 
@@ -986,4 +986,10 @@ gtkui_menubar_get_height( void )
   gtk_widget_get_allocation( menu_bar, &alloc );
 
   return alloc.height;
+}
+
+int
+gtkui_is_statusbar_visible( void )
+{
+  return settings_current.statusbar && !settings_current.full_screen;
 }

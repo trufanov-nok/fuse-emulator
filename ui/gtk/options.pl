@@ -2,7 +2,7 @@
 
 # options.pl: generate options dialog boxes
 
-# Copyright (c) 2002-2015 Philip Kendall
+# Copyright (c) 2002-2019 Philip Kendall
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -339,7 +339,7 @@ CODE
     print "  $_->{posthook}();\n\n" if $_->{posthook};
 
     print << "CODE";
-  gtkstatusbar_set_visibility( settings_current.statusbar );
+  gtkstatusbar_set_visibility( gtkui_is_statusbar_visible() );
   display_refresh_all();
 
   gtk_main_quit();
