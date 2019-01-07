@@ -202,6 +202,7 @@ ui_init( int *argc, char ***argv )
 	    fuse_progname,__FILE__,__LINE__);
     return 1;
   }
+  gtkui_set_menubar_visibility();
 
   gtk_window_add_accel_group( GTK_WINDOW(gtkui_window), accel_group );
   gtk_box_pack_start( GTK_BOX(box), menu_bar, FALSE, FALSE, 0 );
@@ -992,4 +993,22 @@ int
 gtkui_is_statusbar_visible( void )
 {
   return settings_current.statusbar && !settings_current.full_screen;
+}
+
+int
+gtkui_is_menubar_visible( void )
+{
+  return !settings_current.full_screen;
+}
+
+void
+gtkui_set_menubar_visibility( void )
+{
+  gtkdisplay_update_geometry();
+
+  if( gtkui_is_menubar_visible() ) {
+    gtk_widget_show( menu_bar );
+  } else {
+    gtk_widget_hide( menu_bar );
+  }
 }

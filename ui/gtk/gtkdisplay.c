@@ -650,8 +650,12 @@ gtkdisplay_update_geometry( void )
      don't set geometry of widgets. See [bugs:#344] */
   geometry_widget = NULL;
 
-  /* Add extra space for menu bar */
-  extra_height = gtkui_menubar_get_height();
+  extra_height = 0;
+
+  if( gtkui_is_menubar_visible() ) {
+    /* Add extra space for menu bar */
+    extra_height += gtkui_menubar_get_height();
+  }
 
   /* Add extra space for status bar + padding */
   if( gtkui_is_statusbar_visible() ) {
@@ -728,6 +732,7 @@ uidisplay_set_fullscreen( int fullscreen )
 {
   /* TODO: hide menu bar when fullscreen */
 #if GTK_CHECK_VERSION( 3, 0, 0 )
+  gtkui_set_menubar_visibility();
   gtkstatusbar_set_visibility( gtkui_is_statusbar_visible() );
 
   if( fullscreen ) {

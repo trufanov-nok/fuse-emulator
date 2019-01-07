@@ -68,6 +68,9 @@ int gtkui_picture( const char *filename, int border );
 
 extern void gtkui_popup_menu(void);
 
+int gtkui_is_menubar_visible( void );
+void gtkui_set_menubar_visibility( void );
+
 int gtkui_is_statusbar_visible( void );
 
 GtkAccelGroup* gtkstock_add_accel_group( GtkWidget *widget );
