@@ -1,8 +1,30 @@
-2018-09-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2019-??-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Miscellaneous improvements:
+          * Fix display corruption with HQ 3x scaler (thanks, Philip Kendall)
+            (Sergio Baldoví).
+          * Fix antialiasing effect of AdvMAME3x scaler (Sergio Baldoví).
+          * Allow screenshots with TV 3x, PAL TV and Timex 1.5x scalers (Sergio
+            Baldoví).
+          * GTK+ UI: Add Fuse icon to the about dialog and the main window
+            (Alberto Garcia).
+          * Fix GTK+ 3 build when the GTK+ version is < 3.20 (thanks, Thrice)
+            (Alberto Garcia).
+          * Allow selection of audio driver at build time (thanks, kov_serg)
+            (Alberto Garcia).
+
+2018-12-09  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.7 released.
 
         * UI improvements:
           * GTK+ 3: Make the offset entry wider in memory browser (Derek
             Fountain).
+          * GTK+: Remove duplicated surface creation code (Philip Kendall).
+          * GTK+: Remove use of deprecated gtk_device_(un)grab functions
+            (Philip Kendall).
+          * GTK+/Win32: Add *.bin as an allowed filetype to file selectors and
+            amend .fmf filetype (thanks, Allan Turvey) (Sergio Baldoví).
           * Improve Fuse's window sizing under Wayland; still not right, but
             better than it was before (Sergio Baldoví).
           * Improve Fuse's Kempston mouse handling under GTK+ 3.x (Philip
