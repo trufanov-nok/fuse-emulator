@@ -322,7 +322,7 @@ fb_set_mode( void )
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   return 0;
 }

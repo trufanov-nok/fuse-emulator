@@ -1,5 +1,5 @@
 /* wiidisplay.c: Routines for dealing with the Wii's framebuffer display
-   Copyright (c) 2008-2009 Bjoern Giesler, Marek Januszewski
+   Copyright (c) 2008-2019 Bjoern Giesler, Marek Januszewski
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -318,7 +318,7 @@ int wiidisplay_init(void)
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   return 0;
 }

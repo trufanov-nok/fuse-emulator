@@ -32,7 +32,7 @@ int uidisplay_init( int width, int height );
 
 void uidisplay_area( int x, int y, int w, int h );
 void uidisplay_frame_end( void );
-int uidisplay_hotswap_gfx_mode( void );
+int uidisplay_hotswap_gfx_mode( int force_resize );
 
 void uidisplay_set_fullscreen( int fullscreen );
 

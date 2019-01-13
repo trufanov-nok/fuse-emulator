@@ -640,7 +640,7 @@ register_scalers( void )
 	    ( machine_current->timex ? 2 : 1 );
   if( scaler_is_supported( current_scaler ) &&
 	( xdisplay_current_size * 4 == f ) ) {
-    uidisplay_hotswap_gfx_mode();
+    uidisplay_hotswap_gfx_mode( 1 );
   } else {
     switch( xdisplay_current_size ) {
     case 1:
@@ -848,7 +848,7 @@ xdisplay_setup_rgb_putpixel( void )
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   image_scale = 4.0 * scaler_get_scaling_factor( current_scaler );
   scaled_image_w = image_width  * image_scale >> 2;

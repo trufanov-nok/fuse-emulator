@@ -122,8 +122,8 @@ static int extra_height = 0;
 
 static int init_colours( colour_format_t format );
 static void gtkdisplay_area(int x, int y, int width, int height);
-static void register_scalers( int force_scaler );
-static void gtkdisplay_load_gfx_mode( void );
+static void register_scalers( int force_scaler, int force_resize );
+static void gtkdisplay_load_gfx_mode( int force_resize );
 
 /* Callbacks */
 
@@ -243,14 +243,14 @@ uidisplay_init( int width, int height )
   image_scale = width / DISPLAY_ASPECT_WIDTH;
   set_scale_factor_from_scaler();
 
-  register_scalers( 0 );
+  register_scalers( 0, 1 );
 
   display_refresh_all();
 
   if ( scaler_select_scaler( current_scaler ) )
         scaler_select_scaler( SCALER_NORMAL );
 
-  gtkdisplay_load_gfx_mode();
+  gtkdisplay_load_gfx_mode( 1 );
 
   machine_name = libspectrum_machine_name( machine_current->machine );
   gtkstatusbar_update_machine( machine_name );
@@ -318,7 +318,7 @@ drawing_area_resize( int width, int height, int force_scaler )
   gtkdisplay_current_size = size;
   set_scale_factor_from_scaler();
 
-  register_scalers( force_scaler );
+  register_scalers( force_scaler, 0 );
 
   memset( scaled_image, 0, sizeof( scaled_image ) );
 
@@ -330,7 +330,7 @@ drawing_area_resize( int width, int height, int force_scaler )
 }
 
 static void
-register_scalers( int force_scaler )
+register_scalers( int force_scaler, int force_resize )
 {
   scaler_type scaler;
   float scaling_factor;
@@ -380,7 +380,7 @@ register_scalers( int force_scaler )
     }
   }
 
-  scaler_select_scaler( scaler );
+  scaler_select_scaler_optional_resize( scaler, force_resize );
 }
 
 void
@@ -467,12 +467,12 @@ static void gtkdisplay_area(int x, int y, int width, int height)
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   fuse_emulation_pause();
 
   /* Setup the new GFX mode */
-  gtkdisplay_load_gfx_mode();
+  gtkdisplay_load_gfx_mode( force_resize );
 
   fuse_emulation_unpause();
 
@@ -701,7 +701,7 @@ gtkdisplay_update_geometry( void )
 }
 
 static void
-gtkdisplay_load_gfx_mode( void )
+gtkdisplay_load_gfx_mode( int force_resize )
 {
   float scale;
 
@@ -720,8 +720,10 @@ gtkdisplay_load_gfx_mode( void )
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
  
-  gtk_window_resize( GTK_WINDOW( gtkui_window ), scale * image_width,
-                     scale * image_height + extra_height );
+  if( force_resize ) {
+    gtk_window_resize( GTK_WINDOW( gtkui_window ), scale * image_width,
+                       scale * image_height + extra_height );
+  }
 
   /* Redraw the entire screen... */
   display_refresh_all();

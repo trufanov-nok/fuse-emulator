@@ -25,6 +25,7 @@
 
 #include "keyboard.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
 
 #include "../uijoystick.c"
 
@@ -225,7 +226,7 @@ uidisplay_frame_end( void )
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   /* No error */
   return 0;

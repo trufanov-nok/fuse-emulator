@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # options.pl: generate options dialog boxes
-# Copyright (c) 2001-2015 Philip Kendall, Fredrick Meunier
+# Copyright (c) 2001-2019 Philip Kendall, Fredrick Meunier
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -391,7 +391,7 @@ widget_options_finish( widget_finish_state finished )
     settings_free( &original_settings );
 
     /* make the needed UI changes */
-    uidisplay_hotswap_gfx_mode();
+    uidisplay_hotswap_gfx_mode( 1 );
   }
   settings_free( &widget_options_settings );
   memset( &widget_options_settings, 0, sizeof( settings_info ) );

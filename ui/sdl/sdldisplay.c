@@ -441,7 +441,7 @@ sdldisplay_load_gfx_mode( void )
 }
 
 int
-uidisplay_hotswap_gfx_mode( void )
+uidisplay_hotswap_gfx_mode( int force_resize )
 {
   fuse_emulation_pause();
 
@@ -755,7 +755,7 @@ uidisplay_frame_end( void )
      windowed-only UI a chance to free menu etc. resources before
      the switch to fullscreen (e.g. Mac OS X) */
   if( sdldisplay_is_full_screen != settings_current.full_screen &&
-      uidisplay_hotswap_gfx_mode() ) {
+      uidisplay_hotswap_gfx_mode( 1 ) ) {
     fprintf( stderr, "%s: Error switching to fullscreen\n", fuse_progname );
     fuse_abort();
   }
