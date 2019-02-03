@@ -39,6 +39,11 @@
 #include "ui/scaler/scaler.h"
 #include "settings.h"
 
+/* The biggest size screen (in units of DISPLAY_ASPECT_WIDTH x
+   DISPLAY_SCREEN_HEIGHT ie a Timex screen is size 2) we will be
+   creating via the scalers */
+#define MAX_SCALE 4
+
 /* The size of a 1x1 image in units of
    DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
 static int image_scale;
@@ -59,9 +64,9 @@ static guchar rgb_image[ 4 * 2 * ( DISPLAY_SCREEN_HEIGHT + 4 ) *
 static const gint rgb_pitch = ( DISPLAY_SCREEN_WIDTH + 3 ) * 4;
 
 /* The scaled image */
-static guchar scaled_image[ 3 * DISPLAY_SCREEN_HEIGHT *
-                            6 * DISPLAY_SCREEN_WIDTH ];
-static const ptrdiff_t scaled_pitch = 6 * DISPLAY_SCREEN_WIDTH;
+static guchar scaled_image[ MAX_SCALE * DISPLAY_SCREEN_HEIGHT *
+                            MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2 ];
+static const ptrdiff_t scaled_pitch = MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2;
 
 /* The colour palette */
 static const guchar rgb_colours[16][3] = {
@@ -195,7 +200,7 @@ set_scale_factor_from_scaler( void )
   float old_scale_factor_from_scaler = scale_factor_from_scaler;
 
   scale_factor_from_scaler = (float)gtkdisplay_current_size / image_scale;
-  if( scale_factor_from_scaler > 3 ) scale_factor_from_scaler = 3;
+  if( scale_factor_from_scaler > MAX_SCALE ) scale_factor_from_scaler = MAX_SCALE;
 
   /* Adjust the "after scaler" factor to compensate for any changes we made here */
   scale_factor_after_scaler *= old_scale_factor_from_scaler / scale_factor_from_scaler;
@@ -308,7 +313,7 @@ drawing_area_resize( int width, int height, int force_scaler )
   if( size > height / DISPLAY_SCREEN_HEIGHT )
     size = height / DISPLAY_SCREEN_HEIGHT;
 
-  if( size > 3 ) size = 3;
+  if( size > MAX_SCALE ) size = MAX_SCALE;
 
   set_scale_factor_after_scaler( width, height );
 
@@ -342,15 +347,19 @@ register_scalers( int force_scaler, int force_resize )
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
     scaler_register( SCALER_TIMEX1_5X );
+    scaler_register( SCALER_TIMEX2X );
   } else {
     scaler_register( SCALER_DOUBLESIZE );
     scaler_register( SCALER_TRIPLESIZE );
+    scaler_register( SCALER_QUADSIZE );
     scaler_register( SCALER_TV2X );
     scaler_register( SCALER_TV3X );
+    scaler_register( SCALER_TV4X );
     scaler_register( SCALER_PALTV2X );
     scaler_register( SCALER_PALTV3X );
     scaler_register( SCALER_HQ2X );
     scaler_register( SCALER_HQ3X );
+    scaler_register( SCALER_HQ4X );
     scaler_register( SCALER_ADVMAME2X );
     scaler_register( SCALER_ADVMAME3X );
     scaler_register( SCALER_2XSAI );
@@ -376,6 +385,9 @@ register_scalers( int force_scaler, int force_resize )
       break;
     case 3: scaler = machine_current->timex ? SCALER_TIMEX1_5X :
                                               SCALER_TRIPLESIZE;
+      break;
+    case 4: scaler = machine_current->timex ? SCALER_TIMEX2X :
+                                              SCALER_QUADSIZE;
       break;
     }
   }
@@ -670,8 +682,8 @@ gtkdisplay_update_geometry( void )
    * constraints */
   hints |= GDK_HINT_MAX_SIZE | GDK_HINT_BASE_SIZE | GDK_HINT_RESIZE_INC;
 
-  geometry.max_width = 3 * DISPLAY_ASPECT_WIDTH;
-  geometry.max_height = 3 * DISPLAY_SCREEN_HEIGHT;
+  geometry.max_width = MAX_SCALE * DISPLAY_ASPECT_WIDTH;
+  geometry.max_height = MAX_SCALE * DISPLAY_SCREEN_HEIGHT;
   geometry.base_width = scale * image_width;
   geometry.base_height = scale * image_height;
   geometry.width_inc = DISPLAY_ASPECT_WIDTH;
