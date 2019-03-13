@@ -122,9 +122,6 @@ float scale_factor_after_scaler = 1.0;
 /* The offsets we need to keep the Spectrum display centred in the window */
 int x_offset, y_offset;
 
-/* Extra height used for menu and status bars */
-static int extra_height = 0;
-
 static int init_colours( colour_format_t format );
 static void gtkdisplay_area(int x, int y, int width, int height);
 static void register_scalers( int force_scaler, int force_resize );
@@ -634,54 +631,32 @@ static gint
 drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
                               gpointer data GCC_UNUSED )
 {
-  drawing_area_resize( event->configure.width,
-                       event->configure.height - extra_height, 1 );
+  drawing_area_resize( event->configure.width, event->configure.height, 1 );
 
   return FALSE;
 }
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
+#if !GTK_CHECK_VERSION( 3, 0, 0 )
+
 void
 gtkdisplay_update_geometry( void )
 {
   GdkGeometry geometry;
   GdkWindowHints hints;
-  GtkWidget *geometry_widget;
   float scale;
 
   if( !scalers_registered ) return;
 
   scale = scaler_get_scaling_factor( current_scaler );
 
-  hints = GDK_HINT_MIN_SIZE;
+  /* GTK+ 2.x doesn't support arbitrary scaling */
+  hints = GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE | GDK_HINT_BASE_SIZE |
+          GDK_HINT_RESIZE_INC;
 
-#if GTK_CHECK_VERSION( 3, 0, 0 )
-
-  /* Since GTK+ 3.20 it is intended that gtk_window_set_geometry_hints
-     don't set geometry of widgets. See [bugs:#344] */
-  geometry_widget = NULL;
-
-  extra_height = 0;
-
-  if( gtkui_is_menubar_visible() ) {
-    /* Add extra space for menu bar */
-    extra_height += gtkui_menubar_get_height();
-  }
-
-  /* Add extra space for status bar + padding */
-  if( gtkui_is_statusbar_visible() ) {
-    extra_height += gtkstatusbar_get_height();
-  }
-
-#else                 /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
-
-  geometry_widget = gtkui_drawing_area;
-
-  /* GTK+ 2.x doesn't support arbitrary scaling, so add extra
-   * constraints */
-  hints |= GDK_HINT_MAX_SIZE | GDK_HINT_BASE_SIZE | GDK_HINT_RESIZE_INC;
-
+  geometry.min_width = DISPLAY_ASPECT_WIDTH;
+  geometry.min_height = DISPLAY_SCREEN_HEIGHT;
   geometry.max_width = MAX_SCALE * DISPLAY_ASPECT_WIDTH;
   geometry.max_height = MAX_SCALE * DISPLAY_SCREEN_HEIGHT;
   geometry.base_width = scale * image_width;
@@ -689,17 +664,12 @@ gtkdisplay_update_geometry( void )
   geometry.width_inc = DISPLAY_ASPECT_WIDTH;
   geometry.height_inc = DISPLAY_SCREEN_HEIGHT;
 
-#endif                /* #if GTK_CHECK_VERSION( 3, 0, 0 ) */
-
-  geometry.min_width = DISPLAY_ASPECT_WIDTH;
-  geometry.min_height = DISPLAY_SCREEN_HEIGHT + extra_height;
-
   if( settings_current.aspect_hint ) {
     hints |= GDK_HINT_ASPECT;
 
     geometry.min_aspect = geometry.max_aspect =
       ( scale * DISPLAY_ASPECT_WIDTH ) /
-      ( scale * DISPLAY_SCREEN_HEIGHT + extra_height );
+      ( scale * DISPLAY_SCREEN_HEIGHT );
 
     if( !settings_current.strict_aspect_hint ) {
       geometry.min_aspect *= 0.9;
@@ -708,9 +678,11 @@ gtkdisplay_update_geometry( void )
   }
 
   gtk_window_set_geometry_hints( GTK_WINDOW( gtkui_window ),
-                                 geometry_widget,
+                                 gtkui_drawing_area,
                                  &geometry, hints );
 }
+
+#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
 static void
 gtkdisplay_load_gfx_mode( int force_resize )
@@ -719,14 +691,14 @@ gtkdisplay_load_gfx_mode( int force_resize )
 
   scale = scaler_get_scaling_factor( current_scaler );
 
-  gtkdisplay_update_geometry();
-
 #if !GTK_CHECK_VERSION( 3, 0, 0 )
+
+  gtkdisplay_update_geometry();
 
   /* This function should be innocuous when the main window is shown */
   gtk_window_set_default_size( GTK_WINDOW( gtkui_window ),
                                scale * image_width,
-                               scale * image_height + extra_height );
+                               scale * image_height );
 
   drawing_area_resize( scale * image_width, scale * image_height, 0 );
 
@@ -734,7 +706,7 @@ gtkdisplay_load_gfx_mode( int force_resize )
  
   if( force_resize ) {
     gtk_window_resize( GTK_WINDOW( gtkui_window ), scale * image_width,
-                       scale * image_height + extra_height );
+                       scale * image_height );
   }
 
   /* Redraw the entire screen... */

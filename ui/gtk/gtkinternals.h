@@ -34,7 +34,9 @@
 /* The colour palette in use */
 extern libspectrum_dword gtkdisplay_colours[ 16 ];
 
+#if !GTK_CHECK_VERSION( 3, 0, 0 )
 void gtkdisplay_update_geometry( void );
+#endif
 
 /*
  * Keyboard routines (gtkkeyboard.c)
@@ -125,8 +127,6 @@ GtkWidget *gtkstock_dialog_new( const gchar *title, GCallback destroy );
 int gtkui_get_monospaced_font( PangoFontDescription **font );
 void gtkui_free_font( PangoFontDescription *font );
 
-int gtkui_menubar_get_height( void );
-
 /*
  * The menu data (menu_data.c)
  */
@@ -155,7 +155,6 @@ extern const char *gtkpixmap_mouse_active[];
 
 
 int gtkstatusbar_create( GtkBox *parent );
-int gtkstatusbar_get_height( void );
 int gtkstatusbar_set_visibility( int visible );
 void gtkstatusbar_update_machine( const char *name );
 

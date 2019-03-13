@@ -116,19 +116,11 @@ gtkstatusbar_create( GtkBox *parent )
 }
 
 int
-gtkstatusbar_get_height( void )
-{
-  GtkAllocation alloc;
-
-  gtk_widget_get_allocation( status_bar, &alloc );
-
-  return alloc.height + 6;        /* status bar + vbox padding */
-}
-
-int
 gtkstatusbar_set_visibility( int visible )
 {
+#if !GTK_CHECK_VERSION( 3, 0, 0 )
   gtkdisplay_update_geometry();
+#endif
 
   if( visible ) {
     gtk_widget_show( status_bar );

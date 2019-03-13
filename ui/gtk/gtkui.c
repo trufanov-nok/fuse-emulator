@@ -986,16 +986,6 @@ gtkui_scroll_connect( GtkTreeView *list, GtkAdjustment *adj )
 }
 
 int
-gtkui_menubar_get_height( void )
-{
-  GtkAllocation alloc;
-
-  gtk_widget_get_allocation( menu_bar, &alloc );
-
-  return alloc.height;
-}
-
-int
 gtkui_is_statusbar_visible( void )
 {
   return settings_current.statusbar && !settings_current.full_screen;
@@ -1010,7 +1000,9 @@ gtkui_is_menubar_visible( void )
 void
 gtkui_set_menubar_visibility( void )
 {
+#if !GTK_CHECK_VERSION( 3, 0, 0 )
   gtkdisplay_update_geometry();
+#endif
 
   if( gtkui_is_menubar_visible() ) {
     gtk_widget_show( menu_bar );
