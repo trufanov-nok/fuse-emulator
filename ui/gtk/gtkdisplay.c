@@ -130,15 +130,23 @@ static void gtkdisplay_load_gfx_mode( int force_resize );
 /* Callbacks */
 
 #if !GTK_CHECK_VERSION( 3, 0, 0 )
+
 static gint gtkdisplay_expose(GtkWidget *widget, GdkEvent *event,
                               gpointer data);
-#else
-static gboolean gtkdisplay_draw( GtkWidget *widget, cairo_t *cr,
-                                 gpointer user_data );
-#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
 static gint drawing_area_resize_callback( GtkWidget *widget, GdkEvent *event,
                                           gpointer data );
+
+#else
+
+static gboolean gtkdisplay_draw( GtkWidget *widget, cairo_t *cr,
+                                 gpointer user_data );
+
+static void drawing_area_size_alloc_callback( GtkWidget *widget,
+                                              GdkRectangle *allocation,
+                                              gpointer user_data );
+
+#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
 static int
 init_colours( colour_format_t format )
@@ -228,8 +236,8 @@ uidisplay_init( int width, int height )
 
   colour_format = FORMAT_x8r8g8b8;
 
-  g_signal_connect( G_OBJECT( gtkui_window ), "configure_event",
-                    G_CALLBACK( drawing_area_resize_callback ), NULL );
+  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "size-allocate",
+                    G_CALLBACK( drawing_area_size_alloc_callback ), NULL );
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
@@ -625,15 +633,11 @@ gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
   return FALSE;
 }
 
-/* Called by gtkui_window on "configure_event".
-   On GTK+ 3 the window determines the size of the drawing area */
-static gint
-drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
-                              gpointer data GCC_UNUSED )
+static void
+drawing_area_size_alloc_callback( GtkWidget *widget, GdkRectangle *allocation,
+                                  gpointer user_data )
 {
-  drawing_area_resize( event->configure.width, event->configure.height, 1 );
-
-  return FALSE;
+  drawing_area_resize( allocation->width, allocation->height, 1 );
 }
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
