@@ -706,12 +706,42 @@ gtkdisplay_load_gfx_mode( int force_resize )
 
   drawing_area_resize( scale * image_width, scale * image_height, 0 );
 
-#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
- 
   if( force_resize ) {
     gtk_window_resize( GTK_WINDOW( gtkui_window ), scale * image_width,
                        scale * image_height );
   }
+
+#else
+
+  if( force_resize ) {
+    GdkRectangle window_size;
+    GdkRectangle drawing_area_size;
+
+    gtk_window_get_size( GTK_WINDOW( gtkui_window ), &window_size.width,
+                         &window_size.height );
+    gtk_widget_get_allocation( gtkui_drawing_area, &drawing_area_size );
+
+    /* Calculate space used for widgets other than drawing area +
+       window decorations */
+    if( drawing_area_size.width < DISPLAY_ASPECT_WIDTH ||
+        drawing_area_size.height < DISPLAY_SCREEN_HEIGHT ) {
+      /* This shouldn't happen, drawing area will get an unexpected size */
+      window_size.width = 0;
+      window_size.height = 0;
+    } else {
+      window_size.width -= drawing_area_size.width;
+      window_size.height -= drawing_area_size.height;
+    }
+
+    /* Calculate space needed for drawing area */
+    window_size.width += scale * image_width;
+    window_size.height += scale * image_height;
+
+    gtk_window_resize( GTK_WINDOW( gtkui_window ), window_size.width,
+                       window_size.height );
+  }
+
+#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
   /* Redraw the entire screen... */
   display_refresh_all();
