@@ -211,20 +211,13 @@ set_scale_factor_from_scaler( void )
   scale_factor_after_scaler *= old_scale_factor_from_scaler / scale_factor_from_scaler;
 }
 
-int
-uidisplay_init( int width, int height )
+static void
+drawing_area_connect_signals( void )
 {
-  int x, y, error;
-  libspectrum_dword black;
-  const char *machine_name;
-  colour_format_t colour_format;
-
 #if !GTK_CHECK_VERSION( 3, 0, 0 )
 
   g_signal_connect( G_OBJECT( gtkui_drawing_area ), "expose_event",
                     G_CALLBACK( gtkdisplay_expose ), NULL );
-
-  colour_format = FORMAT_x8b8g8r8;
 
   g_signal_connect( G_OBJECT( gtkui_drawing_area ), "configure_event",
                     G_CALLBACK( drawing_area_resize_callback ), NULL );
@@ -234,12 +227,29 @@ uidisplay_init( int width, int height )
   g_signal_connect( G_OBJECT( gtkui_drawing_area ), "draw",
                     G_CALLBACK( gtkdisplay_draw ), NULL );
 
-  colour_format = FORMAT_x8r8g8b8;
-
   g_signal_connect( G_OBJECT( gtkui_drawing_area ), "size-allocate",
                     G_CALLBACK( drawing_area_size_alloc_callback ), NULL );
 
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
+
+}
+
+int
+uidisplay_init( int width, int height )
+{
+  int x, y, error;
+  libspectrum_dword black;
+  const char *machine_name;
+  colour_format_t colour_format;
+
+#if !GTK_CHECK_VERSION( 3, 0, 0 )
+  colour_format = FORMAT_x8b8g8r8;
+#else
+  colour_format = FORMAT_x8r8g8b8;
+#endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
+
+  if( !display_ui_initialised )
+   drawing_area_connect_signals();
 
   error = init_colours( colour_format ); if( error ) return error;
 
