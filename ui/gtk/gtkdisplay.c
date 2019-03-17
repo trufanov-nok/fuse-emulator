@@ -329,6 +329,7 @@ drawing_area_resize( int width, int height, int force_scaler )
     size = height / DISPLAY_SCREEN_HEIGHT;
 
   if( size > MAX_SCALE ) size = MAX_SCALE;
+  if( size < 1 ) size = 1;
 
   set_scale_factor_after_scaler( width, height );
 
