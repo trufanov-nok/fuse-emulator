@@ -26,6 +26,7 @@
 
 #include <libspectrum.h>
 
+#include "debugger/debugger.h"
 #include "fuse.h"
 #include "machine.h"
 #include "mempool.h"
@@ -36,10 +37,12 @@
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/ide/zxatasp.h"
 #include "peripherals/ide/zxcf.h"
 #include "peripherals/if1.h"
 #include "peripherals/if2.h"
+#include "peripherals/multiface.h"
 #include "peripherals/speccyboot.h"
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
@@ -753,6 +756,7 @@ paging_test( void )
   {
     r += if1_unittest();
     r += if2_unittest();
+    r += multiface_unittest();
     r += speccyboot_unittest();
     r += usource_unittest();
 
@@ -763,6 +767,7 @@ paging_test( void )
     r += plusd_unittest();
 
     r += divide_unittest();
+    r += divmmc_unittest();
     r += zxatasp_unittest();
     r += zxcf_unittest();
   }
@@ -780,6 +785,9 @@ unittests_run( void )
   r += floating_bus_merge_test();
   r += mempool_test();
   r += paging_test();
+  r += debugger_disassemble_unittest();
+
+  printf("Final return value: %d (should be 0)\n", r);
 
   return r;
 }

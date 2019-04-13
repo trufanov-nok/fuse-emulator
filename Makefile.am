@@ -38,6 +38,7 @@ fuse_SOURCES = display.c \
 	movie.c \
 	module.c \
 	periph.c \
+	phantom_typist.c \
 	profile.c \
 	psg.c \
 	rectangle.c \
@@ -57,13 +58,16 @@ fuse_SOURCES = display.c \
 
 fuse_LDADD = \
              $(PTHREAD_LIBS) \
-             $(LIBSPEC_LIBS) \
+             $(LIBSPECTRUM_LIBS) \
              $(GTK_LIBS) \
              $(GLIB_LIBS) \
              $(PNG_LIBS) \
-             $(SDL_LIBS) \
              $(X_LIBS) \
              $(XML_LIBS)
+
+if USE_SDL
+fuse_LDADD += $(SDL_LIBS)
+endif
 
 fuse_DEPENDENCIES =
 
@@ -83,11 +87,14 @@ options.h: $(srcdir)/perl/cpp-perl.pl config.h $(srcdir)/ui/@OPTIONS_DIR@/option
 AM_CPPFLAGS = \
               $(GLIB_CFLAGS) \
               $(GTK_CFLAGS) \
-              $(LIBSPEC_CFLAGS) \
+              $(LIBSPECTRUM_CFLAGS) \
               $(XML_CFLAGS) \
               -DFUSEDATADIR="\"${pkgdatadir}\"" \
-              $(SDL_CFLAGS) \
               $(PNG_CFLAGS)
+
+if USE_SDL
+AM_CPPFLAGS += $(SDL_CFLAGS)
+endif
 
 AM_CFLAGS = $(WARN_CFLAGS) $(PTHREAD_CFLAGS)
 
@@ -106,6 +113,7 @@ noinst_HEADERS = compat.h \
 	movie_tables.h \
 	module.h \
 	periph.h \
+	phantom_typist.h \
 	psg.h \
 	rectangle.h \
 	rzx.h \
@@ -130,6 +138,7 @@ EXTRA_DIST = AUTHORS \
 	     keysyms.pl \
 	     m4/ax_create_stdint_h.m4 \
 	     m4/ax_pthread.m4 \
+	     m4/ax_string_strcasecmp.m4 \
 	     m4/gtk-2.0.m4 \
 	     m4/pkg.m4 \
 	     m4/sdl.m4 \
@@ -156,7 +165,7 @@ fuse_LDADD += windres.o
 fuse_DEPENDENCIES += windres.o
 
 windres.o: windres.rc data/win32/winfuse.ico data/win32/fuse.manifest $(ui_win32_res)
-	$(AM_V_GEN)$(WINDRES) -I$(srcdir) -I. $(srcdir)/windres.rc $(LIBSPEC_CFLAGS) $(CPPFLAGS) windres.o
+	$(AM_V_GEN)$(WINDRES) -I$(srcdir) -I. $(srcdir)/windres.rc $(LIBSPECTRUM_CFLAGS) $(CPPFLAGS) windres.o
 
 endif
 
@@ -178,6 +187,7 @@ include timer/Makefile.am
 include ui/Makefile.am
 include ui/fb/Makefile.am
 include ui/gtk/Makefile.am
+include ui/null/Makefile.am
 include ui/scaler/Makefile.am
 include ui/sdl/Makefile.am
 include ui/svga/Makefile.am

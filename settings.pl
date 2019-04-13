@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # settings.pl: generate settings.c from settings.dat
-# Copyright (c) 2002-2015 Philip Kendall
+# Copyright (c) 2002-2017 Philip Kendall
 # Copyright (c) 2016 BogDan Vatra
 
 # This program is free software; you can redistribute it and/or modify
@@ -166,13 +166,13 @@ void settings_defaults( settings_info *settings )
 static int
 read_config_file( settings_info *settings )
 {
-  const char *home; char path[ PATH_MAX ];
+  const char *cfgdir; char path[ PATH_MAX ];
 
   xmlDocPtr doc;
 
-  home = compat_get_home_path(); if( !home ) return 1;
+  cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
-  snprintf( path, PATH_MAX, "%s/%s", home, CONFIG_FILE_NAME );
+  snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
   /* See if the file exists; if doesn't, it's not a problem */
   if( !compat_file_exists( path ) ) {
@@ -271,13 +271,13 @@ print hashline( __LINE__ ), << 'CODE';
 int
 settings_write_config( settings_info *settings )
 {
-  const char *home; char path[ PATH_MAX ], buffer[80]; 
+  const char *cfgdir; char path[ PATH_MAX ], buffer[80];
 
   xmlDocPtr doc; xmlNodePtr root;
 
-  home = compat_get_home_path(); if( !home ) return 1;
+  cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
-  snprintf( path, PATH_MAX, "%s/%s", home, CONFIG_FILE_NAME );
+  snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
   /* Create the XML document */
   doc = xmlNewDoc( (const xmlChar*)"1.0" );
@@ -327,15 +327,15 @@ CODE
 static int
 read_config_file( settings_info *settings )
 {
-  const char *home; char path[ PATH_MAX ];
+  const char *cfgdir; char path[ PATH_MAX ];
   struct stat stat_info;
   int error;
 
   utils_file file;
 
-  home = compat_get_home_path(); if( !home ) return 1;
+  cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
-  snprintf( path, PATH_MAX, "%s/%s", home, CONFIG_FILE_NAME );
+  snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
   /* See if the file exists; if doesn't, it's not a problem */
   if( stat( path, &stat_info ) ) {
@@ -497,13 +497,13 @@ settings_numeric_write( compat_fd doc, const char* name, int config )
 int
 settings_write_config( settings_info *settings )
 {
-  const char *home; char path[ PATH_MAX ];
+  const char *cfgdir; char path[ PATH_MAX ];
 
   compat_fd doc;
 
-  home = compat_get_home_path(); if( !home ) return 1;
+  cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
-  snprintf( path, PATH_MAX, "%s/%s", home, CONFIG_FILE_NAME );
+  snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
   doc = compat_file_open( path, 1 );
   if( doc == COMPAT_FILE_OPEN_FAILED ) {
@@ -765,9 +765,12 @@ settings_get_rom_setting( settings_info *settings, size_t which,
     case  2: return &( settings->rom_plusd );
     case  3: return &( settings->rom_didaktik80 );
     case  4: return &( settings->rom_disciple );
-    case  5: return &( settings->rom_opus );
-    case  6: return &( settings->rom_speccyboot );
-    case  7: return &( settings->rom_usource );
+    case  5: return &( settings->rom_multiface1 );
+    case  6: return &( settings->rom_multiface128 );
+    case  7: return &( settings->rom_multiface3 );
+    case  8: return &( settings->rom_opus );
+    case  9: return &( settings->rom_speccyboot );
+    case 10: return &( settings->rom_usource );
     default: return NULL;
     }
   }

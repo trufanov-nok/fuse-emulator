@@ -124,19 +124,6 @@ fuse_window_proc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
   switch( msg ) {
 
-#if defined USE_JOYSTICK && !defined HAVE_JSW_H
-
-    case WM_CREATE:
-      if( joysticks_supported > 0 )
-        if( joySetCapture( hWnd, JOYSTICKID1, 0, FALSE ) )
-          ui_error( UI_ERROR_ERROR, "Couldn't start capture for joystick 1" );
-      if( joysticks_supported > 1 )
-        if( joySetCapture( hWnd, JOYSTICKID2, 0, FALSE ) )
-          ui_error( UI_ERROR_ERROR, "Couldn't start capture for joystick 2" );
-      break;      
-
-#endif			/* if defined USE_JOYSTICK && !defined HAVE_JSW_H */
-
     case WM_COMMAND:
       if( ! handle_menu( LOWORD( wParam ), hWnd ) )
         return 0;
@@ -586,8 +573,15 @@ menu_machine_reset( int action )
 
   if( hard_reset )
     message = "Hard reset?";
-  
-  if( win32ui_confirm( message ) && machine_reset( hard_reset ) ) {
+
+  if( !win32ui_confirm( message ) )
+    return;
+
+  /* Stop any ongoing RZX */
+  rzx_stop_recording();
+  rzx_stop_playback( 1 );
+
+  if( machine_reset( hard_reset ) ) {
     ui_error( UI_ERROR_ERROR, "couldn't reset machine: giving up!" );
 
     /* FIXME: abort() seems a bit extreme here, but it'll do for now */
@@ -655,7 +649,12 @@ ui_widgets_reset( void )
 void
 menu_help_keyboard( int action )
 {
-  win32ui_picture( "keyboard.scr", 0 );
+#ifdef USE_LIBPNG
+  if( win32ui_picture( "keyboard.png", PICTURE_PNG ) == 0 )
+    return;
+#endif
+
+  win32ui_picture( "keyboard.scr", PICTURE_SCR );
 }
 
 /* Functions to activate and deactivate certain menu items */
@@ -1113,8 +1112,8 @@ win32ui_window_resizing( HWND hWnd, WPARAM wParam, LPARAM lParam )
     width = w_max; height = h_max;
   }
 
-  if( width > 3 || height > 3 ) {
-    width = 3; height = 3;
+  if( width > MAX_SCALE || height > MAX_SCALE ) {
+    width = MAX_SCALE; height = MAX_SCALE;
   }
 
   if( width < height ) {

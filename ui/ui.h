@@ -73,7 +73,7 @@ int ui_debugger_activate( void );
 int ui_debugger_deactivate( int interruptable );
 int ui_debugger_update( void );
 int ui_debugger_disassemble( libspectrum_word address );
-void ui_breakpoints_updated();
+void ui_breakpoints_updated( void );
 
 /* Reset anything in the UI which needs to be reset on machine selection */
 int ui_widgets_reset( void );
@@ -133,6 +133,7 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_FILE_MOVIE_RECORDING,
   UI_MENU_ITEM_FILE_MOVIE_PAUSE,
   UI_MENU_ITEM_MACHINE_PROFILER,
+  UI_MENU_ITEM_MACHINE_MULTIFACE,
   UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP,
   UI_MENU_ITEM_MEDIA_CARTRIDGE,
   UI_MENU_ITEM_MEDIA_CARTRIDGE_DOCK,
@@ -233,6 +234,10 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE,
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE_MASTER_EJECT,
   UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT,
+  UI_MENU_ITEM_MEDIA_IDE_DIVMMC,
+  UI_MENU_ITEM_MEDIA_IDE_DIVMMC_EJECT,
+  UI_MENU_ITEM_MEDIA_IDE_ZXMMC,
+  UI_MENU_ITEM_MEDIA_IDE_ZXMMC_EJECT,
   UI_MENU_ITEM_RECORDING,
   UI_MENU_ITEM_RECORDING_ROLLBACK,
   UI_MENU_ITEM_AY_LOGGING,

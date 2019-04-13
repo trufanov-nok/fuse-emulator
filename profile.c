@@ -30,7 +30,6 @@
 
 #include "event.h"
 #include "infrastructure/startup_manager.h"
-#include "fuse.h"
 #include "module.h"
 #include "profile.h"
 #include "ui/ui.h"
@@ -87,8 +86,8 @@ profile_start( void )
   init_profiling_counters();
 
   /* Schedule an event to ensure that the main z80 emulation loop recognises
-     profiling is turned on; otherwise problems occur if we we started while
-     the debugger was active (bug #1530345) */
+     profiling is turned on; otherwise problems occur if we started while
+     the debugger was active (bug #54) */
   event_add( tstates, event_type_null );
 
   ui_menu_activate( UI_MENU_ITEM_MACHINE_PROFILER, 1 );
@@ -97,8 +96,6 @@ profile_start( void )
 void
 profile_map( libspectrum_word pc )
 {
-  if( tstates - profile_last_tstates > 256 ) fuse_abort();
-
   total_tstates[ profile_last_pc ] += tstates - profile_last_tstates;
 
   profile_last_pc = z80.pc.w;

@@ -193,7 +193,9 @@ void
 ui_mouse_suspend( void )
 {
   mouse_grab_suspended = ui_mouse_grabbed ? 2 : 1;
-  ui_mouse_grabbed = ui_mouse_release( 1 );
+
+  if( ui_mouse_grabbed )
+    ui_mouse_grabbed = ui_mouse_release( 1 );
 }
 
 void
@@ -235,7 +237,9 @@ static const struct menu_item_entries menu_item_lookup[] = {
   
   { UI_MENU_ITEM_MACHINE_PROFILER, "/Machine/Profiler/Stop",
     "/Machine/Profiler/Start", 1 },
-  
+
+  { UI_MENU_ITEM_MACHINE_MULTIFACE, "/Machine/Multiface Red Button" },
+
   { UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP, "/Machine/Didaktik SNAP" },
 
   { UI_MENU_ITEM_MEDIA_CARTRIDGE, "/Media/Cartridge" },
@@ -628,6 +632,18 @@ static const struct menu_item_entries menu_item_lookup[] = {
   { UI_MENU_ITEM_MEDIA_IDE_DIVIDE_SLAVE_EJECT,
     "/Media/IDE/DivIDE/Slave/Commit",
     "/Media/IDE/DivIDE/Slave/Eject", 0 },
+
+  { UI_MENU_ITEM_MEDIA_IDE_DIVMMC, "/Media/IDE/DivMMC" },
+
+  { UI_MENU_ITEM_MEDIA_IDE_DIVMMC_EJECT,
+    "/Media/IDE/DivMMC/Commit",
+    "/Media/IDE/DivMMC/Eject", 0 },
+
+  { UI_MENU_ITEM_MEDIA_IDE_ZXMMC, "/Media/IDE/ZXMMC" },
+
+  { UI_MENU_ITEM_MEDIA_IDE_ZXMMC_EJECT,
+    "/Media/IDE/ZXMMC/Commit",
+    "/Media/IDE/ZXMMC/Eject", 0 },
 
   { UI_MENU_ITEM_RECORDING,
     "/File/Recording/Stop", 

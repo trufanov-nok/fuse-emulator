@@ -27,7 +27,6 @@
 #include <stdio.h>
 
 #include <gdk/gdkkeysyms.h>
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include <glib.h>
@@ -164,6 +163,10 @@ ui_init( int *argc, char ***argv )
 
   gtkui_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
+#ifdef FUSE_ICON_AVAILABLE
+  gtk_window_set_icon_name( GTK_WINDOW( gtkui_window ), "fuse" );
+#endif
+
   settings = gtk_widget_get_settings( GTK_WIDGET( gtkui_window ) );
   g_object_set( settings, "gtk-menu-bar-accel", "F1", NULL );
   gtk_window_set_title( GTK_WINDOW(gtkui_window), "Fuse" );
@@ -217,14 +220,7 @@ ui_init( int *argc, char ***argv )
   gtk_widget_set_size_request( gtkui_drawing_area, DISPLAY_ASPECT_WIDTH,
                                DISPLAY_SCREEN_HEIGHT );
 
-  gtk_widget_add_events( GTK_WIDGET( gtkui_drawing_area ),
-    GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
-  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "motion-notify-event",
-		    G_CALLBACK( gtkmouse_position ), NULL );
-  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "button-press-event",
-		    G_CALLBACK( gtkmouse_button ), NULL );
-  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "button-release-event",
-		    G_CALLBACK( gtkmouse_button ), NULL );
+  gtkmouse_init();
 
   gtk_box_pack_start( GTK_BOX(box), gtkui_drawing_area, TRUE, TRUE, 0 );
 
@@ -323,7 +319,7 @@ ui_end(void)
 int
 ui_error_specific( ui_error_level severity, const char *message )
 {
-  GtkWidget *dialog, *label, *vbox, *content_area, *action_area;
+  GtkWidget *dialog, *label, *vbox, *content_area;
   const gchar *title;
 
   /* If we don't have a UI yet, we can't output widgets */
@@ -350,10 +346,8 @@ ui_error_specific( ui_error_level severity, const char *message )
   /* Make a new vbox for the top part for saner spacing */
   vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
   content_area = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );
-  action_area = gtk_dialog_get_action_area( GTK_DIALOG( dialog ) );
   gtk_box_pack_start( GTK_BOX( content_area ), vbox, TRUE, TRUE, 0 );
   gtk_container_set_border_width( GTK_CONTAINER( vbox ), 5 );
-  gtk_container_set_border_width( GTK_CONTAINER( action_area ), 5 );
 
   /* Put the label in it */
   gtk_container_add( GTK_CONTAINER( vbox ), label );
@@ -407,7 +401,7 @@ menu_file_exit( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 
     /* Ensure we break out of the main Z80 loop, there could be active
        breakpoints before the next event */
-    debugger_exit_emulator();
+    debugger_exit_emulator( NULL );
   }
 }
 
@@ -465,6 +459,9 @@ menu_get_scaler( scaler_available_fn selector )
                              G_CALLBACK( menu_options_filter_done ),
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
+
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
 
   gtk_widget_show_all( dialog.dialog );
 
@@ -547,7 +544,14 @@ menu_machine_reset( GtkAction *gtk_action GCC_UNUSED, guint action )
   if( hard_reset )
     message = "Hard reset?";
 
-  if( gtkui_confirm( message ) && machine_reset( hard_reset ) ) {
+  if( !gtkui_confirm( message ) )
+    return;
+
+  /* Stop any ongoing RZX */
+  rzx_stop_recording();
+  rzx_stop_playback( 1 );
+
+  if( machine_reset( hard_reset ) ) {
     ui_error( UI_ERROR_ERROR, "couldn't reset machine: giving up!" );
 
     /* FIXME: abort() seems a bit extreme here, but it'll do for now */
@@ -604,6 +608,9 @@ menu_machine_select( GtkAction *gtk_action GCC_UNUSED,
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
 
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
+
   gtk_widget_show_all( dialog.dialog );
 
   /* Process events until the window is done with */
@@ -652,18 +659,21 @@ ui_widgets_reset( void )
 void
 menu_help_keyboard( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
-  gtkui_picture( "keyboard.scr", 0 );
+  gtkui_picture( "keyboard.png", 0 );
 }
 
 void
 menu_help_about( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
-  /* TODO: show Fuse icon */
   gtk_show_about_dialog( GTK_WINDOW( gtkui_window ),
                          "program-name", "Fuse",
                          "comments", "The Free Unix Spectrum Emulator",
                          "copyright", FUSE_COPYRIGHT,
+#ifdef FUSE_ICON_AVAILABLE
+                         "logo-icon-name", "fuse",
+#else
                          "logo-icon-name", NULL,
+#endif
                          "version", VERSION,
                          "website", PACKAGE_URL,
                          NULL );
@@ -767,6 +777,9 @@ ui_confirm_joystick( libspectrum_joystick libspectrum_type,
                              (gpointer) &dialog, DEFAULT_DESTROY,
                              DEFAULT_DESTROY );
 
+  gtk_dialog_set_default_response( GTK_DIALOG( dialog.dialog ),
+                                   GTK_RESPONSE_OK );
+
   gtk_widget_show_all( dialog.dialog );
 
   /* Process events until the window is done with */
@@ -784,7 +797,7 @@ ui_confirm_joystick( libspectrum_joystick libspectrum_type,
  */
 
 int
-gtkui_get_monospaced_font( gtkui_font *font )
+gtkui_get_monospaced_font( PangoFontDescription **font )
 {
   *font = pango_font_description_from_string( "Monospace 10" );
   if( !(*font) ) {
@@ -796,15 +809,9 @@ gtkui_get_monospaced_font( gtkui_font *font )
 }
 
 void
-gtkui_free_font( gtkui_font font )
+gtkui_free_font( PangoFontDescription *font )
 {
   pango_font_description_free( font );
-}
-
-void
-gtkui_set_font( GtkWidget *widget, gtkui_font font )
-{
-  gtk_widget_override_font( widget, font );
 }
 
 void

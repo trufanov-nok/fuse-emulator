@@ -1,5 +1,5 @@
 /* coretest.c: Test program for Fuse's Z80 core
-   Copyright (c) 2003-2015 Philip Kendall
+   Copyright (c) 2003-2017 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "peripherals/disk/opus.h"
 #include "peripherals/disk/plusd.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/if1.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
@@ -538,8 +539,22 @@ if1_unpage( void )
   abort();
 }
 
+int multiface_activated = 0;
+
+void
+multiface_setic8( void )
+{
+  abort();
+}
+
 void
 divide_set_automap( int state GCC_UNUSED )
+{
+  abort();
+}
+
+void
+divmmc_set_automap( int state GCC_UNUSED )
 {
   abort();
 }
@@ -651,6 +666,7 @@ init_dummies( void )
   scld_last_dec.name.intdisable = 0;
   settings_current.slt_traps = 0;
   settings_current.divide_enabled = 0;
+  settings_current.divmmc_enabled = 0;
   settings_current.z80_is_cmos = 0;
   beta_pc_mask = 0xfe00;
   beta_pc_value = 0x3c00;

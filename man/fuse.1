@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" fuse.1: Fuse man page
-.\" Copyright (c) 2001-2016 Russell Marks, Philip Kendall, Darren Salt,
+.\" Copyright (c) 2001-2018 Russell Marks, Philip Kendall, Darren Salt,
 .\"                         Fredrick Meunier, Stuart Brady
 .\"
 .\" This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH fuse 1 "31st January, 2017" "Version 1.3.3" "Emulators"
+.TH fuse 1 "9th December, 2018" "Version 1.5.7" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -209,6 +209,14 @@ to disable). This option is the same as the General Options dialog's
 option.
 .RE
 .PP
+.B \-\-covox
+.RS
+Emulate a Covox sound interface for Pentagon/Scorpion. Same as the
+General Peripherals Options dialog's
+.I "Covox"
+option.
+.RE
+.PP
 .B \-\-debugger\-command
 .I string
 .RS
@@ -314,6 +322,29 @@ and slave drives respectively.
 Specify that the emulated DivIDE's write protect jumper should be
 considered set. The same as the Disk Peripherals Options dialog's
 .I "DivIDE write protect"
+option.
+.RE
+.PP
+.B \-\-divmmc
+.RS
+Emulate the DivMMC interface. The same as the Disk Peripherals Options
+dialog's
+.I "DivMMC interface"
+option.
+.RE
+.PP
+.B \-\-divmmc\-file
+.I file
+.RS
+Specify an HDF image to be loaded into the DivMMC's emulated memory card.
+.RE
+.PP
+.B \-\-divmmc\-write\-protect
+.RS
+Specify that the emulated DivMMC's write protect jumper that protects
+EEPROM should be considered set. The same as the Disk Peripherals Options
+dialog's
+.I "DivMMC write protect"
 option.
 .RE
 .PP
@@ -464,6 +495,7 @@ which uses no filtering. The available options are
 .IR 2x ,
 .IR 2xsai ,
 .IR 3x ,
+.IR 4x ,
 .IR advmame2x ,
 .IR advmame3x ,
 .IR dotmatrix ,
@@ -471,12 +503,16 @@ which uses no filtering. The available options are
 .IR halfskip ,
 .IR hq2x ,
 .IR hq3x ,
+.IR hq4x ,
 .IR normal ,
 .IR super2xsai ,
 .IR supereagle ,
 .IR timex15x ,
+.IR timex2x ,
 .IR timextv ,
 .IR tv2x ,
+.IR tv3x ,
+.IR tv4x ,
 .IR paltv ,
 .IR paltv2x ,
 and
@@ -806,6 +842,23 @@ General Peripherals Options dialog's
 option.
 .RE
 .PP
+.B \-\-mdr\-len
+.I length
+.RS
+This option controls the number of blocks in a new Microdrive cartridge.
+Same as the Media Options dialog's
+.I "MDR cartridge len"
+option.
+.RE
+.PP
+.B \-\-mdr\-random\-len
+.RS
+If this option is set, Fuse will use a random Microdrive cartridge
+length. Same as the Media Options dialog's
+.I "Random length MDR cartridge"
+option.
+.RE
+.PP
 .B \-\-microdrive\-file
 .I file
 .br
@@ -860,7 +913,7 @@ section.
 .RE
 .PP
 .B \-\-movie\-start
-.I filename
+.I file
 .RS
 With this command line option, Fuse will start movie recording as soon as the
 emulator is started. See also the
@@ -881,9 +934,42 @@ See also the
 section.
 .RE
 .PP
+.B \-\-multiface1
+.RS
+Emulate a Romantic Robot Multiface One interface. Same as the General
+Peripherals Options dialog's
+.I "Multiface One"
+option.
+.RE
+.PP
+.B \-\-multiface128
+.RS
+Emulate a Romantic Robot Multiface\ 128 interface. Same as the General
+Peripherals Options dialog's
+.I "Multiface\ 128"
+option.
+.RE
+.PP
+.B \-\-multiface3
+.RS
+Emulate a Romantic Robot Multiface\ 3 interface. Same as the General
+Peripherals Options dialog's
+.I "Multiface\ 3"
+option.
+.RE
+.PP
+.B \-\-multiface1-stealth
+.RS
+Set Multiface One stealth/invisible mode. Same as the General Peripherals
+Options dialog's
+.I "Stealth Multiface One"
+option.
+.RE
+.PP
 .B \-\-opus
 .RS
-Emulate a Opus Discovery interface. Same as the Disk Peripherals Options dialog's
+Emulate an Opus Discovery interface. Same as the Disk Peripherals Options
+dialog's
 .I "Opus Discovery interface"
 option.
 .RE
@@ -900,6 +986,22 @@ Specify whether the PAL\ TV\ 2x and PAL\ TV\ 3x scalers should also produce
 scanlines along the lines of the TV\ 2x and Timex\ TV scalers.
 The same as the General Options dialog's
 .I "PAL-TV use TV2x effect"
+option.
+.RE
+.PP
+.B \-\-phantom\-typist\-mode
+.I mode
+.RS
+Specify the keystroke sequence that the "phantom typist" should use when
+starting a program loading. The available options are
+.IR "Auto" ,
+.IR "Keyword" ,
+.IR "Keystroke" ,
+.IR "Menu" ,
+.IR "Plus 2A" " and"
+.IR "Plus 3" .
+The same as the Media Options dialog's
+.I "Phantom typist mode"
 option.
 .RE
 .PP
@@ -1153,6 +1255,15 @@ are not.
 .B \-\-rom\-disciple
 .I file
 .br
+.B \-\-rom\-multiface1
+.I file
+.br
+.B \-\-rom\-multiface128
+.I file
+.br
+.B \-\-rom\-multiface3
+.I file
+.br
 .B \-\-rom\-opus
 .I file
 .br
@@ -1174,6 +1285,12 @@ the Didaktik\ 80 ROM
 .RI ( didaktik80.rom ),
 the DISCiPLE ROM
 .RI ( disciple.rom ),
+the Multiface\ One ROM
+.RI ( mf1.rom ),
+the Multiface\ 128 ROM
+.RI ( mf128.rom ),
+the Multiface\ 3 ROM
+.RI ( mf3.rom ),
 the Opus Discovery ROM
 .RI ( opus.rom ),
 the SpeccyBoot ROM
@@ -1217,6 +1334,16 @@ to disable). Same as the RZX Options dialog's
 .I "Create autosaves"
 option;
 see there for more details.
+.RE
+.PP
+.B \-\-sdl\-fullscreen\-mode
+.I mode
+.RS
+Select a screen resolution for full screen mode. Available values for
+.IR mode " are listed in a table, when Fuse is called with"
+.B \-\-sdl\-fullscreen\-mode
+.IR list " command line option."
+This option is effective only under the SDL UI.
 .RE
 .PP
 .B \-\-separation
@@ -1568,7 +1695,7 @@ option.
 .I frequency
 .RS
 Specify what frequency Fuse should use for the sound
-device, the default is 32\ kHz, but some devices only
+device, the default is 44.1\ kHz, but some devices only
 support a single frequency or a limited range (e.g.
 48\ kHz or up to 22\ kHz).
 .RE
@@ -1747,6 +1874,15 @@ Same as the Sound Options dialog's
 option.
 .RE
 .PP
+.B \-\-volume\-covox
+.I volume
+.RS
+Sets the relative volume of the Covox from a range of 0\(en100%.
+Same as the Sound Options dialog's
+.I "Covox volume"
+option.
+.RE
+.PP
 .B \-\-volume\-specdrum
 .I volume
 .RS
@@ -1822,6 +1958,20 @@ option.
 .I file
 .RS
 Specify a HDF file to connect to the emulated ZXCF interface.
+.RE
+.PP
+.B \-\-zxmmc
+.RS
+Emulate the ZXMMC interface. The same as the Disk Peripherals Options
+dialog's
+.I "ZXMMC interface"
+option.
+.RE
+.PP
+.B \-\-zxmmc\-file
+.I file
+.RS
+Specify an HDF image to be loaded into the ZXMMC's emulated memory card.
 .RE
 .PP
 .B \-\-zxprinter
@@ -1980,7 +2130,7 @@ Stop any currently-recording/playing RZX file.
 .PP
 .I "File, Recording, Finalise..."
 .RS
-Compact a RZX file. Any interspersed snapshot will be removed and the
+Compact an RZX file. Any interspersed snapshot will be removed and the
 recording cannot be continued. All action replays submitted to the RZX
 Archive should be finalised.
 .RE
@@ -1996,7 +2146,7 @@ file. You will be prompted for a filename to save the recording to.
 Stop any current AY logging.
 .RE
 .PP
-.I "File, Open SCR Screenshot..."
+.I "File, Screenshot, Open SCR Screenshot..."
 .RS
 Load an SCR screenshot (essentially just a binary dump of the
 Spectrum's video memory) onto the current screen. Fuse supports
@@ -2005,14 +2155,31 @@ screenshots saved in the Timex hi-colour and hi-res modes as well as
 hi-colour or hi-res screenshot is loaded onto a non-Timex machine.
 .RE
 .PP
-.I "File, Save Screen as SCR..."
+.I "File, Screenshot, Save Screen as SCR..."
 .RS
 Save a copy of whatever's currently displayed on the Spectrum's screen
 as an SCR file. You will be prompted for a filename to save the
 screenshot to.
 .RE
 .PP
-.I "File, Save Screen as PNG..."
+.I "File, Screenshot, Open MLT Screenshot..."
+.RS
+Load an MLT screenshot onto the current screen. The MLT format is similar
+to the SCR format but additionally supports capturing images that use
+techniques to display more than two colours in each Spectrum attribute
+square. Fuse will only load the bitmap version of an image on a Sinclair
+machine but on a Timex clone it can show the full colour detail captured
+in the image by using the hi-colour mode.
+.RE
+.PP
+.I "File, Screenshot, Save Screen as MLT..."
+.RS
+Save a copy of whatever's currently displayed on the Spectrum's screen
+as an MLT file. You will be prompted for a filename to save the
+screenshot to.
+.RE
+.PP
+.I "File, Screenshot, Save Screen as PNG..."
 .RS
 Save the current screen as a PNG file. You will be prompted for a
 filename to save the screenshot to.
@@ -2121,7 +2288,7 @@ Set how fast Fuse will attempt to emulate the Spectrum, as a
 percentage of the speed at which the real machine runs. If your
 machine isn't fast enough to keep up with the requested speed, Fuse
 will just run as fast as it can. Note that if the emulation speed is
-not exactly 100%, no sound output will be produced.
+faster than 500%, no sound output will be produced.
 .RE
 .PP
 .I "Frame rate"
@@ -2272,6 +2439,38 @@ a loading routine, so is by no means infallible, but works in most
 cases.
 .RE
 .PP
+.I "Phantom typist mode"
+.RS
+Specify the keystroke sequence that the "phantom typist" should use when
+starting a program loading. Available options are
+.RS
+.PP
+.I Auto
+.PP
+.I Keyword
+.PP
+.I Keystroke
+.PP
+.I Menu
+.PP
+.I Plus 2A
+.PP
+.I Plus 3
+.RE
+.PP
+The first four of these correspond to automatic detection based on machine
+model, keyword based entry, keystroke based entry, and selection from a 128K
+style menu.
+.I Plus 2A
+and
+.I Plus 3
+also correspond to selection from a 128K style menu, but have special handling
+for games which need to be loaded with `LOAD ""CODE'. The most likely use for
+this option will be use
+.I Keystroke
+if you have changed the default 48K ROM for one with keystroke entry.
+.RE
+.PP
 .I "Fastloading"
 .RS
 If this option is enabled, then Fuse will run at the fastest possible
@@ -2317,13 +2516,14 @@ the trap or not.
 .I "MDR cartridge len"
 .RS
 This option controls the number of blocks in a new Microdrive cartridge.
-If the value smaller than 4 or greater than 254 Fuse assumes 4 or 254.
+If the value smaller than 10 or greater than 254 Fuse assumes 10 or 254.
+Average real capacity is around 180 blocks (90 Kb).
 .RE
 .PP
 .I "Random length MDR cartridge"
 .RS
 If this option is enabled, Fuse will use a random Microdrive cartridge
-length instead of the length specified in the
+length (around 180 blocks) instead of the length specified in the
 .I "MDR cartridge len"
 option.
 .RE
@@ -2388,6 +2588,11 @@ Sets the relative volume of the AY-3-8912 chip from a range of 0\(en100%.
 .I "Beeper volume"
 .RS
 Sets the relative volume of the beeper from a range of 0\(en100%.
+.RE
+.PP
+.I "Covox volume"
+.RS
+Sets the relative volume of the Covox from a range of 0\(en100%.
 .RE
 .PP
 .I "SpecDrum volume"
@@ -2482,6 +2687,30 @@ extended features, so only one of these should be selected at once or
 unpredictable behaviour will occur.
 .RE
 .PP
+.I "Multiface One"
+.RS
+If this option is selected, Fuse will emulate the Romantic Robot Multiface\ One.
+Available for 16K, 48K and Timex TC2048 machines.
+.RE
+.PP
+.I "Multiface\ 128"
+.RS
+If this option is selected, Fuse will emulate the Romantic Robot
+Multiface\ 128. Available for 16K, 48K, Timex TC2048, 128K, +2 and SE machines.
+.RE
+.PP
+.I "Multiface\ 3"
+.RS
+If this option is selected, Fuse will emulate the Romantic Robot
+Multiface\ 3. Available for +2A, +3 and +3e machines.
+.RE
+.PP
+.I "Stealth Multiface One"
+.RS
+This option controls the `invisible' or `stealth' mode of Multiface One,
+as the physical switch on the side of the interface.
+.RE
+.PP
 .I "Emulate printers"
 .RS
 If this option is selected, Fuse will emulate a printer. See the
@@ -2536,6 +2765,14 @@ If this option is selected, Fuse will emulate a Currah \(mcSource interface.
 See the World of Spectrum Infoseek web page at
 .I http://www.worldofspectrum.org/infoseekid.cgi?id=1000080
 for the manual.
+.RE
+.PP
+.I "Covox interface"
+.RS
+If this option is selected, Fuse will emulate a Covox digital sound
+interface. This emulation is only available for the Pentagon, Pentagon 512k,
+Pentagon 1024k and Scorpion machines. The Pentagon variants use port 0xfb and
+the Scorpion version uses port 0xdd.
 .RE
 .RE
 .PP
@@ -2600,6 +2837,12 @@ This option controls the state of the ZXCF upload jumper. See the
 section for more details.
 .RE
 .PP
+.I "ZXMMC interface"
+.RS
+If this option is selected, Fuse will emulate the ZXMMC interface.
+Available for +2A, +3 and +3e machines.
+.RE
+.PP
 .I "DivIDE interface"
 .RS
 If this option is selected, Fuse will emulate the DivIDE
@@ -2613,6 +2856,22 @@ section for more details.
 This option controls the state of the DivIDE write protection
 jumper. See the
 .B "DIVIDE"
+section for more details.
+.RE
+.PP
+.I "DivMMC interface"
+.RS
+If this option is selected, Fuse will emulate the DivMMC
+interface. See the
+.B "DIVMMC"
+section for more details.
+.RE
+.PP
+.I "DivMMC write protect"
+.RS
+This option controls the state of the DivMMC write protection
+jumper that prevents flashing the EEPROM chip. See the
+.B "DIVMMC"
 section for more details.
 .RE
 .PP
@@ -2750,7 +3009,7 @@ section for more information).
 .PP
 .I "Stop recording after RZX ends"
 .RS
-If this option is selected, Fuse will stop any movie recording after a RZX 
+If this option is selected, Fuse will stop any movie recording after an RZX
 playback is finished.
 .RE
 .RE
@@ -3018,6 +3277,7 @@ The available options are
 and
 .IR Always .
 .RE
+.RE
 .PP
 .I "Options, Save"
 .RS
@@ -3211,6 +3471,11 @@ pressing the NMI button.  For some UIs, this may be tricky, or even
 impossible to do.  Note that GDOS on the DISCiPLE contains a bug which
 causes corruption of saved snapshots, and a failure to return from the
 NMI menu correctly.  This bug is not present in G+DOS on the +D.
+.RE
+.PP
+.I "Machine, Multiface Red Button"
+.RS
+Presses the Multiface One/128/3 red button to active the interface.
 .RE
 .PP
 .I "Machine, Didaktik SNAP"
@@ -3661,24 +3926,46 @@ The same as the
 entries above, but for the ZXCF interface's CompactFlash slot.
 .RE
 .PP
+.I "Media, IDE, ZXMMC, Insert..."
+.br
+.I "Media, IDE, ZXMMC, Commit"
+.br
+.I "Media, IDE, ZXMMC, Eject"
+.RS
+The same as the
+.I "Media, IDE, Simple 8-bit"
+entries above, but for the memory card slot of the ZXMMC interface.
+.RE
+.PP
 .I "Media, IDE, DivIDE, Master, Insert..."
 .br
 .I "Media, IDE, DivIDE, Master, Commit"
 .br
-.I "Media, IDE, DivIDE, Eject"
+.I "Media, IDE, DivIDE, Master, Eject"
 .br
 .I "Media, IDE, DivIDE, Slave, Insert..."
 .br
 .I "Media, IDE, DivIDE, Slave, Commit"
 .br
-.I "Media, IDE, DivIDE, Eject"
+.I "Media, IDE, DivIDE, Slave, Eject"
 .RS
 The same as the
 .I "Media, IDE, Simple 8-bit"
 entries above, but for the two channels of the DivIDE interface.
 .RE
 .PP
-.I "Help, Keyboard picture..."
+.I "Media, IDE, DivMMC, Insert..."
+.br
+.I "Media, IDE, DivMMC, Commit"
+.br
+.I "Media, IDE, DivMMC, Eject"
+.RS
+The same as the
+.I "Media, IDE, Simple 8-bit"
+entries above, but for the memory card slot of the DivMMC interface.
+.RE
+.PP
+.I "Help, Keyboard..."
 .RS
 Display a diagram showing the Spectrum keyboard, and the various
 keywords that can be generated with each key from (48K) BASIC. Under
@@ -3688,6 +3975,11 @@ emulator paused) until you press
 .I Esc
 or
 .IR Enter .
+.RE
+.PP
+.I "Help, About..."
+.RS
+Show Fuse's version number.
 .RE
 .PP
 .\"
@@ -3821,6 +4113,12 @@ GTK+, Win32, Xlib and SDL user interfaces or when saving screenshots of
 non-Timex machines.
 .RE
 .PP
+.IR "Quadruple size " ( 4x )
+.RS
+Scale the displayed screen up to quadruple size. Available only with the
+GTK+, Win32 and SDL user interfaces.
+.RE
+.PP
 .IR "2xSaI " ( 2xsai )
 .br
 .IR "Super 2xSaI " ( super2xsai )
@@ -3850,11 +4148,14 @@ screenshots of non-Timex machines.
 .br
 .IR "TV\ 3x " ( tv3x )
 .br
+.IR "TV\ 4x " ( tv4x )
+.br
 .IR "Timex\ TV " ( timextv )
 .RS
-Three filters which attempt to emulate the effect of television
+Four filters which attempt to emulate the effect of television
 scanlines. The first is a double-sizing filter for non-Timex
-machines, the second is a similar triple-sizing filter, while the last
+machines, the second is a similar triple-sizing filter, the third
+is a similar quadruple-sizing filter, while the last
 is a single-sizing filter for Timex machines (note that this means TV\ 2X
 and Timex\ TV produce the same size output).
 .RE
@@ -3885,12 +4186,22 @@ up to 1.5\(mu its usual size (which is therefore 3\(mu the size of a
 user interfaces or when saving screenshots.
 .RE
 .PP
+.IR "Timex\ 2x " ( timex2x )
+.RS
+A non-interpolating Timex-specific filter which scales the Timex screen
+up to 2\(mu its usual size (which is therefore 4\(mu the size of a
+`normal' Spectrum screen). Available only for the GTK+, Win32 and SDL
+user interfaces or when saving screenshots.
+.RE
+.PP
 .IR "HQ\ 2x " ( hq2x )
 .br
 .IR "HQ\ 3x " ( hq3x )
+.br
+.IR "HQ\ 4x " ( hq4x )
 .RS
-Two filters which do high quality (but slow) antialiasing. Doubles and
-triples the size of the displayed screen respectively.
+Three filters which do high quality (but slow) antialiasing. Doubles and
+triples and quadruples the size of the displayed screen respectively.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -4010,6 +4321,31 @@ dialog, and the state of its write protect jumper controlled via the
 .IR "DivIDE write protect option" .
 If you're going to be using the DivIDE, you'll probably want one of
 the firmwares available from the DivIDE homepage.
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH "DIVMMC"
+The DivMMC is a MMC interface for the Spectrum. Originally designed by
+Alessandro Dorigatti for the V6Z80P+ FPGA board as the fusion of DivIDE
+and ZXMMC+ interfaces, later assembled as an interface for real spectrums
+by Mario Prato. Currently there are variants with different RAM size,
+one/two memory cards slots, optional kempston jostick, etc.
+.PP
+The interface can be activated via the
+.I "DivMMC interface"
+option from the
+.I "Options, Peripherals, Disk..."
+dialog, and the state of its EEPROM write protect jumper controlled via the
+.IR "DivMMC write protect option" .
+If you're going to be using the DivMMC, you'll need to load the ESXDOS
+firmware at
+.IR "http://www.esxdos.org/
+or use the ZX Spectrum +3e ROMs by Garry Lancaster.
+.PP
+You'll also need a HDF image to store the contents of the memory card.
+There are several tools to create and manipulate this file format, e.g.,
+hdfmonkey at
+.IR "https://github.com/gasman/hdfmonkey" .
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -4306,7 +4642,7 @@ evaluates true. If
 is omitted, it defaults to the current value of PC.
 .RE
 .PP
-br{eakpoint} p{ort} (r{ead}|w{rite})
+br{eakpoint} p{ort} (re{ad}|w{rite})
 .IR port " [if " condition ]
 .RS
 Set a breakpoint to trigger whenever IO port
@@ -4316,7 +4652,7 @@ is read from or written to and
 evaluates true.
 .RE
 .PP
-br{eakpoint} (r{ead}|w{rite})
+br{eakpoint} (re{ad}|w{rite})
 .RI [ address "] [if " condition ]
 .RS
 Set a breakpoint to trigger whenever memory location
@@ -4375,11 +4711,25 @@ divide:unpage
 The DivIDE interface is paged into or out of memory respectively.
 .RE
 .br
+divmmc:page
+.br
+divmmc:unpage
+.RS
+The DivIDE interface is paged into or out of memory respectively.
+.RE
+.br
 if1:page
 .br
 if1:unpage
 .RS
 The Interface\ 1 shadow ROM is paged into or out of memory.
+.RE
+.br
+multiface:page
+.br
+multiface:unpage
+.RS
+The Multiface One/128/3 is paged into or out of memory respectively.
 .RE
 .br
 opus:page
@@ -4509,8 +4859,14 @@ Set the centre panel disassembly to begin at
 .RE
 .PP
 ex{it}
+.RI [ expression ]
 .RS
-Exit the emulator immediately.
+Exit the emulator immediately, using the exit code resulting from the
+evaluation of
+.IR expression ,
+or 0 if
+.I expression
+is omitted.
 .RE
 .PP
 fi{nish}
@@ -4565,26 +4921,6 @@ Poke
 .I value
 into memory at
 .IR address .
-.RE
-.PP
-se{t}
-.I "register value"
-.RS
-Set the value of the Z80 register
-.I register
-to
-.IR value .
-.RE
-.PP
-se{t}
-.I "[im|iff1|iff2] value"
-.RS
-Set the interrupt mode or interrupt flip flops
-.I register
-to
-.IR value .
-If the im mode is not 0, 1 or 2 it will be ignored, while non-zero iff values
-will be converted to one.
 .RE
 .PP
 se{t}
@@ -4646,8 +4982,12 @@ Other available sources are:
 .RI ` "DISCiPLE ROM" "',"
 .RI ` "DivIDE EPROM" "',"
 .RI ` "DivIDE RAM" "',"
+.RI ` "DivMMC EPROM" "',"
+.RI ` "DivMMC RAM" "',"
 .RI ` If1 "',"
 .RI ` If2 "',"
+.RI ` "Multiface RAM" "',"
+.RI ` "Multiface ROM" "',"
 .RI ` "Opus RAM" "',"
 .RI ` "Opus ROM" "',"
 .RI ` "PlusD RAM" "',"
@@ -4688,6 +5028,20 @@ ay:current
 .RS
 The current AY-3-8912 register.
 .RE
+divmmc:control
+.RS
+The last byte written to DivMMC control port.
+.RE
+spectrum:frames
+.RS
+The frame count since reset. Note that this variable can only be read, not
+written to.
+.RE
+tape:microphone
+.RS
+The current level of the tape input connected to the `EAR' port. Note that
+this variable can only be read, not written to.
+.RE
 ula:last
 .RS
 The last byte written to the ULA. Note that this variable can only
@@ -4712,7 +5066,7 @@ z80:
 .RS
 The value of the specified register. Both 8-bit registers and 16-bit
 register pairs are supported. The MEMPTR / WZ hidden register is also
-supported.
+supported. The (presumable) Q hidden register is also supported.
 .RE
 z80:im
 .RS
@@ -4725,10 +5079,6 @@ z80:iff2
 1 if the specified interrupt flip-flop is currently set, or 0 if it is
 not set.
 .RE
-.PP
-The Z80 registers, interrupt mode and interrupt flip-flops can also be
-specified without the `z80:' prefix, but this syntax is deprecated and
-will be removed in Fuse 1.4.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -5097,8 +5447,8 @@ was compiled, than Fuse will try to create UDI images with compressed
 tracks to save disk space.
 There is a
 .I .LOG
-`image' format for debugging purpose. This is a plain text file
-contains three dump of the loaded disk image at different details.
+`image' format for debugging purpose. This is a plain text file that
+contains three dumps of the loaded disk image at different details.
 Not all image formats can store all disk images.
 You cannot save a disk image with an inappropriate format
 that loses some information (e.g. variable track length or
@@ -5152,11 +5502,11 @@ option is set to 1, but in most cases you can safely use 2. Also, movie
 recording stops if the emulated machine is changed.
 .PP
 The recorded sound sampling rate and the channel number is equal with the
-Fuse generated sound sampling rate (32000\ Hz by default) and channel
+Fuse generated sound sampling rate (44100\ Hz by default) and channel
 number (mono by default). The common sampling frequencies in
 standard video files are 44100\ Hz and 48000\ Hz. If you use
 .B \-\-sound\-freq
-command line option you can record sound on 44100\ Hz or even 48000\ Hz.
+command line option you can change the frequency.
 .PP
 You can record stereo sound if you use
 .I "AY stereo separation"

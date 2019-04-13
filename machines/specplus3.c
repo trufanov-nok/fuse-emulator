@@ -43,6 +43,7 @@
 #include "peripherals/disk/fdd.h"
 #include "peripherals/disk/upd_fdc.h"
 #include "peripherals/printer.h"
+#include "phantom_typist.h"
 #include "settings.h"
 #include "snapshot.h"
 #include "spec128.h"
@@ -288,12 +289,9 @@ select_special_map( int page1, int page2, int page3, int page4 )
 }
 
 void
-specplus3_memoryport2_write( libspectrum_word port GCC_UNUSED,
-			     libspectrum_byte b )
+specplus3_memoryport2_write_internal( libspectrum_word port GCC_UNUSED,
+                                      libspectrum_byte b )
 {
-  /* Do nothing else if we've locked the RAM configuration */
-  if( machine_current->ram.locked ) return;
-
   /* Let the parallel printer code know about the strobe bit */
   printer_parallel_strobe_write( b & 0x10 );
 
@@ -310,6 +308,15 @@ specplus3_memoryport2_write( libspectrum_word port GCC_UNUSED,
   machine_current->ram.last_byte2 = b;
 
   machine_current->memory_map();
+}
+
+void
+specplus3_memoryport2_write( libspectrum_word port, libspectrum_byte b )
+{
+  /* Do nothing else if we've locked the RAM configuration */
+  if( machine_current->ram.locked ) return;
+
+  specplus3_memoryport2_write_internal( port, b );
 }
 
 int
@@ -445,31 +452,7 @@ specplus3_shutdown( void )
 static int
 ui_drive_autoload( void )
 {
-  int error;
-  utils_file snap;
-  libspectrum_id_t type;
-
-  /* Look for an autoload snap. Try .szx first, then .z80 */
-  type = LIBSPECTRUM_ID_SNAPSHOT_SZX;
-  error = utils_read_auxiliary_file( "disk_plus3.szx", &snap,
-                                     UTILS_AUXILIARY_LIB );
-  if( error == -1 ) {
-    type = LIBSPECTRUM_ID_SNAPSHOT_Z80;
-    error = utils_read_auxiliary_file( "disk_plus3.z80", &snap,
-                                       UTILS_AUXILIARY_LIB );
-  }
-
-  /* If we couldn't find either, give up */
-  if( error == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't find autoload snap for +3 disk" );
-    return 1;
-  }
-  if( error ) return error;
-
-  error = snapshot_read_buffer( snap.buffer, snap.length, type );
-  if( error ) { utils_close_file( &snap ); return error; }
-
-  utils_close_file( &snap );
-
+  machine_reset( 0 );
+  phantom_typist_activate_disk();
   return 0;
 }

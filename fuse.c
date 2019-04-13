@@ -1,5 +1,5 @@
 /* fuse.c: The Free Unix Spectrum Emulator
-   Copyright (c) 1999-2016 Philip Kendall and others
+   Copyright (c) 1999-2017 Philip Kendall and others
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -72,24 +72,29 @@
 #include "peripherals/disk/fdd.h"
 #include "peripherals/fuller.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/ide/simpleide.h"
 #include "peripherals/ide/zxatasp.h"
 #include "peripherals/ide/zxcf.h"
+#include "peripherals/ide/zxmmc.h"
 #include "peripherals/joystick.h"
 #include "peripherals/if1.h"
 #include "peripherals/if2.h"
 #include "peripherals/kempmouse.h"
 #include "peripherals/melodik.h"
+#include "peripherals/multiface.h"
 #include "peripherals/printer.h"
 #include "peripherals/scld.h"
 #include "peripherals/speccyboot.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
+#include "phantom_typist.h"
 #include "pokefinder/pokemem.h"
 #include "profile.h"
 #include "psg.h"
 #include "rzx.h"
+#include "screenshot.h"
 #include "settings.h"
 #include "slt.h"
 #include "snapshot.h"
@@ -140,6 +145,8 @@ typedef struct start_files_t {
   const char *zxatasp_master, *zxatasp_slave;
   const char *zxcf;
   const char *divide_master, *divide_slave;
+  const char *divmmc;
+  const char *zxmmc;
   const char *mdr[8];
 
 } start_files_t;
@@ -193,13 +200,12 @@ int main(int argc, char **argv)
       z80_do_opcodes();
       event_do_events();
     }
-    r = 0;
+    r = debugger_get_exit_code();
   }
 
   fuse_end();
   
   return r;
-
 }
 
 static int
@@ -290,11 +296,13 @@ run_startup_manager( int *argc, char ***argv )
   ay_register_startup();
   beta_register_startup();
   creator_register_startup();
+  covox_register_startup();
   debugger_register_startup();
   didaktik80_register_startup();
   disciple_register_startup();
   display_register_startup( &display_context );
   divide_register_startup();
+  divmmc_register_startup();
   event_register_startup();
   fdd_register_startup();
   fuller_register_startup();
@@ -310,13 +318,16 @@ run_startup_manager( int *argc, char ***argv )
   melodik_register_startup();
   memory_register_startup();
   mempool_register_startup();
+  multiface_register_startup();
   opus_register_startup();
+  phantom_typist_register_startup();
   plusd_register_startup();
   printer_register_startup();
   profile_register_startup();
   psg_register_startup();
   rzx_register_startup();
   scld_register_startup();
+  screenshot_register_startup();
   settings_register_startup();
   setuid_register_startup();
   simpleide_register_startup();
@@ -333,6 +344,7 @@ run_startup_manager( int *argc, char ***argv )
   z80_register_startup();
   zxatasp_register_startup();
   zxcf_register_startup();
+  zxmmc_register_startup();
 
   return startup_manager_run();
 }
@@ -403,7 +415,7 @@ creator_init( void *context )
 {
   size_t i;
   unsigned int version[4] = { 0, 0, 0, 0 };
-  char *custom, osname[ 256 ];
+  char *custom, osname[ 192 ];
   static const size_t CUSTOM_SIZE = 256;
   
   libspectrum_error error; int sys_error;
@@ -594,6 +606,11 @@ setup_start_files( start_files_t *start_files )
   start_files->divide_slave =
     utils_safe_strdup( settings_current.divide_slave_file );
 
+  start_files->divmmc =
+    utils_safe_strdup( settings_current.divmmc_file );
+
+  start_files->zxmmc = utils_safe_strdup( settings_current.zxmmc_file );
+
   start_files->mdr[0] = settings_current.mdr_file;
   start_files->mdr[1] = settings_current.mdr_file2;
   start_files->mdr[2] = settings_current.mdr_file3;
@@ -654,6 +671,10 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
 	start_files->simpleide_master = filename;
       } else if( settings_current.divide_enabled ) {
 	start_files->divide_master = filename;
+      } else if( settings_current.divmmc_enabled ) {
+	start_files->divmmc = filename;
+      } else if( settings_current.zxmmc_enabled ) {
+	start_files->zxmmc = filename;
       } else {
 	/* No IDE interface active, so activate the ZXCF */
 	settings_current.zxcf_active = 1;
@@ -895,6 +916,16 @@ do_start_files( start_files_t *start_files )
   if( start_files->divide_slave ) {
     error = divide_insert( start_files->divide_slave,
 			    LIBSPECTRUM_IDE_SLAVE );
+    if( error ) return error;
+  }
+
+  if( start_files->divmmc ) {
+    error = divmmc_insert( start_files->divmmc );
+    if( error ) return error;
+  }
+
+  if( start_files->zxmmc ) {
+    error = zxmmc_insert( start_files->zxmmc );
     if( error ) return error;
   }
 

@@ -26,6 +26,9 @@
 #include <config.h>
 
 #include <string.h>
+#ifdef HAVE_STRINGS_STRCASECMP
+#include <strings.h>
+#endif      /* #ifdef HAVE_STRINGS_STRCASECMP */
 
 #include <libspectrum.h>
 
@@ -35,6 +38,7 @@
 #include "infrastructure/startup_manager.h"
 #include "machines/pentagon.h"
 #include "machines/spec128.h"
+#include "machines/specplus3.h"
 #include "memory_pages.h"
 #include "module.h"
 #include "peripherals/disk/opus.h"
@@ -540,7 +544,7 @@ memory_from_snapshot( libspectrum_snap *snap )
 
     if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) ||
         ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY )    )
-      specplus3_memoryport2_write(
+      specplus3_memoryport2_write_internal(
         0x1ffd, libspectrum_snap_out_plus3_memoryport( snap )
       );
   }

@@ -1,11 +1,330 @@
+2019-??-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Emulation core improvements:
+          * Fix activation of joystick and IF2 peripherals when loading a
+            snapshot (thanks, ICEknight) (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Fix display corruption with HQ 3x scaler (thanks, Philip Kendall)
+            (Sergio Baldoví).
+          * Fix antialiasing effect of AdvMAME3x scaler (Sergio Baldoví).
+          * Add 4x, TV 4x and HQ 4x scalers on GTK+, SDL and win32 UIs (Sergio
+            Baldoví).
+          * Allow screenshots with TV 3x, PAL TV and Timex 1.5x scalers (Sergio
+            Baldoví).
+          * GTK+ UI: Add Fuse icon to the about dialog and the main window
+            (Alberto Garcia).
+          * Fix GTK+ 3 build when the GTK+ version is < 3.20 (thanks, Thrice)
+            (Alberto Garcia).
+          * Allow selection of audio driver at build time (thanks, kov_serg)
+            (Alberto Garcia).
+          * GTK+ 3 UI: Improve moving and sizing Fuse's window under Wayland
+            (Sergio Baldoví).
+          * GTK+ 3 UI: Fix kempston mouse values on Wayland (thanks, Philip
+            Kendall) (Sergio Baldoví).
+          * Suppress a couple of -Wunused-result warnings from gcc
+            (Alberto Garcia).
+          * New higher resolution keyboard picture on GTK+ and win32 UIs
+            (thanks, Andrew Owen for the picture) (Sergio Baldoví and Philip
+            Kendall).
+          * SDL UI: Fix crash when using dispmanx backend on the Raspberry Pi
+            (Jools Wills).
+
+2018-12-09  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.7 released.
+
+        * UI improvements:
+          * GTK+ 3: Make the offset entry wider in memory browser (Derek
+            Fountain).
+          * GTK+: Remove duplicated surface creation code (Philip Kendall).
+          * GTK+: Remove use of deprecated gtk_device_(un)grab functions
+            (Philip Kendall).
+          * GTK+/Win32: Add *.bin as an allowed filetype to file selectors and
+            amend .fmf filetype (thanks, Allan Turvey) (Sergio Baldoví).
+          * Improve Fuse's window sizing under Wayland; still not right, but
+            better than it was before (Sergio Baldoví).
+          * Improve Fuse's Kempston mouse handling under GTK+ 3.x (Philip
+            Kendall).
+          * Stop Kempston mouse causing a crash under Wayland; still doesn't
+            work properly though (Philip Kendall).
+
+        * Miscellaneous improvements:
+          * "Save binary" command can now save 65536 bytes again (regression
+            introduced in 1.5.6; thanks, thrice) (Philip Kendall).
+          * Remove gcc 8 string overflow warnings (Philip Kendall).
+
+2018-08-06  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.6 released.
+
+        * Emulation core improvements:
+          * Z80 flags register is now correct after SCF and CCF (Sergio
+            Baldoví).
+
+        * Miscellaneous improvements:
+          * Factor out common paths code between Linux and generic UNIX (Alberto
+            Garcia and Fredrick Meunier).
+          * More improvements disabling phantom typist after finishing loading
+            TAP or standard ROM TZX files (thanks, Alberto Garcia) (Fredrick
+            Meunier).
+          * Saving and loading binary data no longer increments tstate count
+            or triggers breakpoints (thanks, Sergio Baldoví) (Philip Kendall).
+          * "Variant" Alkatraz loaders (e.g. Gauntlet 3 and Shadow Dancer),
+            "Variant" Search Loader programs (e.g. Lotus Esprit Turbo
+            Challenge and Space Crusade) and Dinaload loaders (e.g. Astro Marine
+            Corps) are now accelerated (Philip Kendall).
+          * Stop RZX playback/recording on machine reset/change (Sergio
+            Baldoví).
+          * Various minor bugfixes.
+
+2018-07-01  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.5 released.
+
+        * Emulation core improvements:
+          * Improve sound accuracy on Unix 64 bits systems (thanks, Fredrick
+            Meunier) (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Allow the use of real joystick hats/dpads in the SDL joystick code
+            (thanks, Sarah) (Fredrick Meunier).
+          * Rename compat_get_home_path() to compat_get_config_path() (Alberto
+            Garcia).
+          * Various minor bugfixes.
+
+2018-06-03  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.4 released.
+
+        * Miscellaneous improvements:
+          * Add *.FMF as an allowed filetype to file selectors (Sergio Baldoví).
+          * Save SCR from current display file (thanks, Einar Saukas) (Fredrick
+            Meunier).
+          * Use 44.1KHz as default sound frequency (Fredrick Meunier).
+          * Various minor bugfixes.
+
+2018-04-29  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.3 released.
+
+        * Emulation core improvements:
+          * Disable inactive peripherals after loading a snapshot (Sergio
+            Baldoví).
+
+        * Miscellaneous improvements:
+          * Distribute strcasecmp autoconf macro (Sergio Baldoví).
+          * Re-enable sound after phantom typist finishes loading TAP, standard
+            ROM TZX or +3 DSK images (thanks, Alberto Garcia) (Fredrick
+            Meunier).
+
+2018-03-27  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.2 released.
+
+        * Emulation core improvements:
+          * Emulate ROM bug loading zero length blocks when using tape traps
+            (ub880d).
+
+        * Machine specific improvements:
+          * Fix the format of double-sided +3 disks (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Spectrum reset is accelerated when phantom typist is enabled and a
+            file is loaded from the menu (Fredrick Meunier).
+          * Add options UI for phantom typist (Fredrick Meunier).
+          * GTK+ 3 UI: Memory browser dialog allows to go to specific offset
+            (Sergio Baldoví).
+
+2018-02-25  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.1 released.
+
+        * Debugger improvements:
+          * Prevent crash when we try to disassemble an instruction with many
+            DD or FD prefixes (Philip Kendall; thanks, Miguel Angel Rodríguez
+            Jódar).
+          * Fix crash when setting debugger variables (Gergely Szasz).
+
+        * Profiler improvements:
+          * Prevent crash when we try to profile an instruction with many DD
+            or FD prefixes (Philip Kendall; thanks, Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * GTK+ UI: Improve behaviour of default button on dialogs (thanks,
+            atom-atom) (ub880d and Sergio Baldoví).
+          * GTK+ and win32 UIs: Support hex numbers in load/save binary and
+            pokefinder dialogs (thanks, Allan Turvey) (Sergio Baldoví).
+          * SDL UI: Allow to select the video mode used in full-screen (Gergely
+            Szasz).
+
+2017-12-10  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.5.0 released.
+
+        * Debugger improvements:
+          * Ensure conditional timed breakpoints work correctly (Philip
+            Kendall).
+
+        * Miscellaneous improvements:
+          * Autoload snapshots replaced by a "phantom typist" which types
+            LOAD "" or similar.
+          * Alkatraz loaders (e.g. Cobra and Fairlight) are now accelerated
+            (Philip Kendall).
+
+2017-10-10  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.4.1 released.
+
+        * Emulation core improvements:
+          * Improvements to the loader acceleration code to reduce errors -
+            Blood Brothers, City Slicker, Driller, Dynamite Dan, Games
+            Compendium (by Gremlin), Joe Blade II, Kokotoni Wilf, Powerplay,
+            Saboteur, Trapdoor and Zanthrax now all load successfully (thanks,
+            windale and ub880d) (Philip Kendall).
+          * Multiface 3 returns values stored from ports 0x1ffd and 0x7ffd
+            (thanks, Fredrick Meunier) (Sergio Baldoví).
+          * Set contention for DivIDE/DivMMC EPROM memory and clear data to 1's
+            (Sergio Baldoví).
+
+        * Debugger improvements:
+          * Allow an exit code to be specified when using the "exit" command
+            (Philip Kendall).
+          * Add new "tape:microphone" and "spectrum:frames" system variables to
+            allow access to the current tape level and frame count since reset
+            (Philip Kendall).
+
+        * Deprecated features removed:
+          * All Z80 variables in the debugger must now be referenced as
+            "z80:NAME" rather than just "NAME" e.g. "set z80:af 0x1234"
+            rather than just "set af 0x1234" (Philip Kendall).
+
+        * Miscellaneous improvements:
+          * Support XCode 9 SDK in CoreAudio driver (Fredrick Meunier).
+          * Correct enabling of ide slave menu item (Fredrick Meunier).
+          * Add *.mlt as an allowed filetype to file selectors (thanks,
+            jonesypeter) (Fredrick Meunier).
+          * Add null UI for use in automation tests (Philip Kendall).
+          * Ensure null UI is not overridden by GTK+ UI (Sergio Baldoví).
+          * Fix detection of libspectrum capabilities (Sergio Baldoví).
+          * Remove C11 typedef redefinition of divxxx_t (Fredrick Meunier).
+
+2017-09-03  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.4.0 released.
+
+        * New features:
+          * Add DivMMC emulation (Philip Kendall and Sergio Baldoví).
+          * Add ZXMMC emulation (Philip Kendall and Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Add support for MLT format screenshots (Fredrick Meunier).
+
+2017-07-31  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.3.8 released.
+
+        * Emulation core improvements:
+          * Add workaround for Multiface One and 128 clash (thanks, Fredrick
+            Meunier) (Sergio Baldoví).
+          * Limit RZX sentinel warning to once per playback (Sergio Baldoví).
+          * Disable Melodik interface on 128K machines (Sergio Baldoví).
+          * Correct the list of machines for Multiface One (Fredrick Meunier).
+
+        * Miscellaneous improvements:
+          * Update compile instructions for win32 UI (Sergio Baldoví).
+          * Check required version of libspectrum is available (Fredrick
+            Meunier).
+          * Document --mdr-len and --mdr-random-len options (thanks, Philip
+            Kendall and Gergely Szasz) (Sergio Baldoví).
+          * Document support for the Recreated ZX Spectrum (Sergio Baldoví).
+          * Fix transposed description of AY-3-8912 (Sergio Baldoví).
+          * GTK UI: Destroy tape browser dialog on close (thanks, Alberto
+            Garcia) (Sergio Baldoví).
+
+2017-07-02  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.3.7 released.
+
+        * New features:
+          * Add Multiface One/128/3 interface emulation (Gergely Szasz and
+            Sergio Baldoví).
+
+        * Machine specific improvements:
+          * Restore +2A/+3 ALL_RAM mode from snapshots (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * SDL: Hide cursor when UI runs on a console (Raspberry Pi) (Sergio
+            Baldoví).
+          * Switch to using autoreconf (Fredrick Meunier).
+          * Use silent builds by default when available (Fredrick Meunier).
+          * Use explicit AM_SILENT_RULES macro as libspectrum does (Sergio
+            Baldoví).
+          * AC_PROG_RANLIB is rendered obsolete by LT_INIT (Sergio Baldoví).
+          * Remove unnecessary include glib.h (Sergio Baldoví).
+
+2017-06-01  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.3.6 released.
+
+        * Emulation core improvements:
+          * Add Covox interface emulation (Fredrick Meunier).
+          * Disable accelerate loader while recording RZX files (thanks,
+            windale) (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Fix typo in Opus Discovery option (thanks, Stuart) (Sergio Baldoví).
+          * WidgetUI: Disable RollbackTo menu option for widget UIs (thanks,
+            Ian) (Sergio Baldoví).
+          * Update description of speed option (Sergio Baldoví).
+          * List Melodik as supported interface and rearrange audio interfaces
+            as a separate item (Sergio Baldoví).
+          * Document --volume-covox option and update bash completion
+            (Sergio Baldoví).
+
+2017-04-28  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.3.5 released.
+
+        * Emulation core improvements:
+          * Disable tape traps when playing/recording RZX files (thanks,
+            windale) (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Fix typo in LOG disk format (Sergio Baldoví).
+          * Replace old ticket numbers from Trac to Allura (Sergio Baldoví).
+          * WidgetUI: Fix memory leak in file selector (thanks, clang) (Sergio
+            Baldoví).
+          * Fix allocator sizeof operand mismatch and remove dead assignment
+            (Sergio Baldoví).
+          * Remove prototypes of old plus3 disk functions (thanks, Andre
+            Leiradella) (Sergio Baldoví).
+          * Increase allocated memory to keep GCC7 happy (Sergio Baldoví).
+
+2017-03-07  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.3.4 released.
+
+        * Debugger improvements:
+          * Fix syntax for "breakpoint read" debugger command (thanks, Andy
+            Chadbourne) (Sergio Baldoví).
+
+        * Miscellaneous improvements:
+          * Fix Z80 unit test 39 to test the right opcode (thanks, Gareth Adams)
+            (Philip Kendall).
+          * Win32: Fix joystick initialisation (thanks, Matthias and Алексей)
+            (Sergio Baldoví).
+          * Use power-of-2 sound buffers on FreeBSD (thanks, Rene Ladan)
+            (Fredrick Meunier).
+
 2017-01-31  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
         * Fuse 1.3.3 released.
 
         * Emulation core improvements:
           * Add support for the hidden MEMPTR register (thanks, Boo-boo,
-	    Vladimir Kladov and the members of the "Z80 Assembly Programming On
-	    The ZX Spectrum" Facebook group) (Philip Kendall).
+            Vladimir Kladov and the members of the "Z80 Assembly Programming On
+            The ZX Spectrum" Facebook group) (Philip Kendall).
           * Mark new disks as needing to be saved (Gergely Szasz).
           * Show more information on disk modification status in menus (Gergely
             Szasz).

@@ -463,8 +463,7 @@ if1_memory_map( void )
 static void
 if1_enabled_snapshot( libspectrum_snap *snap )
 {
-  if( libspectrum_snap_interface1_active( snap ) )
-    settings_current.interface1 = 1;
+  settings_current.interface1 = libspectrum_snap_interface1_active( snap );
 }
 
 static void
@@ -726,7 +725,9 @@ no_rs232_in:
 
   if( if1_ula.s_net_mode == 0 ) {		/* if we do raw */
     /* Here is the input routine */
-    read( if1_ula.fd_net, &if1_ula.net, 1 );	/* Ok, if no byte, we send last*/
+    ssize_t unused;
+    unused = read( if1_ula.fd_net, &if1_ula.net, 1 );	/* Ok, if no byte, we send last*/
+    (void) unused;
   } else {/* if( if1_ula.s_net_mode == 1 ) if we do interpreted */
 /* Here is the input routine. There are several stage in input
    and output. So first for output. if1 first do SEND-SC 

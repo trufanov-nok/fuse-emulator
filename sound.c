@@ -36,6 +36,7 @@
 #include "settings.h"
 #include "sound.h"
 #include "tape.h"
+#include "timer/timer.h"
 #include "ui/ui.h"
 #include "sound/blipbuffer.h"
 
@@ -95,6 +96,8 @@ Blip_Synth *ay_a_synth = NULL, *ay_b_synth = NULL, *ay_c_synth = NULL;
 Blip_Synth *ay_a_synth_r = NULL, *ay_b_synth_r = NULL, *ay_c_synth_r = NULL;
 
 Blip_Synth *left_specdrum_synth = NULL, *right_specdrum_synth = NULL;
+
+Blip_Synth *left_covox_synth = NULL, *right_covox_synth = NULL;
 
 struct speaker_type_tag
 {
@@ -227,21 +230,31 @@ sound_init( const char *device )
   treble = speaker_type[ option_enumerate_sound_speaker_type() ].treble;
 
   ay_a_synth = new_Blip_Synth();
-  blip_synth_set_volume( ay_a_synth, sound_get_volume( settings_current.volume_ay) );
+  blip_synth_set_volume( ay_a_synth,
+                         sound_get_volume( settings_current.volume_ay) );
   blip_synth_set_treble_eq( ay_a_synth, treble );
 
   ay_b_synth = new_Blip_Synth();
-  blip_synth_set_volume( ay_b_synth, sound_get_volume( settings_current.volume_ay) );
+  blip_synth_set_volume( ay_b_synth,
+                         sound_get_volume( settings_current.volume_ay) );
   blip_synth_set_treble_eq( ay_b_synth, treble );
 
   ay_c_synth = new_Blip_Synth();
-  blip_synth_set_volume( ay_c_synth, sound_get_volume( settings_current.volume_ay) );
+  blip_synth_set_volume( ay_c_synth,
+                         sound_get_volume( settings_current.volume_ay) );
   blip_synth_set_treble_eq( ay_c_synth, treble );
 
   left_specdrum_synth = new_Blip_Synth();
-  blip_synth_set_volume( left_specdrum_synth, sound_get_volume( settings_current.volume_specdrum ) );
+  blip_synth_set_volume( left_specdrum_synth,
+                         sound_get_volume( settings_current.volume_specdrum ) );
   blip_synth_set_output( left_specdrum_synth, left_buf );
   blip_synth_set_treble_eq( left_specdrum_synth, treble );
+
+  left_covox_synth = new_Blip_Synth();
+  blip_synth_set_volume( left_covox_synth,
+                         sound_get_volume( settings_current.volume_covox ) );
+  blip_synth_set_output( left_covox_synth, left_buf );
+  blip_synth_set_treble_eq( left_covox_synth, treble );
   
   /* important to override these settings if not using stereo
    * (it would probably be confusing to mess with the stereo
@@ -282,9 +295,16 @@ sound_init( const char *device )
     blip_synth_set_treble_eq( *ay_mid_synth_r, treble );
 
     right_specdrum_synth = new_Blip_Synth();
-    blip_synth_set_volume( right_specdrum_synth, sound_get_volume( settings_current.volume_specdrum ) );
+    blip_synth_set_volume( right_specdrum_synth,
+                           sound_get_volume( settings_current.volume_specdrum ) );
     blip_synth_set_output( right_specdrum_synth, right_buf );
     blip_synth_set_treble_eq( right_specdrum_synth, treble );
+
+    right_covox_synth = new_Blip_Synth();
+    blip_synth_set_volume( right_covox_synth,
+                           sound_get_volume( settings_current.volume_covox ) );
+    blip_synth_set_output( right_covox_synth, right_buf );
+    blip_synth_set_treble_eq( right_covox_synth, treble );
   } else {
     blip_synth_set_output( ay_a_synth, left_buf );
     blip_synth_set_output( ay_b_synth, left_buf );
@@ -322,7 +342,7 @@ void
 sound_unpause( void )
 {
   /* No sound if fastloading in progress */
-  if( settings_current.fastload && tape_is_playing() )
+  if( settings_current.fastload && timer_fastloading_active() )
     return;
 
   sound_init( settings_current.sound_device );
@@ -344,6 +364,9 @@ sound_end( void )
 
     delete_Blip_Synth( &left_specdrum_synth );
     delete_Blip_Synth( &right_specdrum_synth );
+
+    delete_Blip_Synth( &left_covox_synth );
+    delete_Blip_Synth( &right_covox_synth );
 
     delete_Blip_Buffer( &left_buf );
     delete_Blip_Buffer( &right_buf );
@@ -645,6 +668,23 @@ sound_specdrum_write( libspectrum_word port GCC_UNUSED, libspectrum_byte val )
       blip_synth_update( right_specdrum_synth, tstates, ( val - 128) * 128);
     }
     machine_current->specdrum.specdrum_dac = val - 128;
+  }
+}
+
+/*
+ * sound_covox_write - very simple routine
+ * as the output is already a digitized waveform
+ */
+void
+sound_covox_write( libspectrum_word port GCC_UNUSED, libspectrum_byte val )
+{
+  if( periph_is_active( PERIPH_TYPE_COVOX_FB ) ||
+      periph_is_active( PERIPH_TYPE_COVOX_DD ) ) {
+    blip_synth_update( left_covox_synth, tstates, val * 128);
+    if( right_covox_synth ) {
+      blip_synth_update( right_covox_synth, tstates, val * 128);
+    }
+    machine_current->covox.covox_dac = val;
   }
 }
 

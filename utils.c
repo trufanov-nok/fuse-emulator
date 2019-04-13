@@ -43,9 +43,11 @@
 #include "memory_pages.h"
 #include "peripherals/dck.h"
 #include "peripherals/ide/divide.h"
+#include "peripherals/ide/divmmc.h"
 #include "peripherals/ide/simpleide.h"
 #include "peripherals/ide/zxatasp.h"
 #include "peripherals/ide/zxcf.h"
+#include "peripherals/ide/zxmmc.h"
 #include "peripherals/if1.h"
 #include "peripherals/if2.h"
 #include "pokefinder/pokemem.h"
@@ -194,6 +196,8 @@ utils_open_file( const char *filename, int autoload,
     if( !settings_current.simpleide_active &&
 	!settings_current.zxatasp_active   &&
 	!settings_current.divide_enabled   &&
+	!settings_current.divmmc_enabled   &&
+	!settings_current.zxmmc_enabled    &&
 	!settings_current.zxcf_active         ) {
       settings_current.zxcf_active = 1;
       periph_update();
@@ -205,8 +209,12 @@ utils_open_file( const char *filename, int autoload,
       error = zxatasp_insert( filename, LIBSPECTRUM_IDE_MASTER );
     } else if( settings_current.simpleide_active ) {
       error = simpleide_insert( filename, LIBSPECTRUM_IDE_MASTER );
-    } else {
+    } else if( settings_current.divide_enabled ) {
       error = divide_insert( filename, LIBSPECTRUM_IDE_MASTER );
+    } else if( settings_current.zxmmc_enabled ) {
+      error = zxmmc_insert( filename );
+    } else {
+      error = divmmc_insert( filename );
     }
     if( error ) return error;
     
@@ -292,15 +300,14 @@ utils_find_file_path( const char *filename, char *ret_path,
   init_path_context( &ctx, type );
 
   while( compat_get_next_path( &ctx ) ) {
-
+    int bytes_written;
 #ifdef AMIGA
-    snprintf( ret_path, PATH_MAX, "%s%s", ctx.path, filename );
+    bytes_written = snprintf( ret_path, PATH_MAX, "%s%s", ctx.path, filename );
 #else
-    snprintf( ret_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", ctx.path,
-              filename );
+    bytes_written = snprintf( ret_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s",
+        ctx.path, filename );
 #endif
-    if( compat_file_exists(ret_path) ) return 0;
-
+    if( bytes_written < PATH_MAX && compat_file_exists(ret_path) ) return 0;
   }
 
   return 1;
@@ -439,6 +446,26 @@ utils_safe_strdup( const char *src )
     memcpy( dest, src, length );
   }
   return dest;
+}
+
+int
+utils_save_binary( libspectrum_word start, size_t length,
+                   const char *filename )
+{
+  libspectrum_byte *buffer;
+  size_t i;
+  int error = 0;
+
+  buffer = libspectrum_new( libspectrum_byte, length );
+
+  for( i = 0; i < length; i++ )
+    buffer[ i ] = readbyte_internal( start + i );
+
+  error = utils_write_file( filename, buffer, length );
+
+  libspectrum_free( buffer );
+
+  return error;
 }
 
 void
