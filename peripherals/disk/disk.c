@@ -55,8 +55,8 @@ disk_open2( libspectrum_disk *d, const char *filename, int preindex )
   d->flag = preindex ? LIBSPECTRUM_DISK_FLAG_PREIDX : 0;
   if( utils_read_file( filename, &file ) )
     return d->status = LIBSPECTRUM_DISK_OPEN;
-  d->filename = utils_safe_strdup( filename );
-  error = libspectrum_disk_open( d, file.buffer, file.length );
+  error = libspectrum_disk_open( d, file.buffer, file.length,
+                                 LIBSPECTRUM_DISK_TYPE_NONE, filename );
   utils_close_file( &file );
 
   if( !error && ( d->type == LIBSPECTRUM_DISK_TRD ||
@@ -80,6 +80,7 @@ disk_open( libspectrum_disk *d, const char *filename, int preindex,
   int l, g = 0, pos = 0;
   libspectrum_disk d1, d2;
 
+  d->type = LIBSPECTRUM_DISK_TYPE_NONE;
   d->filename = NULL;
   if( filename == NULL || *filename == '\0' )
     return d->status = LIBSPECTRUM_DISK_OPEN;
