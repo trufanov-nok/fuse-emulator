@@ -222,7 +222,7 @@ uidisplay_init( int width, int height )
 {
   SDL_Rect **modes;
   int no_modes;
-  int i, mw = 0, mh = 0, mn = 0;
+  int i = 0, mw = 0, mh = 0, mn = 0;
 
   /* Get available fullscreen/software modes */
   modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_SWSURFACE);
@@ -241,7 +241,7 @@ uidisplay_init( int width, int height )
     );
     if( no_modes ) {
       fprintf( stderr, "  ** The modes list is empty%s...\n",
-                       no_modes == 2 ? ", all resolution allowed" : "" );
+               modes == (SDL_Rect **) -1 ? ", all resolutions allowed" : "" );
     } else {
       for( i = 0; modes[i]; i++ ) {
         fprintf( stderr, "% 3d  % 5d % 5d\n", i + 1, modes[i]->w, modes[i]->h );
@@ -253,10 +253,15 @@ uidisplay_init( int width, int height )
     return 0;
   }
 
-  for( i=0; modes[i]; ++i ); /* count modes */
+  if( !no_modes ) {
+    for( i=0; modes[i]; ++i ); /* count modes */
+  }
+
   if( settings_current.sdl_fullscreen_mode ) {
     if( sscanf( settings_current.sdl_fullscreen_mode, " %dx%d", &mw, &mh ) != 2 ) {
-      if( sscanf( settings_current.sdl_fullscreen_mode, " %d", &mn ) == 1 && mn <= i ) {
+      if( !no_modes &&
+          sscanf( settings_current.sdl_fullscreen_mode, " %d", &mn ) == 1 &&
+          mn <= i ) {
         mw = modes[mn - 1]->w; mh = modes[mn - 1]->h;
       }
     }
@@ -264,14 +269,14 @@ uidisplay_init( int width, int height )
 
   /* Check if there are any modes available, or if our resolution is restricted
      at all */
-  if( no_modes ){
-    /* Just try whatever we have and see what happens */
-    max_fullscreen_height = 480;
-    min_fullscreen_height = 240;
-  } else if( mh > 0 ) {
+  if( mh > 0 ) {
     /* set from command line */
     max_fullscreen_height = min_fullscreen_height = mh;
     fullscreen_width = mw;
+  } else if( no_modes ){
+    /* Just try whatever we have and see what happens */
+    max_fullscreen_height = 480;
+    min_fullscreen_height = 240;
   } else {
     /* Record the largest supported fullscreen software mode */
     max_fullscreen_height = modes[0]->h;
